@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper.dart';
 import 'package:gemini001/models/farmer.dart';
+import 'package:gemini001/screens/delete_confirmation_screen.dart';
+
 
 // This screen displays a list of farmers and is the main screen for the app.
 class ListFarmersScreen extends StatefulWidget {
@@ -14,6 +16,13 @@ class ListFarmersScreen extends StatefulWidget {
 
 class _ListFarmersScreenState extends State<ListFarmersScreen> {
   final FirestoreHelper _firestoreHelper = FirestoreHelper();
+  late Stream<List<Farmer>> _farmersStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _farmersStream = _firestoreHelper.streamFarmers();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,48 +31,55 @@ class _ListFarmersScreenState extends State<ListFarmersScreen> {
         title: const Text('Farmer List'),
       ),
       body: StreamBuilder<List<Farmer>>(
-        // Now we call the streamFarmers() method which returns a Stream<List<Farmer>>
-        // This is the key change to fix the type mismatch error.
-        stream: _firestoreHelper.streamFarmers(),
+        
+        stream: _firestoreHelper.streamFarmers(),                               // Now we call the streamFarmers() method which returns a Stream<List<Farmer>>
         builder: (context, snapshot) {
-          // Show a loading indicator if the stream is still waiting for data.
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          
+          if (snapshot.connectionState == ConnectionState.waiting) {            // If the connection is still waiting, show a loading indicator.
             return const Center(child: CircularProgressIndicator());
           }
-          // If there's an error, show an error message.
-          if (snapshot.hasError) {
+          
+          if (snapshot.hasError) {                                              
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-          // If the snapshot has data, display the list.
-          if (snapshot.hasData) {
-            final farmers = snapshot.data!;
-            // Show a message if there are no farmers.
-            if (farmers.isEmpty) {
+          
+          if (snapshot.hasData) {                                               // If we have data, we can display the list of farmers.                               
+            final farmers = snapshot.data!;            
+            if (farmers.isEmpty) {                                              // If the list is empty, show a message indicating no farmers have been added yet.  
               return const Center(child: Text('No farmers added yet.'));
-            }
-            // Use a ListView to display the list of farmers.
-            return ListView.builder(
+            }            
+            return ListView.builder(                                            // Use a ListView to display the list of farmers.
               itemCount: farmers.length,
               itemBuilder: (context, index) {
                 final farmer = farmers[index];
-                return ListTile(
-                  // We'll combine the first and last name for the title.
-                  title: Text('${farmer.firstName} ${farmer.lastName}'),
-                  // We'll use the address for the subtitle, as there is no 'location' property.
-                  subtitle: Text(farmer.address),
+                return ListTile(                  
+                  title: Text('${farmer.firstName} ${farmer.lastName}'),        // We'll combine the first and last name for the title.                  
+                  subtitle: Text(farmer.address),                               // We'll use the address for the subtitle, as there is no 'location' property.
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+
                       IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () {
                           // Handle edit farmer functionality
                         },
                       ),
+                      
                       IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          // Handle delete farmer functionality
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DeleteConfirmationScreen(farmer: farmer),
+                            ),
+                          );
+                          if (result == true) { // If deletion happened, refresh the list
+                            setState(() {
+                              _farmersStream = _firestoreHelper.streamFarmers();
+                            });
+                          }
                         },
                       ),
                     ],
