@@ -53,32 +53,36 @@ class _AddFarmerScreenState extends State<AddFarmerScreen> {                    
       );
 
       try {
-        await _firestoreHelper.addFarmer(newFarmer);                                            // Use the new Firestore helper to add the farmer.
-        _showSnackBar('Farmer added successfully!');                                            // Show a confirmation message.
-
-        _formKey.currentState!.reset();                                                         // Reset the form fields after successful save.
+        await _firestoreHelper.addFarmer(newFarmer);                                // Use the new Firestore helper to add the farmer.
+        if (mounted) {                                                              // Grok-2025-08-21-fix-error: Check if the widget is still mounted before showing the SnackBar.
+          _showSnackBar('Farmer added successfully!');                              // Show a confirmation message.
         
-        _firstNameController.clear();                                                           // Clear the text controllers.
-        _lastNameController.clear();
-        _companyNameController.clear();
-        _addressController.clear();
-        _phoneController.clear();
-        _emailController.clear();
-        _totalFarmSizeController.clear();
-        _monthlyCapacityController.clear();
-        _yearlyCapacityController.clear();
+          _formKey.currentState!.reset();                                           // Reset the form fields after successful save.
+          
+          _firstNameController.clear();                                             // Clear the text controllers.
+          _lastNameController.clear();
+          _companyNameController.clear();
+          _addressController.clear();
+          _phoneController.clear();
+          _emailController.clear();
+          _totalFarmSizeController.clear();
+          _monthlyCapacityController.clear();
+          _yearlyCapacityController.clear();
 
-        Navigator.pop(context, true);                                                         // Grok-2025-08-21-fix-error: Pop the screen and return true to indicate success.   
-        return true;                                                                          // Return true to indicate success.
+          Navigator.pop(context, true);  
+        }                                                     
+        return true;                                                                   // Return true to indicate success.
 
-      } catch (e) {                                                                           // Catch any errors that occur during the save operation.
-        _showSnackBar('Error adding farmer: $e');                                             // Show an error message if something goes wrong.
-        return false;                                                                         // Return false to indicate failure.
+      } catch (e) {                                                                    // Catch any errors that occur during the save operation.
+        if (mounted) {                                                                 // Grok-2025-08-21-fix-error: Check if the widget is still mounted before showing the SnackBar.
+          _showSnackBar('Error adding farmer: $e');                                    // Show an error message if something goes wrong.
+        }
+        return false;                                                                  // Return false to indicate failure.
       } 
 
     } else {
-      _showSnackBar('Please fill out all fields correctly.');                                // If the form is not valid, show a message.
-      return false;                                                                          // Return false to indicate failure.     
+      _showSnackBar('Please fill out all fields correctly.');                           // If the form is not valid, show a message.
+      return false;                                                                     // Return false to indicate failure.     
     }
   }
 
