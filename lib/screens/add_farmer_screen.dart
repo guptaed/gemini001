@@ -35,7 +35,7 @@ class _AddFarmerScreenState extends State<AddFarmerScreen> {                    
   }
 
   
-  Future<void> _saveFarmer() async {                                                          // `_saveFarmer` method: Handles the logic for saving the farmer data.
+  Future<bool> _saveFarmer() async {                                                          // `_saveFarmer` method: Handles the logic for saving the farmer data.
     
     if (_formKey.currentState!.validate()) {                                                  // Check if the form is valid. `validate()` returns true if all validators pass.
       
@@ -52,21 +52,33 @@ class _AddFarmerScreenState extends State<AddFarmerScreen> {                    
         sellingCapacityPerYearTons: double.tryParse(_yearlyCapacityController.text) ?? 0.0,
       );
 
-      await _firestoreHelper.addFarmer(newFarmer);                                            // Use the new Firestore helper to add the farmer.
-      _showSnackBar('Farmer added successfully!');                                            // Show a confirmation message.
+      try {
+        await _firestoreHelper.addFarmer(newFarmer);                                            // Use the new Firestore helper to add the farmer.
+        _showSnackBar('Farmer added successfully!');                                            // Show a confirmation message.
 
-      _formKey.currentState!.reset();                                                         // Reset the form fields after successful save.
-      
-      _firstNameController.clear();                                                           // Clear the text controllers.
-      _lastNameController.clear();
-      _companyNameController.clear();
-      _addressController.clear();
-      _phoneController.clear();
-      _emailController.clear();
-      _totalFarmSizeController.clear();
-      _monthlyCapacityController.clear();
-      _yearlyCapacityController.clear();
+        _formKey.currentState!.reset();                                                         // Reset the form fields after successful save.
+        
+        _firstNameController.clear();                                                           // Clear the text controllers.
+        _lastNameController.clear();
+        _companyNameController.clear();
+        _addressController.clear();
+        _phoneController.clear();
+        _emailController.clear();
+        _totalFarmSizeController.clear();
+        _monthlyCapacityController.clear();
+        _yearlyCapacityController.clear();
 
+        Navigator.pop(context, true);                                                         // Grok-2025-08-21-fix-error: Pop the screen and return true to indicate success.   
+        return true;                                                                          // Return true to indicate success.
+
+      } catch (e) {                                                                           // Catch any errors that occur during the save operation.
+        _showSnackBar('Error adding farmer: $e');                                             // Show an error message if something goes wrong.
+        return false;                                                                         // Return false to indicate failure.
+      } 
+
+    } else {
+      _showSnackBar('Please fill out all fields correctly.');                                // If the form is not valid, show a message.
+      return false;                                                                          // Return false to indicate failure.     
     }
   }
 
@@ -113,7 +125,9 @@ class _AddFarmerScreenState extends State<AddFarmerScreen> {                    
   
   @override
   Widget build(BuildContext context) {                                                        // The `build` method describes the UI.
-    return Padding(      
+    return Scaffold(                                                                          // Grok-2025-08-21-fix-error:
+      appBar: AppBar(title: const Text('Add Farmer')),                                        // Grok-2025-08-21-fix-error:    
+      body: Padding(      
       padding: const EdgeInsets.all(16.0),                                                    // Padding around the entire form.
       child: Center(
         child: SingleChildScrollView(          
@@ -160,6 +174,7 @@ class _AddFarmerScreenState extends State<AddFarmerScreen> {                    
           ),
         ),
       ),
+    ),
     );
   }
 }

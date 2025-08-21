@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper.dart';
 import 'package:gemini001/models/farmer.dart';
+import 'package:gemini001/screens/add_farmer_screen.dart';
 import 'package:gemini001/screens/delete_confirmation_screen.dart';
 
 
@@ -93,8 +94,24 @@ class _ListFarmersScreenState extends State<ListFarmersScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Handle adding a new farmer
+        onPressed: () async {
+          try {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddFarmerScreen(),
+              ),
+            );
+            if (result == true) {
+              setState(() {
+                _farmersStream = _firestoreHelper.streamFarmers();
+              });
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error navigating to Add Farmer: $e')),
+            );
+          }
         },
         child: const Icon(Icons.add),
       ),
