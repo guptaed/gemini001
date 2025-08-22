@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper.dart';
 import 'package:gemini001/models/farmer.dart';
 import 'package:gemini001/screens/add_farmer_screen.dart';
-import 'package:gemini001/screens/delete_confirmation_screen.dart';
-import 'package:gemini001/screens/edit_farmer_screen.dart';
-
+import 'package:gemini001/screens/farmer_details_screen.dart'; 
 
 // This screen displays a list of farmers and is the main screen for the app.
 class ListFarmersScreen extends StatefulWidget {
@@ -30,11 +28,11 @@ class _ListFarmersScreenState extends State<ListFarmersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Farmer List'),
+        title: const Text('Suppliers List'),
       ),
       body: StreamBuilder<List<Farmer>>(
         
-        stream: _firestoreHelper.streamFarmers(),                               // Now we call the streamFarmers() method which returns a Stream<List<Farmer>>
+        stream: _farmersStream,                               
         builder: (context, snapshot) {
           
           if (snapshot.connectionState == ConnectionState.waiting) {            // If the connection is still waiting, show a loading indicator.
@@ -50,51 +48,41 @@ class _ListFarmersScreenState extends State<ListFarmersScreen> {
             if (farmers.isEmpty) {                                              // If the list is empty, show a message indicating no farmers have been added yet.  
               return const Center(child: Text('No farmers added yet.'));
             }            
-            return ListView.builder(                                            // Use a ListView to display the list of farmers.
+            return GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 3,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+              ),
               itemCount: farmers.length,
               itemBuilder: (context, index) {
                 final farmer = farmers[index];
-                return ListTile(                  
-                  title: Text('${farmer.firstName} ${farmer.lastName}'),        // We'll combine the first and last name for the title.                  
-                  subtitle: Text(farmer.address),                               // We'll use the address for the subtitle, as there is no 'location' property.
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditFarmerScreen(farmer: farmer),
-                            ),
-                          );
-                          if (result == true) {
-                            setState(() {
-                              _farmersStream = _firestoreHelper.streamFarmers();
-                            });
-                          }
-                        },
+                return Card(
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FarmerDetailsScreen(farmer: farmer),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${farmer.firstName} ${farmer.lastName}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(farmer.companyName),
+                          Text(farmer.address),
+                        ],
                       ),
-                      
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DeleteConfirmationScreen(farmer: farmer),
-                            ),
-                          );
-                          if (result == true) { // If deletion happened, refresh the list
-                            setState(() {
-                              _farmersStream = _firestoreHelper.streamFarmers();
-                            });
-                          }
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                 );
               },

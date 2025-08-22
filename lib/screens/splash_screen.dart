@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {          // `_SplashScree
             const SizedBox(height: 20),                           // Adds vertical space between icon and text.
             
             const Text(                                           // `Text` for the app title.
-              'Wood Procurement App',
+              'Fuel Procurement System',
               style: TextStyle(
                 color: Colors.white,                            // White text for contrast.
                 fontSize: 32,                                     // Large font size.
