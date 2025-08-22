@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {                              
                                                                                     // It starts at 0, meaning "Add New Farmer Information" will be the default view.
   final List<Widget> _pages = const [                                               // `_pages` is a list of widgets that represent the different screens
                                                                                     // that can be displayed in the main content area. This allows us to easily switch between screens by index.
-    AddFarmerScreen(),                                                              // Index 0: Add New Farmer Information screen.
+    AddFarmerScreen(isPushed: false),                                               // Index 0: Add New Farmer Information screen.
     ListFarmersScreen(),                                                            // Index 1: List Farmer Information screen.
     //DeleteFarmerScreen(),                                                            // Index 2: Delete Farmer Information screen.
   ];

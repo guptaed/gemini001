@@ -7,7 +7,8 @@ import 'package:gemini001/database/firestore_helper.dart';                      
 
 
 class AddFarmerScreen extends StatefulWidget {                                                // `AddFarmerScreen` is a `StatefulWidget`. it manages the state of the form's input fields.
-  const AddFarmerScreen({super.key});                                                         // Constructor for AddFarmerScreen.
+  final bool isPushed;                                                                        // `isPushed` is a boolean to determine if the screen was pushed onto the navigation stack.
+  const AddFarmerScreen({super.key, this.isPushed = true});                                   // Constructor for AddFarmerScreen.
   @override
   State<AddFarmerScreen> createState() => _AddFarmerScreenState();                            // Creates the mutable state for this widget.
 }
@@ -68,9 +69,13 @@ class _AddFarmerScreenState extends State<AddFarmerScreen> {                    
           _totalFarmSizeController.clear();
           _monthlyCapacityController.clear();
           _yearlyCapacityController.clear();
-
-          Navigator.pop(context, true);  
-        }                                                     
+          
+          if (widget.isPushed) {
+            Navigator.pop(context, true); // Only pop if pushed
+          } else {            
+            setState(() {});              // Simple refresh if needed
+          }
+        }
         return true;                                                                   // Return true to indicate success.
 
       } catch (e) {                                                                    // Catch any errors that occur during the save operation.
