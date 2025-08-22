@@ -63,8 +63,6 @@ class FirestoreHelper {
   }
 
 
-
-
   // Update an existing farmer's data.
   Future<void> updateFarmer(Farmer farmer) async {
     try {

@@ -5,6 +5,7 @@ import 'package:gemini001/database/firestore_helper.dart';
 import 'package:gemini001/models/farmer.dart';
 import 'package:gemini001/screens/add_farmer_screen.dart';
 import 'package:gemini001/screens/delete_confirmation_screen.dart';
+import 'package:gemini001/screens/edit_farmer_screen.dart';
 
 
 // This screen displays a list of farmers and is the main screen for the app.
@@ -62,8 +63,18 @@ class _ListFarmersScreenState extends State<ListFarmersScreen> {
 
                       IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          // Handle edit farmer functionality
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditFarmerScreen(farmer: farmer),
+                            ),
+                          );
+                          if (result == true) {
+                            setState(() {
+                              _farmersStream = _firestoreHelper.streamFarmers();
+                            });
+                          }
                         },
                       ),
                       

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';                                         
 import 'package:gemini001/widgets/app_scaffold.dart';                               // Importing our custom `AppScaffold` widget for the two-panel layout.
 import 'package:gemini001/screens/add_farmer_screen.dart';                          // Importing the screen for adding new farmer information.
 import 'package:gemini001/screens/list_farmers_screen.dart';                        // Importing the screen for listing existing farmer information.
-//import 'package:gemini001/screens/delete_farmer_screen.dart';                        // Importing the screen for deleting existing farmer information.
+
 
 class HomeScreen extends StatefulWidget {                                           // `HomeScreen` is a `StatefulWidget`.
                                                                                     // A `StatefulWidget` is used when the widget's state (data that affects the UI)
@@ -23,14 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {                              
   final List<Widget> _pages = const [                                               // `_pages` is a list of widgets that represent the different screens
                                                                                     // that can be displayed in the main content area. This allows us to easily switch between screens by index.
     AddFarmerScreen(isPushed: false),                                               // Index 0: Add New Farmer Information screen.
-    ListFarmersScreen(),                                                            // Index 1: List Farmer Information screen.
-    //DeleteFarmerScreen(),                                                            // Index 2: Delete Farmer Information screen.
+    ListFarmersScreen(),                                                            // Index 1: List Farmer Information screen.                                                           // Index 2: Delete Farmer Information screen.
   ];
 
   final List<String> _appBarTitles = const [                                        // `_appBarTitles` is a list of titles for the app bar, corresponding to each page.
     'Add New Supplier',
     'List Suppliers',
-    //'Delete Supplier',
   ];
 
   void _onMenuItemSelected(int index) {                                             // `_onMenuItemSelected` is a callback function that will be executed when
@@ -87,13 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {                              
           selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
         ),
 
-        ListTile(
-          leading: Icon(Icons.delete, color: Theme.of(context).primaryColor),
-          title: const Text('Delete Supplier'),
-          selected: _selectedPageIndex == 2,
-          onTap: () => _onMenuItemSelected(2),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
-        ),  
         
       ],
     );
