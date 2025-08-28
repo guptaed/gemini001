@@ -59,12 +59,12 @@ class _SplashScreenState extends State<SplashScreen> {          // `_SplashScree
             
             const SizedBox(height: 30),                           // Adds more vertical space.
             
-            //const CircularProgressIndicator(                      // `CircularProgressIndicator` to show that something is loading.
-            //  valueColor: AlwaysStoppedAnimation<Color>(Colors.white), // White loading indicator.
-            //),
-            const LinearProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            const CircularProgressIndicator(                      // `CircularProgressIndicator` to show that something is loading.
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white), // White loading indicator.
             ),
+            //const LinearProgressIndicator(
+            //  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            //),
           ],
         ),
       ),

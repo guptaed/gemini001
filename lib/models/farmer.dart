@@ -19,6 +19,7 @@ class Farmer {
   final double totalFarmSize;
   final double sellingCapacityPerMonthTons;
   final double sellingCapacityPerYearTons;
+  final String? contractPdfUrl; // Optional URL to the contract PDF
 
   // The constructor for the `Farmer` class.
   // The `id` is optional when creating a new farmer object, as it will be null initially.
@@ -33,7 +34,40 @@ class Farmer {
     required this.totalFarmSize,
     required this.sellingCapacityPerMonthTons,
     required this.sellingCapacityPerYearTons,
+    this.contractPdfUrl,
   });
+
+// `copyWith` method: This method allows us to create a new `Farmer` object
+// by copying the existing one and overriding specific fields.
+// This is useful for updating farmer information without modifying the original object.
+Farmer copyWith({
+    String? id,
+    String? firstName,
+    String? lastName,
+    String? companyName,
+    String? address,
+    String? phone,
+    String? email,
+    double? totalFarmSize,
+    double? sellingCapacityPerMonthTons,
+    double? sellingCapacityPerYearTons,
+    String? contractPdfUrl,
+  }) {
+    return Farmer(
+      id: id ?? this.id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      companyName: companyName ?? this.companyName,
+      address: address ?? this.address,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      totalFarmSize: totalFarmSize ?? this.totalFarmSize,
+      sellingCapacityPerMonthTons: sellingCapacityPerMonthTons ?? this.sellingCapacityPerMonthTons,
+      sellingCapacityPerYearTons: sellingCapacityPerYearTons ?? this.sellingCapacityPerYearTons,
+      contractPdfUrl: contractPdfUrl ?? this.contractPdfUrl,
+    );
+  }
+
 
   // `toMap` method: This method converts a `Farmer` object into a `Map<String, dynamic>`.
   // This format is what the Firestore SDK uses to write data to the database.
@@ -49,6 +83,7 @@ class Farmer {
       'totalFarmSize': totalFarmSize,
       'sellingCapacityPerMonthTons': sellingCapacityPerMonthTons,
       'sellingCapacityPerYearTons': sellingCapacityPerYearTons,
+      'contractPdfUrl': contractPdfUrl,
     };
   }
 
@@ -74,6 +109,7 @@ class Farmer {
         totalFarmSize: (data['totalFarmSize'] as num?)?.toDouble() ?? 0.0,
         sellingCapacityPerMonthTons: (data['sellingCapacityPerMonthTons'] as num?)?.toDouble() ?? 0.0,
         sellingCapacityPerYearTons: (data['sellingCapacityPerYearTons'] as num?)?.toDouble() ?? 0.0,
+        contractPdfUrl: data['contractPdfUrl'] as String?,
       );
     } catch (e) {
       // If there's an error during conversion, we print it and return a default
@@ -89,6 +125,7 @@ class Farmer {
         totalFarmSize: 0.0,
         sellingCapacityPerMonthTons: 0.0,
         sellingCapacityPerYearTons: 0.0,
+        contractPdfUrl: null,
       );
     }
   }
