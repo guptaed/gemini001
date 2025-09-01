@@ -45,7 +45,16 @@ class _SplashScreenState extends State<SplashScreen> {          // `_SplashScree
               size: 100,                                          // Large size for prominence.
               color: Colors.white,                              // White color for contrast.
             ),
-            
+
+
+            // Image.asset(
+            //   'assets/images/splash_image.jpg',                  // Path to your image asset
+            //   width: 512,                                         // Adjust width as needed
+            //   height: 768,                                        // Adjust height as needed
+            //   fit: BoxFit.contain,                                // Ensures the image fits within the bounds without distortion
+            // ),
+
+
             const SizedBox(height: 20),                           // Adds vertical space between icon and text.
             
             const Text(                                           // `Text` for the app title.
@@ -57,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {          // `_SplashScree
               ),
             ),
             
-            const SizedBox(height: 30),                           // Adds more vertical space.
+            const SizedBox(height: 20),                           // Adds more vertical space.
             
             const CircularProgressIndicator(                      // `CircularProgressIndicator` to show that something is loading.
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white), // White loading indicator.

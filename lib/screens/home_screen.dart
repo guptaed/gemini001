@@ -22,13 +22,14 @@ class _HomeScreenState extends State<HomeScreen> {                              
                                                                                     // It starts at 0, meaning "Add New Farmer Information" will be the default view.
   final List<Widget> _pages = const [                                               // `_pages` is a list of widgets that represent the different screens
                                                                                     // that can be displayed in the main content area. This allows us to easily switch between screens by index.
-    AddFarmerScreen(isPushed: false),                                               // Index 0: Add New Farmer Information screen.
-    ListFarmersScreen(),                                                            // Index 1: List Farmer Information screen.                                                           // Index 2: Delete Farmer Information screen.
+    ListFarmersScreen(),                                                            // Index 0: List Farmer Information screen.                                                           // Index 2: Delete Farmer Information screen.
+    AddFarmerScreen(isPushed: false),                                               // Index 1: Add New Farmer Information screen.
+    
   ];
 
   final List<String> _appBarTitles = const [                                        // `_appBarTitles` is a list of titles for the app bar, corresponding to each page.
-    'Add New Supplier',
     'List Suppliers',
+    'Add New Supplier',    
   ];
 
   void _onMenuItemSelected(int index) {                                             // `_onMenuItemSelected` is a callback function that will be executed when
@@ -68,22 +69,87 @@ class _HomeScreenState extends State<HomeScreen> {                              
         const Divider(),                                                            // `Divider` adds a thin horizontal line for visual separation.
         
         // It's commonly used in lists and navigation drawers.
-        
+
+        ListTile(
+          leading: Icon(Icons.people, color: Theme.of(context).primaryColor),
+          title: const Text('List Suppliers'),
+          selected: _selectedPageIndex == 0,
+          onTap: () => _onMenuItemSelected(0),         
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+        ),
+
+
         ListTile(                                                                   // `ListTile` is a convenient widget for displaying a single row with title, subtitle, icon etc.
-          leading: Icon(Icons.person_add, color: Theme.of(context).primaryColor),   // `leading` usually takes an `Icon`. Using `Theme.of(context).primaryColor` for the icon color.
+          leading: Icon(Icons.group_add, color: Theme.of(context).primaryColor),   // `leading` usually takes an `Icon`. Using `Theme.of(context).primaryColor` for the icon color.
           title: const Text('Add New Supplier'),                                    // `title` takes a `Text` widget.          
-          selected: _selectedPageIndex == 0,                                        // `selected` highlights the tile if it's the currently selected page.
-          onTap: () => _onMenuItemSelected(0),                                      // `onTap` is the callback func when the tile is tapped. Calls `_onMenuItemSelected` with the index of this option (0).
+          selected: _selectedPageIndex == 1,                                        // `selected` highlights the tile if it's the currently selected page.
+          onTap: () => _onMenuItemSelected(1),                                      // `onTap` is the callback func when the tile is tapped. Calls `_onMenuItemSelected` with the index of this option (0).
           selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // `selectedTileColor` changes the background color when selected. Using a tinted version of the primary theme color.
         ),
         
+
         ListTile(
-          leading: Icon(Icons.list_alt, color: Theme.of(context).primaryColor),
-          title: const Text('List Suppliers'),
+          leading: Icon(Icons.campaign, color: Theme.of(context).primaryColor),
+          title: const Text('Add Announcement'),
           selected: _selectedPageIndex == 1,
           onTap: () => _onMenuItemSelected(1),         
           selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
         ),
+
+
+        ListTile(
+          leading: Icon(Icons.feed, color: Theme.of(context).primaryColor),
+          title: const Text('List Announcements'),
+          selected: _selectedPageIndex == 1,
+          onTap: () => _onMenuItemSelected(1),         
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+        ),
+
+
+        ListTile(
+          leading: Icon(Icons.add_box, color: Theme.of(context).primaryColor),
+          title: const Text('Add Bids'),
+          selected: _selectedPageIndex == 1,
+          onTap: () => _onMenuItemSelected(1),         
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+        ),
+
+
+        ListTile(
+          leading: Icon(Icons.receipt_long, color: Theme.of(context).primaryColor),
+          title: const Text('List Bids'),
+          selected: _selectedPageIndex == 1,
+          onTap: () => _onMenuItemSelected(1),         
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+        ),
+
+
+        ListTile(
+          leading: Icon(Icons.local_shipping, color: Theme.of(context).primaryColor),
+          title: const Text('List Shipments'),
+          selected: _selectedPageIndex == 1,
+          onTap: () => _onMenuItemSelected(1),         
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+        ),
+
+
+        ListTile(
+          leading: Icon(Icons.assessment, color: Theme.of(context).primaryColor),
+          title: const Text('List QA Results'),
+          selected: _selectedPageIndex == 1,
+          onTap: () => _onMenuItemSelected(1),         
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+        ),
+
+
+        ListTile(
+          leading: Icon(Icons.payments_sharp, color: Theme.of(context).primaryColor),
+          title: const Text('List Payments'),
+          selected: _selectedPageIndex == 1,
+          onTap: () => _onMenuItemSelected(1),         
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+        ),
+
 
         
       ],
