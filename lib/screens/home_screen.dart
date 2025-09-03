@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';                                             // Importing necessary Flutter material design components.
 import 'package:gemini001/widgets/app_scaffold.dart';                               // Importing our custom `AppScaffold` widget for the two-panel layout.
 import 'package:gemini001/screens/add_farmer_screen.dart';                          // Importing the screen for adding new farmer information.
-import 'package:gemini001/screens/list_farmers_screen.dart';                        // Importing the screen for listing existing farmer information.
+import 'package:gemini001/screens/list_suppliers_screen.dart';                        // Importing the screen for listing existing farmer information.
 
 
 class HomeScreen extends StatefulWidget {                                           // `HomeScreen` is a `StatefulWidget`.
@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {                              
                                                                                     // It starts at 0, meaning "Add New Farmer Information" will be the default view.
   final List<Widget> _pages = const [                                               // `_pages` is a list of widgets that represent the different screens
                                                                                     // that can be displayed in the main content area. This allows us to easily switch between screens by index.
-    ListFarmersScreen(),                                                            // Index 0: List Farmer Information screen.                                                           // Index 2: Delete Farmer Information screen.
+    ListSuppliersScreen(),                                                            // Index 0: List Farmer Information screen.                                                           // Index 2: Delete Farmer Information screen.
     AddFarmerScreen(isPushed: false),                                               // Index 1: Add New Farmer Information screen.
     
   ];
