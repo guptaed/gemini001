@@ -34,9 +34,6 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Suppliers List'),
-      ),
       body: Column(
         children: [
           Padding(
@@ -107,7 +104,7 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                     padding: const EdgeInsets.all(8.0),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 3, // Adjusted for more content
+                      childAspectRatio: 3,
                       crossAxisSpacing: 8.0,
                       mainAxisSpacing: 8.0,
                     ),
@@ -134,12 +131,12 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                                 children: [
                                   Text(
                                     supplier.CompanyName,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal), 
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
-                                    'Rep: ${supplier.Representative}',
+                                    supplier.Representative,
                                     style: const TextStyle(fontWeight: FontWeight.bold),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -150,25 +147,22 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-
                                   const Divider(
                                     color: Colors.grey,
                                     thickness: 1,
                                     height: 10,
                                   ),
-
                                   Text('ID: ${supplier.SupId}'),
                                   Text('Address: ${supplier.Address}', maxLines: 1, overflow: TextOverflow.ellipsis),
                                   Text('Tel: ${supplier.Tel}', maxLines: 1, overflow: TextOverflow.ellipsis),
                                   Text('Email: ${supplier.Email}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  Text('Tax Code: ${supplier.TaxCode}', maxLines: 1, overflow: TextOverflow.ellipsis),                                  
+                                  Text('Tax Code: ${supplier.TaxCode}', maxLines: 1, overflow: TextOverflow.ellipsis),
                                   // Text('Title: ${supplier.Title}', maxLines: 1, overflow: TextOverflow.ellipsis),
                                 ],
                               ),
                             ),
                           ),
                         ),
-
                       );
                     },
                   );

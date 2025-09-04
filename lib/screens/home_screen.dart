@@ -1,157 +1,138 @@
-// lib/screens/home_screen.dart
+import 'package:flutter/material.dart';
+import 'package:gemini001/widgets/app_scaffold.dart';
+import 'package:gemini001/screens/add_farmer_screen.dart';
+import 'package:gemini001/screens/list_suppliers_screen.dart';
+import 'package:gemini001/widgets/header.dart';
+import 'package:gemini001/widgets/footer.dart';
 
-import 'package:flutter/material.dart';                                             // Importing necessary Flutter material design components.
-import 'package:gemini001/widgets/app_scaffold.dart';                               // Importing our custom `AppScaffold` widget for the two-panel layout.
-import 'package:gemini001/screens/add_farmer_screen.dart';                          // Importing the screen for adding new farmer information.
-import 'package:gemini001/screens/list_suppliers_screen.dart';                        // Importing the screen for listing existing farmer information.
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-class HomeScreen extends StatefulWidget {                                           // `HomeScreen` is a `StatefulWidget`.
-                                                                                    // A `StatefulWidget` is used when the widget's state (data that affects the UI)
-                                                                                    // can change over time. In this case, the `_selectedPageIndex` changes when
-                                                                                    // a different menu option is selected in the left panel, which in turn changes the content displayed in the main panel.  
-  const HomeScreen({super.key});                                                    // Constructor for HomeScreen. `const` keyword indicates that this widget
-                                                                                    // and its properties are immutable and can be created at compile time.
-  @override                                                                         
-  State<HomeScreen> createState() => _HomeScreenState();                            // `createState` is overridden to create the mutable state for this widget.
-}                                                                                   // It returns an instance of `_HomeScreenState`.
-
-class _HomeScreenState extends State<HomeScreen> {                                  // `_HomeScreenState` is the mutable state for `HomeScreen`. It holds data that can change and rebuild the UI.
-  
-  int _selectedPageIndex = 0;                                                       // `_selectedPageIndex` keeps track of which menu option is currently selected.
-                                                                                    // It starts at 0, meaning "Add New Farmer Information" will be the default view.
-  final List<Widget> _pages = const [                                               // `_pages` is a list of widgets that represent the different screens
-                                                                                    // that can be displayed in the main content area. This allows us to easily switch between screens by index.
-    ListSuppliersScreen(),                                                            // Index 0: List Farmer Information screen.                                                           // Index 2: Delete Farmer Information screen.
-    AddFarmerScreen(isPushed: false),                                               // Index 1: Add New Farmer Information screen.
-    
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedPageIndex = 0;
+  final List<Widget> _pages = const [
+    ListSuppliersScreen(),
+    AddFarmerScreen(isPushed: false),
   ];
 
-  final List<String> _appBarTitles = const [                                        // `_appBarTitles` is a list of titles for the app bar, corresponding to each page.
+  final List<String> _appBarTitles = const [
     'List Suppliers',
-    'Add New Supplier',    
+    'Add New Supplier',
   ];
 
-  void _onMenuItemSelected(int index) {                                             // `_onMenuItemSelected` is a callback function that will be executed when
-                                                                                    // a menu item in the left navigation panel is tapped.
-                                                                                    // It updates `_selectedPageIndex` and triggers a UI rebuild.
-    setState(() {                                                                   // `setState` is a crucial method for `StatefulWidget`s.
-                                                                                    // It tells Flutter that the internal state of this `State` object has changed,
-                                                                                    // and that the widget should be rebuilt to reflect the updated state.
-      _selectedPageIndex = index;                                                   // Update the selected page index.
+  final String _userName = 'Ashish Gupta'; // Replace with actual logged-in user logic
+
+  void _onMenuItemSelected(int index) {
+    setState(() {
+      _selectedPageIndex = index;
     });
   }
 
+  void _logout() {
+    // Add logout logic (e.g., clear session, navigate to login screen)
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out')));
+  }
+
   @override
-  Widget build(BuildContext context) {                                              // The `build` method describes the part of the user interface represented by this widget.
-    return AppScaffold(                                                             // We use our custom `AppScaffold` (app_scaffold.dart) to provide the consistent two-panel layout.
-      title: _appBarTitles[_selectedPageIndex],                                     // The `title` of the app bar will change dynamically based on the selected page.
-      navigationPanel: _buildNavigationPanel(),                                     // The `navigationPanel` is the widget displayed on the left side.
-      mainContentPanel: _pages[_selectedPageIndex],                                 // The `mainContentPanel` is the widget displayed on the right, which changes based on `_selectedPageIndex`.
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Header(
+          title: _appBarTitles[_selectedPageIndex],
+          userName: _userName,
+          onLogout: _logout,
+        ),
+        Expanded(
+          child: AppScaffold(
+            title: '', // Set to empty string to disable AppScaffold's app bar
+            navigationPanel: _buildNavigationPanel(),
+            mainContentPanel: _pages[_selectedPageIndex],
+          ),
+        ),
+        const Footer(),
+      ],
     );
   }
 
-  
-  Widget _buildNavigationPanel() {                                                  // `_buildNavigationPanel` is a private helper method to construct the left navigation panel.
+  Widget _buildNavigationPanel() {
     return Column(
-      
-      crossAxisAlignment: CrossAxisAlignment.start,                                 // `crossAxisAlignment.start` aligns children to the start of the cross axis (left in a Column).
-      children: <Widget>[        
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(                                                              // A simple text label for the navigation section.
-            'Menu',            
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Theme.of(context).primaryColor),    // Using `Theme.of(context).primaryColor` to get the current app's primary color.
+          child: Text(
+            'Menu',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Theme.of(context).primaryColor),
           ),
         ),
-        
-        
-        const Divider(),                                                            // `Divider` adds a thin horizontal line for visual separation.
-        
-        // It's commonly used in lists and navigation drawers.
-
+        const Divider(),
         ListTile(
           leading: Icon(Icons.people, color: Theme.of(context).primaryColor),
           title: const Text('List Suppliers'),
           selected: _selectedPageIndex == 0,
-          onTap: () => _onMenuItemSelected(0),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          onTap: () => _onMenuItemSelected(0),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
-        ListTile(                                                                   // `ListTile` is a convenient widget for displaying a single row with title, subtitle, icon etc.
-          leading: Icon(Icons.group_add, color: Theme.of(context).primaryColor),   // `leading` usually takes an `Icon`. Using `Theme.of(context).primaryColor` for the icon color.
-          title: const Text('Add New Supplier'),                                    // `title` takes a `Text` widget.          
-          selected: _selectedPageIndex == 1,                                        // `selected` highlights the tile if it's the currently selected page.
-          onTap: () => _onMenuItemSelected(1),                                      // `onTap` is the callback func when the tile is tapped. Calls `_onMenuItemSelected` with the index of this option (0).
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // `selectedTileColor` changes the background color when selected. Using a tinted version of the primary theme color.
+        ListTile(
+          leading: Icon(Icons.group_add, color: Theme.of(context).primaryColor),
+          title: const Text('Add New Supplier'),
+          selected: _selectedPageIndex == 1,
+          onTap: () => _onMenuItemSelected(1),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-        
-
         ListTile(
           leading: Icon(Icons.campaign, color: Theme.of(context).primaryColor),
           title: const Text('Add Announcement'),
-          selected: _selectedPageIndex == 1,
-          onTap: () => _onMenuItemSelected(1),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          selected: _selectedPageIndex == 2,
+          onTap: () => _onMenuItemSelected(2),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
         ListTile(
           leading: Icon(Icons.feed, color: Theme.of(context).primaryColor),
           title: const Text('List Announcements'),
-          selected: _selectedPageIndex == 1,
-          onTap: () => _onMenuItemSelected(1),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          selected: _selectedPageIndex == 3,
+          onTap: () => _onMenuItemSelected(3),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
         ListTile(
           leading: Icon(Icons.add_box, color: Theme.of(context).primaryColor),
           title: const Text('Add Bids'),
-          selected: _selectedPageIndex == 1,
-          onTap: () => _onMenuItemSelected(1),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          selected: _selectedPageIndex == 4,
+          onTap: () => _onMenuItemSelected(4),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
         ListTile(
           leading: Icon(Icons.receipt_long, color: Theme.of(context).primaryColor),
           title: const Text('List Bids'),
-          selected: _selectedPageIndex == 1,
-          onTap: () => _onMenuItemSelected(1),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          selected: _selectedPageIndex == 5,
+          onTap: () => _onMenuItemSelected(5),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
         ListTile(
           leading: Icon(Icons.local_shipping, color: Theme.of(context).primaryColor),
           title: const Text('List Shipments'),
-          selected: _selectedPageIndex == 1,
-          onTap: () => _onMenuItemSelected(1),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          selected: _selectedPageIndex == 6,
+          onTap: () => _onMenuItemSelected(6),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
         ListTile(
           leading: Icon(Icons.assessment, color: Theme.of(context).primaryColor),
           title: const Text('List QA Results'),
-          selected: _selectedPageIndex == 1,
-          onTap: () => _onMenuItemSelected(1),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          selected: _selectedPageIndex == 7,
+          onTap: () => _onMenuItemSelected(7),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
         ListTile(
           leading: Icon(Icons.payments_sharp, color: Theme.of(context).primaryColor),
           title: const Text('List Payments'),
-          selected: _selectedPageIndex == 1,
-          onTap: () => _onMenuItemSelected(1),         
-          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()), // Using a tinted version of the primary theme color.
+          selected: _selectedPageIndex == 8,
+          onTap: () => _onMenuItemSelected(8),
+          selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
-
-
-        
       ],
     );
   }

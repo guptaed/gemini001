@@ -1,61 +1,7 @@
 
 {
 "Suppliers": [
-  {
-    "SupId": "5202509001001",
-    "CompanyName": "Thai Hung Forest Products Co., Ltd.",
-    "Address": "Co Hamlet, Quang Son Commune, Dong Hy District, Thai Nguyen Province, Vietnam",
-    "Representative": "Ms. Cao Thi Cam",
-    "Title": "Director",
-    "Email": "lamsanthaihung@gmail.com",
-    "Tel": "0904357589",
-    "TaxCode": "4601588182",
-    "Status": "CreditCheckOk"
-  },
-  {
-    "SupId": "5202509001002",
-    "CompanyName": "An Phuoc Wood Fuel Ltd.",
-    "Address": "Tan Phuoc Hamlet, Bu Dang District, Binh Phuoc Province, Vietnam",
-    "Representative": "Mr. Nguyen Van Hai",
-    "Title": "Manager",
-    "Email": "anphuocwood@yahoo.com.vn",
-    "Tel": "0937123456",
-    "TaxCode": "4701234567",
-    "Status": "Pending"
-  },
-  {
-    "SupId": "5202509001003",
-    "CompanyName": "Dong Nai Timber Energy Co., Ltd.",
-    "Address": "Long Thanh Commune, Long Thanh District, Dong Nai Province, Vietnam",
-    "Representative": "Ms. Tran Thi Mai",
-    "Title": "CEO",
-    "Email": "dongaifuel@outlook.com",
-    "Tel": "0987654321",
-    "TaxCode": "4802345678",
-    "Status": "Approved"
-  },
-  {
-    "SupId": "5202509001004",
-    "CompanyName": "Binh Phuoc Green Fuel Company",
-    "Address": "Phuoc Long Hamlet, Phuoc Long District, Binh Phuoc Province, Vietnam",
-    "Representative": "Mr. Le Van Thanh",
-    "Title": "Director",
-    "Email": "binhphuocgreen@gmail.com",
-    "Tel": "0912345678",
-    "TaxCode": "4903456789",
-    "Status": "CreditCheckOk"
-  },
-  {
-    "SupId": "5202509001005",
-    "CompanyName": "Quang Tri Wood Energy Ltd.",
-    "Address": "Hai Lang Commune, Hai Lang District, Quang Tri Province, Vietnam",
-    "Representative": "Ms. Pham Thi Hoa",
-    "Title": "Manager",
-    "Email": "quangtriwood@zoho.com",
-    "Tel": "0945678901",
-    "TaxCode": "5004567890",
-    "Status": "Pending"
-  },
+
   {
     "SupId": "5202509001006",
     "CompanyName": "Lam Dong Forest Fuel Co., Ltd.",
