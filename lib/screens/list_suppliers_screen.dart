@@ -1,10 +1,7 @@
-// lib/screens/list_suppliers_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/models/supplier.dart';
-// import 'package:gemini001/screens/add_supplier_screen.dart';
-// import 'package:gemini001/screens/supplier_details_screen.dart';
+import 'package:gemini001/screens/supplier_details_screen.dart';
 
 class ListSuppliersScreen extends StatefulWidget {
   const ListSuppliersScreen({super.key});
@@ -115,12 +112,12 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                         elevation: 2,
                         child: InkWell(
                           onTap: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => SupplierDetailsScreen(supplier: supplier),
-                            //   ),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SupplierDetailsScreen(supplier: supplier),
+                              ),
+                            );
                           },
                           child: SingleChildScrollView(
                             child: Padding(
@@ -157,7 +154,6 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                                   Text('Tel: ${supplier.Tel}', maxLines: 1, overflow: TextOverflow.ellipsis),
                                   Text('Email: ${supplier.Email}', maxLines: 1, overflow: TextOverflow.ellipsis),
                                   Text('Tax Code: ${supplier.TaxCode}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  // Text('Title: ${supplier.Title}', maxLines: 1, overflow: TextOverflow.ellipsis),
                                 ],
                               ),
                             ),
@@ -173,28 +169,28 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
           ),
         ],
       ),
-      //floatingActionButton: FloatingActionButton(
-      //  onPressed: () async {
-          // try {
-          //   final result = await Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //       builder: (context) => AddSupplierScreen(),
-          //     ),
-          //   );
-          //   if (result == true) {
-          //     setState(() {
-          //       _suppliersStream = _firestoreHelper.streamSuppliers();
-          //     });
-          //   }
-          // } catch (e) {
-          //   ScaffoldMessenger.of(context).showSnackBar(
-          //     SnackBar(content: Text('Error navigating to Add Supplier: $e')),
-          //   );
-          // }
-      //  },
-      //  child: const Icon(Icons.add),
-      //),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () async {
+      //     try {
+      //       final result = await Navigator.push(
+      //         context,
+      //         MaterialPageRoute(
+      //           builder: (context) => AddSupplierScreen(),
+      //         ),
+      //       );
+      //       if (result == true) {
+      //         setState(() {
+      //           _suppliersStream = _firestoreHelper.streamSuppliers();
+      //         });
+      //       }
+      //     } catch (e) {
+      //       ScaffoldMessenger.of(context).showSnackBar(
+      //         SnackBar(content: Text('Error navigating to Add Supplier: $e')),
+      //       );
+      //     }
+      //   },
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }
