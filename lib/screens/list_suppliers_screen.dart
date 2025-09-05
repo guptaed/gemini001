@@ -173,8 +173,8 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
+      //floatingActionButton: FloatingActionButton(
+      //  onPressed: () async {
           // try {
           //   final result = await Navigator.push(
           //     context,
@@ -192,9 +192,9 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
           //     SnackBar(content: Text('Error navigating to Add Supplier: $e')),
           //   );
           // }
-        },
-        child: const Icon(Icons.add),
-      ),
+      //  },
+      //  child: const Icon(Icons.add),
+      //),
     );
   }
 }

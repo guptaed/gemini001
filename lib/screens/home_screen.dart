@@ -1,6 +1,8 @@
+// home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:gemini001/widgets/app_scaffold.dart';
-import 'package:gemini001/screens/add_farmer_screen.dart';
+import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/widgets/header.dart';
 import 'package:gemini001/widgets/footer.dart';
@@ -16,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedPageIndex = 0;
   final List<Widget> _pages = const [
     ListSuppliersScreen(),
-    AddFarmerScreen(isPushed: false),
+    AddSupplierScreen(isPushed: false),
   ];
 
   final List<String> _appBarTitles = const [
