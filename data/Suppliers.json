@@ -2,29 +2,6 @@
 {
 "Suppliers": [
 
-
-  {
-    "SupId": "5202509001015",
-    "CompanyName": "Ninh Thuan Forest Energy Ltd.",
-    "Address": "Ninh Phuoc Commune, Ninh Phuoc District, Ninh Thuan Province, Vietnam",
-    "Representative": "Ms. Vu Thi Lien",
-    "Title": "CEO",
-    "Email": "ninhthuanenergy@gmail.com",
-    "Tel": "0989015678",
-    "TaxCode": "6005678901",
-    "Status": "Approved"
-  },
-  {
-    "SupId": "5202509001016",
-    "CompanyName": "Thua Thien Hue Timber Co., Ltd.",
-    "Address": "Phu Vang Hamlet, Phu Vang District, Thua Thien Hue Province, Vietnam",
-    "Representative": "Mr. Nguyen Van Nam",
-    "Title": "Director",
-    "Email": "huetimber@zoho.com",
-    "Tel": "0912347890",
-    "TaxCode": "6106789012",
-    "Status": "CreditCheckOk"
-  },
   {
     "SupId": "5202509001017",
     "CompanyName": "Dak Nong Wood Fuel Ltd.",

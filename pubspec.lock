@@ -245,10 +245,10 @@ packages:
     dependency: "direct main"
     description:
       name: firebase_admin
-      sha256: fd9e6d234fb3cc99b8f0077c288089dee7f90451d704a97255c11c941724cf0e
+      sha256: "087ca8e4a78f3976aa1080f169310b131ae5a5f87c7b335b3564ff13f2c997e3"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0+2"
+    version: "0.3.1"
   firebase_auth:
     dependency: "direct main"
     description:
@@ -301,10 +301,10 @@ packages:
     dependency: transitive
     description:
       name: firebase_dart
-      sha256: "81e66e0e6b33ce0f633920f3ada3299d8c3e487e5ff65a18a9e29937722b3c3a"
+      sha256: "6e1d306411ef117403a0286dc029490ebb5e45e37967d467affa2afffb3214e3"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.5"
+    version: "1.5.0"
   firebase_storage:
     dependency: "direct main"
     description:
@@ -396,10 +396,10 @@ packages:
     dependency: transitive
     description:
       name: googleapis
-      sha256: "864f222aed3f2ff00b816c675edf00a39e2aaf373d728d8abec30b37bee1a81c"
+      sha256: "5c9e0f25be1dec13d8d2158263141104c51b5ba83487537c17a2330581e505ee"
       url: "https://pub.dev"
     source: hosted
-    version: "13.2.0"
+    version: "14.0.0"
   hive:
     dependency: transitive
     description:
