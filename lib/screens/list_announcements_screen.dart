@@ -135,7 +135,7 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                     padding: const EdgeInsets.all(8.0),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 3,
+                      childAspectRatio: 2.5, // Adjusted to give more vertical space
                       crossAxisSpacing: 8.0,
                       mainAxisSpacing: 8.0,
                     ),
@@ -144,42 +144,44 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                       final announcement = filteredAnnouncements[index];
                       return Card(
                         elevation: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                announcement.fuelType,
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                'ID: ${announcement.announceId}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                'Status: ${announcement.status}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const Divider(
-                                color: Colors.grey,
-                                thickness: 1,
-                                height: 10,
-                              ),
-                              Text('Announce Date: ${announcement.announceDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                              Text('Bid Close Date: ${announcement.bidCloseDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                              Text('Delivery Date: ${announcement.deliveryDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                              Text('Quantity: ${announcement.quantity}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                              Text('Price: ${announcement.price}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                              Text('Notes: ${announcement.notes}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                            ],
+                        child: SingleChildScrollView( // Added to prevent overflow
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  announcement.fuelType,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'ID: ${announcement.announceId}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'Status: ${announcement.status}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const Divider(
+                                  color: Colors.grey,
+                                  thickness: 1,
+                                  height: 10,
+                                ),
+                                Text('Announce Date: ${announcement.announceDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text('Bid Close Date: ${announcement.bidCloseDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text('Delivery Date: ${announcement.deliveryDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text('Quantity: ${announcement.quantity}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text('Price: ${announcement.price}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text('Notes: ${announcement.notes}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                              ],
+                            ),
                           ),
                         ),
                       );
