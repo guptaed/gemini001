@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
+import 'package:gemini001/models/announcement.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
 // for our application, making it easier to manage data and separate concerns.
@@ -124,6 +125,40 @@ class FirestoreHelper {
         .get();
     return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.first.data() : null;
   }
+
+
+  // Collection reference for "Announcements" with converter
+  CollectionReference<Announcement> get _announcementsCollection {
+    return _db.collection('Announcements').withConverter<Announcement>(
+      fromFirestore: (snapshot, _) => Announcement.fromFirestore(snapshot),
+      toFirestore: (announcement, _) => announcement.toMap(),
+    );
+  }
+
+
+
+  // Add a new announcement
+  Future<void> addAnnouncement(Announcement announcement) async {
+    try {
+      await _announcementsCollection.add(announcement);
+    } catch (e) {
+      print('Error adding announcement: $e');
+      rethrow;
+    }
+  }
+
+  // Stream all announcements
+  Stream<List<Announcement>> streamAnnouncements() {
+    return _announcementsCollection.snapshots().map((querySnapshot) {
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+
+
+
+
+
 
   // Check if a user is logged in.
   User? getCurrentUser() {

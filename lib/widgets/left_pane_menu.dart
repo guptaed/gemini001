@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class LeftPaneMenu extends StatelessWidget {
   final int selectedPageIndex;
-  final Function(int) onMenuItemSelected;
+  final ValueChanged<int> onMenuItemSelected;
 
   const LeftPaneMenu({
     super.key,
@@ -12,30 +12,34 @@ class LeftPaneMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Menu',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Theme.of(context).primaryColor),
-                  ),
-                ),
-                const Divider(),
+    return Container(
+      width: 250,
+      color: Colors.grey[200],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Menu',
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              children: [
                 ListTile(
-                  leading: Icon(Icons.people, color: Theme.of(context).primaryColor),
+                  leading: Icon(Icons.list, color: Theme.of(context).primaryColor),
                   title: const Text('List Suppliers'),
                   selected: selectedPageIndex == 0,
                   onTap: () => onMenuItemSelected(0),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
                 ),
                 ListTile(
-                  leading: Icon(Icons.group_add, color: Theme.of(context).primaryColor),
+                  leading: Icon(Icons.add_business, color: Theme.of(context).primaryColor),
                   title: const Text('Add New Supplier'),
                   selected: selectedPageIndex == 1,
                   onTap: () => onMenuItemSelected(1),
@@ -55,6 +59,8 @@ class LeftPaneMenu extends StatelessWidget {
                   onTap: () => onMenuItemSelected(3),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
                 ),
+                
+                
                 ListTile(
                   leading: Icon(Icons.add_box, color: Theme.of(context).primaryColor),
                   title: const Text('Add Bids'),
@@ -90,11 +96,12 @@ class LeftPaneMenu extends StatelessWidget {
                   onTap: () => onMenuItemSelected(8),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
                 ),
+
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

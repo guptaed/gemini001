@@ -3,6 +3,8 @@ import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
+import 'package:gemini001/screens/add_announcement_screen.dart';
+import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
@@ -106,6 +108,18 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         break;
       case 1:
         // Already on AddSupplierScreen, do nothing
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+        );
         break;
     }
   }

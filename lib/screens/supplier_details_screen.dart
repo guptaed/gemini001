@@ -6,6 +6,8 @@ import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
+import 'package:gemini001/screens/add_announcement_screen.dart';
+import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
@@ -32,14 +34,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   void _onMenuItemSelected(int index) {
     switch (index) {
       case 0:
-        // Pop until ListSuppliersScreen is found, or push a new one
         Navigator.popUntil(context, (route) {
           if (route.settings.name == '/list_suppliers' || route.isFirst) {
             return true;
           }
           return false;
         });
-        // If popped to initial route and it's not ListSuppliersScreen, push it
         if (ModalRoute.of(context)?.settings.name != '/list_suppliers') {
           Navigator.pushReplacement(
             context,
@@ -51,6 +51,18 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
     }
@@ -252,7 +264,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         ),
       ),
       userName: userName,
-      selectedPageIndex: 0, // Highlight "List Suppliers" as parent context
+      selectedPageIndex: 0,
       onMenuItemSelected: _onMenuItemSelected,
     );
   }
