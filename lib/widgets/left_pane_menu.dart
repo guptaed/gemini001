@@ -32,14 +32,14 @@ class LeftPaneMenu extends StatelessWidget {
             child: ListView(
               children: [
                 ListTile(
-                  leading: Icon(Icons.list, color: Theme.of(context).primaryColor),
+                  leading: Icon(Icons.people, color: Theme.of(context).primaryColor),
                   title: const Text('List Suppliers'),
                   selected: selectedPageIndex == 0,
                   onTap: () => onMenuItemSelected(0),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
                 ),
                 ListTile(
-                  leading: Icon(Icons.add_business, color: Theme.of(context).primaryColor),
+                  leading: Icon(Icons.group_add, color: Theme.of(context).primaryColor),
                   title: const Text('Add New Supplier'),
                   selected: selectedPageIndex == 1,
                   onTap: () => onMenuItemSelected(1),

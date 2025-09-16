@@ -59,9 +59,43 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
     }
   }
 
+  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: style.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: style.copyWith(color: theme.colorScheme.onSurface),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userName = Provider.of<AuthProvider>(context).user?.email ?? 'User';
+    final theme = Theme.of(context);
+    final bodyMedium = theme.textTheme.bodyMedium!;
+
     return CommonLayout(
       title: 'List Announcements',
       userName: userName,
@@ -135,7 +169,7 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                     padding: const EdgeInsets.all(8.0),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 2.5, // Adjusted to give more vertical space
+                      childAspectRatio: 2.5,
                       crossAxisSpacing: 8.0,
                       mainAxisSpacing: 8.0,
                     ),
@@ -144,28 +178,18 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                       final announcement = filteredAnnouncements[index];
                       return Card(
                         elevation: 2,
-                        child: SingleChildScrollView( // Added to prevent overflow
+                        child: SingleChildScrollView(
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   announcement.fuelType,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  'ID: ${announcement.announceId}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  'Status: ${announcement.status}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.teal,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -174,12 +198,14 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                                   thickness: 1,
                                   height: 10,
                                 ),
-                                Text('Announce Date: ${announcement.announceDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text('Bid Close Date: ${announcement.bidCloseDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text('Delivery Date: ${announcement.deliveryDate}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text('Quantity: ${announcement.quantity}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text('Price: ${announcement.price}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text('Notes: ${announcement.notes}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                _buildDetailRow('ID', announcement.announceId.toString(), bodyMedium, theme),
+                                _buildDetailRow('Status', announcement.status, bodyMedium, theme),
+                                _buildDetailRow('Announce Date', announcement.announceDate, bodyMedium, theme),
+                                _buildDetailRow('Bid Close Date', announcement.bidCloseDate, bodyMedium, theme),
+                                _buildDetailRow('Delivery Date', announcement.deliveryDate, bodyMedium, theme),
+                                _buildDetailRow('Quantity', announcement.quantity.toString(), bodyMedium, theme),
+                                _buildDetailRow('Price', announcement.price.toString(), bodyMedium, theme),
+                                _buildDetailRow('Notes', announcement.notes, bodyMedium, theme),
                               ],
                             ),
                           ),

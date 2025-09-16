@@ -60,9 +60,43 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
     }
   }
 
+  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: style.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: style.copyWith(color: theme.colorScheme.onSurface),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userName = Provider.of<AuthProvider>(context).user?.email ?? 'User';
+    final theme = Theme.of(context);
+    final bodyMedium = theme.textTheme.bodyMedium!;
+
     return CommonLayout(
       title: 'List Suppliers',
       userName: userName,
@@ -136,7 +170,7 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                     padding: const EdgeInsets.all(8.0),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 3,
+                      childAspectRatio: 2.5,
                       crossAxisSpacing: 8.0,
                       mainAxisSpacing: 8.0,
                     ),
@@ -158,7 +192,6 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
@@ -167,28 +200,18 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  Text(
-                                    supplier.Representative,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    'Status: ${supplier.Status}',
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
                                   const Divider(
                                     color: Colors.grey,
                                     thickness: 1,
                                     height: 10,
                                   ),
-                                  Text('ID: ${supplier.SupId}'),
-                                  Text('Address: ${supplier.Address}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  Text('Tel: ${supplier.Tel}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  Text('Email: ${supplier.Email}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  Text('Tax Code: ${supplier.TaxCode}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                                  _buildDetailRow('ID', supplier.SupId.toString(), bodyMedium, theme),
+                                  _buildDetailRow('Representative', supplier.Representative, bodyMedium, theme),
+                                  _buildDetailRow('Status', supplier.Status, bodyMedium, theme),
+                                  _buildDetailRow('Address', supplier.Address, bodyMedium, theme),
+                                  _buildDetailRow('Tel', supplier.Tel, bodyMedium, theme),
+                                  _buildDetailRow('Email', supplier.Email, bodyMedium, theme),
+                                  _buildDetailRow('Tax Code', supplier.TaxCode, bodyMedium, theme),
                                 ],
                               ),
                             ),
