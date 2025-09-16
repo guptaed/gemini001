@@ -65,7 +65,25 @@ class FirestoreHelper {
   Future<void> updateSupplier(Supplier supplier) async {
     try {
       if (supplier.id != null) {
+        // Fetch old supplier for audit
+        final oldDoc = await _suppliersCollection.doc(supplier.id).get();
+        final oldSupplier = oldDoc.data();
+        
         await _suppliersCollection.doc(supplier.id).set(supplier);
+        
+        // Log audit
+        final currentUser = _auth.currentUser;
+        if (currentUser != null && oldSupplier?.Status != supplier.Status) {
+          await _db.collection('audit_trails').add({
+            'action': 'status_change',
+            'supplierId': supplier.SupId,
+            'oldStatus': oldSupplier?.Status,
+            'newStatus': supplier.Status,
+            'userUid': currentUser.uid,
+            'userEmail': currentUser.email,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       }
     } catch (e) {
       print('Error updating supplier: $e');
@@ -110,5 +128,49 @@ class FirestoreHelper {
   // Check if a user is logged in.
   User? getCurrentUser() {
     return _auth.currentUser;
+  }
+
+  // Sign in with email and password
+  Future<User?> signInWithEmailAndPassword(String email, String password) async {
+    try {
+      final UserCredential credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return credential.user;
+    } on FirebaseAuthException catch (e) {
+      print('Firebase Auth Error: ${e.message}');
+      rethrow; // Let callers handle the error
+    } catch (e) {
+      print('Error signing in: $e');
+      rethrow;
+    }
+  }
+
+  // Sign out
+  Future<void> signOut() async {
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      print('Error signing out: $e');
+      rethrow;
+    }
+  }
+
+  // Optional: Sign up (if needed for new users)
+  Future<User?> createUserWithEmailAndPassword(String email, String password) async {
+    try {
+      final UserCredential credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return credential.user;
+    } on FirebaseAuthException catch (e) {
+      print('Firebase Auth Error: ${e.message}');
+      rethrow;
+    } catch (e) {
+      print('Error creating user: $e');
+      rethrow;
+    }
   }
 }

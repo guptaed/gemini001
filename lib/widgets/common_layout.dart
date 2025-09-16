@@ -8,7 +8,6 @@ class CommonLayout extends StatelessWidget {
   final String title;
   final Widget mainContentPanel;
   final String userName;
-  final VoidCallback onLogout;
   final int selectedPageIndex;
   final Function(int) onMenuItemSelected;
 
@@ -17,7 +16,6 @@ class CommonLayout extends StatelessWidget {
     required this.title,
     required this.mainContentPanel,
     required this.userName,
-    required this.onLogout,
     required this.selectedPageIndex,
     required this.onMenuItemSelected,
   });
@@ -29,7 +27,6 @@ class CommonLayout extends StatelessWidget {
         Header(
           title: title,
           userName: userName,
-          onLogout: onLogout,
         ),
         Expanded(
           child: AppScaffold(

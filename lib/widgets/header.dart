@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:gemini001/providers/auth_provider.dart';
 
 class Header extends StatelessWidget {
   final String title;
   final String userName;
-  final VoidCallback onLogout;
 
   const Header({
     super.key,
     required this.title,
     required this.userName,
-    required this.onLogout,
   });
 
   @override
@@ -62,14 +62,13 @@ class Header extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               GestureDetector(
-                onTap: onLogout,
+                onTap: () => Provider.of<AuthProvider>(context, listen: false).signOut(context),
                 child: const Text(
                   'Logout',
                   style: TextStyle(
                     color: Colors.white54,
                     fontSize: 14,
                     decoration: TextDecoration.none,
-                    decorationStyle: TextDecorationStyle.solid,
                   ),
                 ),
               ),

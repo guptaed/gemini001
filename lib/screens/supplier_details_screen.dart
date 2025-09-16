@@ -4,8 +4,10 @@ import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
-import 'package:gemini001/screens/home_screen.dart';
+import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:gemini001/providers/auth_provider.dart';
 
 class SupplierDetailsScreen extends StatefulWidget {
   final Supplier supplier;
@@ -19,7 +21,6 @@ class SupplierDetailsScreen extends StatefulWidget {
 class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   late Future<ContractInfo?> _contractInfoFuture;
   late Future<BankDetails?> _bankDetailsFuture;
-  final String _userName = 'Ashish Gupta';
 
   @override
   void initState() {
@@ -31,23 +32,28 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   void _onMenuItemSelected(int index) {
     switch (index) {
       case 0:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        // Pop until ListSuppliersScreen is found, or push a new one
+        Navigator.popUntil(context, (route) {
+          if (route.settings.name == '/list_suppliers' || route.isFirst) {
+            return true;
+          }
+          return false;
+        });
+        // If popped to initial route and it's not ListSuppliersScreen, push it
+        if (ModalRoute.of(context)?.settings.name != '/list_suppliers') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
+          );
+        }
         break;
       case 1:
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
         );
         break;
-      // Add cases for other screens later
     }
-  }
-
-  void _logout() {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out')));
   }
 
   @override
@@ -55,6 +61,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     final ThemeData theme = Theme.of(context);
     final TextStyle headlineSmall = theme.textTheme.headlineSmall!;
     final TextStyle bodyMedium = theme.textTheme.bodyMedium!;
+    final userName = Provider.of<AuthProvider>(context).user?.email ?? 'User';
 
     return CommonLayout(
       title: 'Supplier Details',
@@ -244,8 +251,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           ],
         ),
       ),
-      userName: _userName,
-      onLogout: _logout,
+      userName: userName,
       selectedPageIndex: 0, // Highlight "List Suppliers" as parent context
       onMenuItemSelected: _onMenuItemSelected,
     );

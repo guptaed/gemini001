@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/models/supplier.dart';
+import 'package:gemini001/widgets/common_layout.dart';
+import 'package:gemini001/screens/list_suppliers_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 
 class AddSupplierScreen extends StatefulWidget {
@@ -11,7 +15,6 @@ class AddSupplierScreen extends StatefulWidget {
 }
 
 class _AddSupplierScreenState extends State<AddSupplierScreen> {
-  final FirestoreHelper _firestoreHelper = FirestoreHelper();
   final _formKey = GlobalKey<FormState>();
   final _supIdController = TextEditingController();
   final _companyNameController = TextEditingController();
@@ -65,115 +68,144 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         Status: _selectedStatus!,
       );
       try {
-        await _firestoreHelper.addSupplier(supplier);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Supplier added successfully!')));
-        _formKey.currentState!.reset();
-        _companyNameController.clear();
-        _addressController.clear();
-        _telController.clear();
-        _emailController.clear();
-        _taxCodeController.clear();
-        _representativeController.clear();
-        _titleController.clear();
-        setState(() {
-          _selectedStatus = 'New';
-          _supIdController.text = _generateSupplierId();
-        });
+        await FirestoreHelper().addSupplier(supplier);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Supplier added successfully!')));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
+          );
+          _formKey.currentState!.reset();
+          _companyNameController.clear();
+          _addressController.clear();
+          _telController.clear();
+          _emailController.clear();
+          _taxCodeController.clear();
+          _representativeController.clear();
+          _titleController.clear();
+          setState(() {
+            _selectedStatus = 'New';
+            _supIdController.text = _generateSupplierId();
+          });
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding supplier: $e')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding supplier: $e')));
+        }
       }
+    }
+  }
+
+  void _onMenuItemSelected(int index) {
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
+        );
+        break;
+      case 1:
+        // Already on AddSupplierScreen, do nothing
+        break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: ListView(
-          children: [
-            _buildTextField(
-              controller: _supIdController,
-              labelText: 'Supplier ID',
-              enabled: false,
-              fillColor: Colors.grey[300],
-              validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
-            ),
-            _buildTextField(
-              controller: _companyNameController,
-              labelText: 'Company Name',
-              validator: (value) => value!.isEmpty ? 'Enter Company Name' : null,
-            ),
-            _buildTextField(
-              controller: _representativeController,
-              labelText: 'Representative',
-            ),
-            _buildTextField(
-              controller: _titleController,
-              labelText: 'Title',
-            ),
-            _buildTextField(
-              controller: _addressController,
-              labelText: 'Address',
-            ),
-            _buildTextField(
-              controller: _telController,
-              labelText: 'Telephone',
-              keyboardType: TextInputType.phone,
-            ),
-            _buildTextField(
-              controller: _emailController,
-              labelText: 'Email',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            _buildTextField(
-              controller: _taxCodeController,
-              labelText: 'Tax Code',
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: DropdownButtonFormField<String>(
-                value: _selectedStatus,
-                decoration: InputDecoration(
-                  labelText: 'Status',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+    final userName = Provider.of<AuthProvider>(context).user?.email ?? 'User';
+    return CommonLayout(
+      title: 'Add New Supplier',
+      userName: userName,
+      selectedPageIndex: 1,
+      onMenuItemSelected: _onMenuItemSelected,
+      mainContentPanel: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              _buildTextField(
+                controller: _supIdController,
+                labelText: 'Supplier ID',
+                enabled: false,
+                fillColor: Colors.grey[300],
+                validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
+              ),
+              _buildTextField(
+                controller: _companyNameController,
+                labelText: 'Company Name',
+                validator: (value) => value!.isEmpty ? 'Enter Company Name' : null,
+              ),
+              _buildTextField(
+                controller: _representativeController,
+                labelText: 'Representative',
+              ),
+              _buildTextField(
+                controller: _titleController,
+                labelText: 'Title',
+              ),
+              _buildTextField(
+                controller: _addressController,
+                labelText: 'Address',
+              ),
+              _buildTextField(
+                controller: _telController,
+                labelText: 'Telephone',
+                keyboardType: TextInputType.phone,
+              ),
+              _buildTextField(
+                controller: _emailController,
+                labelText: 'Email',
+                keyboardType: TextInputType.emailAddress,
+              ),
+              _buildTextField(
+                controller: _taxCodeController,
+                labelText: 'Tax Code',
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedStatus,
+                  decoration: InputDecoration(
+                    labelText: 'Status',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
-                  ),
+                  items: _statusOptions.map((String status) {
+                    return DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(status),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedStatus = newValue;
+                    });
+                  },
+                  validator: (value) => value == null ? 'Please select a status' : null,
                 ),
-                items: _statusOptions.map((String status) {
-                  return DropdownMenuItem<String>(
-                    value: status,
-                    child: Text(status),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedStatus = newValue;
-                  });
-                },
-                validator: (value) => value == null ? 'Please select a status' : null,
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveSupplier,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontSize: 18),
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _saveSupplier,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: const TextStyle(fontSize: 18),
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Save Supplier'),
               ),
-              child: const Text('Save Supplier'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
