@@ -4,6 +4,7 @@ import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
 import 'package:gemini001/models/announcement.dart';
+import 'package:gemini001/models/credit_check.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
 // for our application, making it easier to manage data and separate concerns.
@@ -96,7 +97,7 @@ class FirestoreHelper {
   CollectionReference<ContractInfo> get _contractsCollection {
     return _db.collection('Contracts').withConverter<ContractInfo>(
       fromFirestore: (snapshot, _) => ContractInfo.fromFirestore(snapshot),
-      toFirestore: (contract, _) => contract.toMap(), // Assuming ContractInfo has a toMap method
+      toFirestore: (contract, _) => contract.toMap(),
     );
   }
 
@@ -104,7 +105,15 @@ class FirestoreHelper {
   CollectionReference<BankDetails> get _banksCollection {
     return _db.collection('Banks').withConverter<BankDetails>(
       fromFirestore: (snapshot, _) => BankDetails.fromFirestore(snapshot),
-      toFirestore: (bank, _) => bank.toMap(), // Assuming BankDetails has a toMap method
+      toFirestore: (bank, _) => bank.toMap(),
+    );
+  }
+
+  // This getter returns a collection reference for "CreditChecks" with a converter.
+  CollectionReference<CreditCheck> get _creditChecksCollection {
+    return _db.collection('CreditChecks').withConverter<CreditCheck>(
+      fromFirestore: (snapshot, _) => CreditCheck.fromFirestore(snapshot),
+      toFirestore: (creditCheck, _) => creditCheck.toMap(),
     );
   }
 
@@ -126,6 +135,44 @@ class FirestoreHelper {
     return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.first.data() : null;
   }
 
+  // Get credit check details for a given SupId.
+  Future<CreditCheck?> getCreditCheck(int supId) async {
+    try {
+      final querySnapshot = await _creditChecksCollection
+          .where('SupId', isEqualTo: supId)
+          .limit(1)
+          .get();
+      return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.first.data() : null;
+    } catch (e) {
+      print('Error fetching credit check: $e');
+      rethrow;
+    }
+  }
+
+  // Update credit check status and log to audit_trails.
+  Future<void> updateCreditCheck(CreditCheck creditCheck, String oldStatus) async {
+    try {
+      if (creditCheck.id != null) {
+        await _creditChecksCollection.doc(creditCheck.id).set(creditCheck);
+        // Log audit
+        final currentUser = _auth.currentUser;
+        if (currentUser != null && oldStatus != creditCheck.status) {
+          await _db.collection('audit_trails').add({
+            'action': 'credit_check_status_change',
+            'supplierId': creditCheck.supId,
+            'oldStatus': oldStatus,
+            'newStatus': creditCheck.status,
+            'userUid': currentUser.uid,
+            'userEmail': currentUser.email,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    } catch (e) {
+      print('Error updating credit check: $e');
+      rethrow;
+    }
+  }
 
   // Collection reference for "Announcements" with converter
   CollectionReference<Announcement> get _announcementsCollection {
@@ -134,8 +181,6 @@ class FirestoreHelper {
       toFirestore: (announcement, _) => announcement.toMap(),
     );
   }
-
-
 
   // Add a new announcement
   Future<void> addAnnouncement(Announcement announcement) async {
@@ -153,12 +198,6 @@ class FirestoreHelper {
       return querySnapshot.docs.map((doc) => doc.data()).toList();
     });
   }
-
-
-
-
-
-
 
   // Check if a user is logged in.
   User? getCurrentUser() {

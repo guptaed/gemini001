@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
+import 'package:gemini001/models/credit_check.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
@@ -23,12 +24,14 @@ class SupplierDetailsScreen extends StatefulWidget {
 class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   late Future<ContractInfo?> _contractInfoFuture;
   late Future<BankDetails?> _bankDetailsFuture;
+  late Future<CreditCheck?> _creditCheckFuture;
 
   @override
   void initState() {
     super.initState();
     _contractInfoFuture = FirestoreHelper().getContractInfo(widget.supplier.SupId);
     _bankDetailsFuture = FirestoreHelper().getBankDetails(widget.supplier.SupId);
+    _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
   }
 
   void _onMenuItemSelected(int index) {
@@ -149,6 +152,97 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
+                            'Credit Check Information',
+                            style: headlineSmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          const Divider(
+                            color: Colors.grey,
+                            thickness: 1,
+                            height: 10,
+                          ),
+                          const SizedBox(height: 16),
+                          FutureBuilder<CreditCheck?>(
+                            future: _creditCheckFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const Center(child: CircularProgressIndicator());
+                              }
+                              if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}', style: bodyMedium);
+                              }
+                              final creditCheck = snapshot.data;
+                              if (creditCheck == null) {
+                                return Center(
+                                  child: AnimatedOpacity(
+                                    opacity: 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: theme.colorScheme.primary,
+                                        foregroundColor: theme.colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      child: const Text('Add Credit Check'),
+                                    ),
+                                  ),
+                                );
+                              }
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDetailRow('Status', creditCheck.status, bodyMedium, theme),
+                                  _buildDetailRow('Established Date', creditCheck.establishedDate, bodyMedium, theme),
+                                  _buildDetailRow('Supply Capacity', creditCheck.supplyCapacity.toString(), bodyMedium, theme),
+                                  _buildDetailRow('Track Record', creditCheck.trackRecord, bodyMedium, theme),
+                                  _buildDetailRow('Raw Material Types', creditCheck.rawMaterialTypes, bodyMedium, theme),
+                                  _buildDetailRow('Check Start Date', creditCheck.checkStartDate, bodyMedium, theme),
+                                  _buildDetailRow('Check Finish Date', creditCheck.checkFinishDate, bodyMedium, theme),
+                                  _buildDetailRow('Check Company', creditCheck.checkCompany, bodyMedium, theme),
+                                  const SizedBox(height: 16),
+                                  AnimatedOpacity(
+                                    opacity: 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: theme.colorScheme.primary,
+                                            foregroundColor: theme.colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                          child: const Text('Edit'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                             'Contract Information',
                             style: headlineSmall.copyWith(
                               fontWeight: FontWeight.bold,
@@ -173,9 +267,19 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                               final contractInfo = snapshot.data;
                               if (contractInfo == null) {
                                 return Center(
-                                  child: ElevatedButton(
-                                    onPressed: () {},
-                                    child: const Text('Add Contract Information'),
+                                  child: AnimatedOpacity(
+                                    opacity: 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: theme.colorScheme.primary,
+                                        foregroundColor: theme.colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      child: const Text('Add Contract Information'),
+                                    ),
                                   ),
                                 );
                               }
@@ -188,6 +292,26 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                   _buildDetailRow('Max Auto Validity', contractInfo.MaxAutoValidity.toString(), bodyMedium, theme),
                                   _buildDetailRow('STT1 Price', contractInfo.STT1Price.toString(), bodyMedium, theme),
                                   _buildDetailRow('STT2 Price', contractInfo.STT2Price.toString(), bodyMedium, theme),
+                                  const SizedBox(height: 16),
+                                  AnimatedOpacity(
+                                    opacity: 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: theme.colorScheme.primary,
+                                            foregroundColor: theme.colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                          child: const Text('Edit'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               );
                             },
@@ -232,9 +356,19 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                               final bankDetails = snapshot.data;
                               if (bankDetails == null) {
                                 return Center(
-                                  child: ElevatedButton(
-                                    onPressed: () {},
-                                    child: const Text('Add Bank Information'),
+                                  child: AnimatedOpacity(
+                                    opacity: 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: theme.colorScheme.primary,
+                                        foregroundColor: theme.colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      child: const Text('Add Bank Information'),
+                                    ),
                                   ),
                                 );
                               }
@@ -249,6 +383,26 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                   _buildDetailRow('Account Name', bankDetails.AccountName, bodyMedium, theme),
                                   _buildDetailRow('Account Number', bankDetails.AccountNumber, bodyMedium, theme),
                                   _buildDetailRow('Preferred Bank', bankDetails.PreferredBank.toString(), bodyMedium, theme),
+                                  const SizedBox(height: 16),
+                                  AnimatedOpacity(
+                                    opacity: 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: theme.colorScheme.primary,
+                                            foregroundColor: theme.colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                          child: const Text('Edit'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               );
                             },
