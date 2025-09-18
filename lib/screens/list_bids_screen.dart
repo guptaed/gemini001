@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
-import 'package:gemini001/models/announcement.dart';
+import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/add_announcement_screen.dart';
-import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/add_bid_screen.dart';
-import 'package:gemini001/screens/list_bids_screen.dart';
+import 'package:gemini001/screens/list_suppliers_screen.dart';
+import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 
-class ListAnnouncementsScreen extends StatefulWidget {
-  const ListAnnouncementsScreen({super.key});
+class ListBidsScreen extends StatefulWidget {
+  const ListBidsScreen({super.key});
 
   @override
-  State<ListAnnouncementsScreen> createState() => _ListAnnouncementsScreenState();
+  State<ListBidsScreen> createState() => _ListBidsScreenState();
 }
 
-class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
+class _ListBidsScreenState extends State<ListBidsScreen> {
   final FirestoreHelper _firestoreHelper = FirestoreHelper();
-  late Stream<List<Announcement>> _announcementsStream;
+  late Stream<List<Bid>> _bidsStream;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _announcementsStream = _firestoreHelper.streamAnnouncements();
+    _bidsStream = _firestoreHelper.streamBids();
   }
 
   @override
@@ -56,7 +56,10 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
         );
         break;
       case 3:
-        // Already on ListAnnouncementsScreen, do nothing
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+        );
         break;
       case 4:
         Navigator.push(
@@ -64,13 +67,10 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
           MaterialPageRoute(builder: (context) => const AddBidScreen()),
         );
         break;
-      case 5:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ListBidsScreen()),
-        );
-        break;
 
+      case 5:
+        // Already on ListBidsScreen, do nothing
+        break;
     }
   }
 
@@ -112,9 +112,9 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
     final bodyMedium = theme.textTheme.bodyMedium!;
 
     return CommonLayout(
-      title: 'List Announcements',
+      title: 'List Bids',
       userName: userName,
-      selectedPageIndex: 3,
+      selectedPageIndex: 4,
       onMenuItemSelected: _onMenuItemSelected,
       mainContentPanel: Column(
         children: [
@@ -123,8 +123,8 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                labelText: 'Search Announcements',
-                hintText: 'Enter any field (e.g., Fuel Type, ID, Notes)',
+                labelText: 'Search Bids',
+                hintText: 'Enter any field (e.g., Supplier ID, Status, Notes)',
                 border: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
                 ),
@@ -152,8 +152,8 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<List<Announcement>>(
-              stream: _announcementsStream,
+            child: StreamBuilder<List<Bid>>(
+              stream: _bidsStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -162,21 +162,21 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
                 if (snapshot.hasData) {
-                  final announcements = snapshot.data!;
-                  if (announcements.isEmpty) {
-                    return const Center(child: Text('No announcements added yet.'));
+                  final bids = snapshot.data!;
+                  if (bids.isEmpty) {
+                    return const Center(child: Text('No bids added yet.'));
                   }
-                  final filteredAnnouncements = announcements.where((announcement) {
+                  final filteredBids = bids.where((bid) {
                     final fields = [
-                      announcement.announceId.toString(),
-                      announcement.announceDate.toLowerCase(),
-                      announcement.bidCloseDate.toLowerCase(),
-                      announcement.deliveryDate.toLowerCase(),
-                      announcement.fuelType.toLowerCase(),
-                      announcement.quantity.toString(),
-                      announcement.price.toString(),
-                      announcement.status.toLowerCase(),
-                      announcement.notes.toLowerCase(),
+                      bid.supId.toString(),
+                      bid.announceId.toString(),
+                      bid.bidId.toString(),
+                      bid.submittedDate.toLowerCase(),
+                      bid.quantity.toString(),
+                      bid.status.toLowerCase(),
+                      bid.quantityAccepted.toString(),
+                      bid.acceptRejectDate.toLowerCase(),
+                      bid.notes.toLowerCase(),
                     ];
                     return fields.any((field) => field.contains(_searchQuery));
                   }).toList();
@@ -188,9 +188,9 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                       crossAxisSpacing: 8.0,
                       mainAxisSpacing: 8.0,
                     ),
-                    itemCount: filteredAnnouncements.length,
+                    itemCount: filteredBids.length,
                     itemBuilder: (context, index) {
-                      final announcement = filteredAnnouncements[index];
+                      final bid = filteredBids[index];
                       return Card(
                         elevation: 2,
                         child: SingleChildScrollView(
@@ -200,7 +200,7 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  announcement.fuelType,
+                                  'Bid #${bid.bidId}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.teal,
@@ -213,14 +213,15 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                                   thickness: 1,
                                   height: 10,
                                 ),
-                                _buildDetailRow('ID', announcement.announceId.toString(), bodyMedium, theme),
-                                _buildDetailRow('Status', announcement.status, bodyMedium, theme),
-                                _buildDetailRow('Announce Date', announcement.announceDate, bodyMedium, theme),
-                                _buildDetailRow('Bid Close Date', announcement.bidCloseDate, bodyMedium, theme),
-                                _buildDetailRow('Delivery Date', announcement.deliveryDate, bodyMedium, theme),
-                                _buildDetailRow('Quantity', announcement.quantity.toString(), bodyMedium, theme),
-                                _buildDetailRow('Price', announcement.price.toString(), bodyMedium, theme),
-                                _buildDetailRow('Notes', announcement.notes, bodyMedium, theme),
+                                _buildDetailRow('Supplier ID', bid.supId.toString(), bodyMedium, theme),
+                                _buildDetailRow('Announcement ID', bid.announceId.toString(), bodyMedium, theme),
+                                _buildDetailRow('Bid ID', bid.bidId.toString(), bodyMedium, theme),
+                                _buildDetailRow('Submitted Date', bid.submittedDate, bodyMedium, theme),
+                                _buildDetailRow('Quantity', bid.quantity.toString(), bodyMedium, theme),
+                                _buildDetailRow('Status', bid.status, bodyMedium, theme),
+                                _buildDetailRow('Quantity Accepted', bid.quantityAccepted.toString(), bodyMedium, theme),
+                                _buildDetailRow('Accept/Reject Date', bid.acceptRejectDate, bodyMedium, theme),
+                                _buildDetailRow('Notes', bid.notes, bodyMedium, theme),
                               ],
                             ),
                           ),
@@ -229,7 +230,7 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                     },
                   );
                 }
-                return const Center(child: Text('Start adding announcements!'));
+                return const Center(child: Text('Start adding bids!'));
               },
             ),
           ),

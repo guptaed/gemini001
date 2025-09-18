@@ -5,6 +5,7 @@ import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
 import 'package:gemini001/models/announcement.dart';
 import 'package:gemini001/models/credit_check.dart';
+import 'package:gemini001/models/bid.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
 // for our application, making it easier to manage data and separate concerns.
@@ -117,6 +118,14 @@ class FirestoreHelper {
     );
   }
 
+  // This getter returns a collection reference for "Bids" with a converter.
+  CollectionReference<Bid> get _bidsCollection {
+    return _db.collection('Bids').withConverter<Bid>(
+      fromFirestore: (snapshot, _) => Bid.fromFirestore(snapshot),
+      toFirestore: (bid, _) => bid.toMap(),
+    );
+  }
+
   // Get contract information for a given SupId.
   Future<ContractInfo?> getContractInfo(int supId) async {
     final querySnapshot = await _contractsCollection
@@ -195,6 +204,23 @@ class FirestoreHelper {
   // Stream all announcements
   Stream<List<Announcement>> streamAnnouncements() {
     return _announcementsCollection.snapshots().map((querySnapshot) {
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  // Add a new bid
+  Future<void> addBid(Bid bid) async {
+    try {
+      await _bidsCollection.add(bid);
+    } catch (e) {
+      print('Error adding bid: $e');
+      rethrow;
+    }
+  }
+
+  // Stream all bids
+  Stream<List<Bid>> streamBids() {
+    return _bidsCollection.snapshots().map((querySnapshot) {
       return querySnapshot.docs.map((doc) => doc.data()).toList();
     });
   }
