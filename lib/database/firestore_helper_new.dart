@@ -225,6 +225,22 @@ class FirestoreHelper {
     });
   }
 
+  Future<List<Bid>> getBidsBySupplier(int supId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Bids')
+          .where('SupId', isEqualTo: supId)
+          .get();
+      print('Found ${snapshot.docs.length} bids for SupId: $supId');    
+      return snapshot.docs.map((doc) => Bid.fromFirestore(doc)).toList();
+    } catch (e) {
+      print('Error fetching bids for SupId: $supId: $e');
+      throw Exception('Failed to fetch bids: $e');
+    }
+  }
+
+
+
   // Check if a user is logged in.
   User? getCurrentUser() {
     return _auth.currentUser;

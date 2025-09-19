@@ -3,12 +3,15 @@ import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
 import 'package:gemini001/models/credit_check.dart';
+import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/add_announcement_screen.dart';
 import 'package:gemini001/screens/list_announcements_screen.dart';
+import 'package:gemini001/screens/add_bid_screen.dart';
+import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
@@ -25,6 +28,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   late Future<ContractInfo?> _contractInfoFuture;
   late Future<BankDetails?> _bankDetailsFuture;
   late Future<CreditCheck?> _creditCheckFuture;
+  late Future<List<Bid>> _bidsFuture;
 
   @override
   void initState() {
@@ -32,6 +36,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     _contractInfoFuture = FirestoreHelper().getContractInfo(widget.supplier.SupId);
     _bankDetailsFuture = FirestoreHelper().getBankDetails(widget.supplier.SupId);
     _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
+    _bidsFuture = FirestoreHelper().getBidsBySupplier(widget.supplier.SupId);
   }
 
   void _onMenuItemSelected(int index) {
@@ -68,6 +73,18 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
+      case 4:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddBidScreen()),
+        );
+        break;
+      case 5:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ListBidsScreen()),
+        );
+        break;        
     }
   }
 
@@ -414,6 +431,96 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bids',
+                      style: headlineSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const Divider(
+                      color: Colors.grey,
+                      thickness: 1,
+                      height: 10,
+                    ),
+                    const SizedBox(height: 16),
+                    FutureBuilder<List<Bid>>(
+                      future: _bidsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}', style: bodyMedium);
+                        }
+                        final bids = snapshot.data ?? [];
+                        if (bids.isEmpty) {
+                          return const Center(child: Text('No bids found for this supplier'));
+                        }
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: bids.length,
+                          separatorBuilder: (context, index) => const Divider(height: 8),
+                          itemBuilder: (context, index) {
+                            final bid = bids[index];
+                            return ExpansionTile(
+                              title: Text(
+                                'Bid ID: ${bid.bidId}',
+                                style: bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                'Announcement ID: ${bid.announceId} | Quantity: ${bid.quantity} | Status: ${bid.status}',
+                                style: bodyMedium,
+                              ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildDetailRow('Submitted Date', bid.submittedDate, bodyMedium, theme),
+                                      _buildDetailRow('Quantity Accepted', bid.quantityAccepted.toString(), bodyMedium, theme),
+                                      _buildDetailRow('Accept/Reject Date', bid.acceptRejectDate.isEmpty ? 'Not set' : bid.acceptRejectDate, bodyMedium, theme),
+                                      _buildDetailRow('Notes', bid.notes.isEmpty ? 'None' : bid.notes, bodyMedium, theme),
+                                      const SizedBox(height: 8),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            // Placeholder for BidDetailsScreen navigation
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: theme.colorScheme.primary,
+                                            foregroundColor: theme.colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                          child: const Text('View Bid'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -447,3 +554,4 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 }
+

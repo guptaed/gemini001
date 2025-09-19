@@ -198,7 +198,7 @@ class _AddBidScreenState extends State<AddBidScreen> {
                   final numValue = int.tryParse(value);
                   if (numValue == null || numValue <= 0) return 'Enter a positive number';
                   if (_selectedAnnouncementQuantity != null && numValue > _selectedAnnouncementQuantity!) {
-                    return 'Quantity must be less than or equal to ${_selectedAnnouncementQuantity}';
+                    return 'Quantity must be less than or equal to $_selectedAnnouncementQuantity';
                   }
                   return null;
                 },

@@ -8,8 +8,8 @@ class Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
-      color: Colors.grey[200],
+      padding: const EdgeInsets.all(4.0),
+      color: const Color.fromARGB(255, 218, 217, 217),
       child: const Center(
         child: Text(
           '© 2025 erex Co. Ltd. All rights reserved. | Contact: it.solutions@erex.co.jp | v3.1.4, September 2025.',
