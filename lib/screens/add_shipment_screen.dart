@@ -3,64 +3,63 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/models/supplier.dart';
-import 'package:gemini001/models/announcement.dart';
+import 'package:gemini001/models/shipment.dart';
 import 'package:gemini001/widgets/common_layout.dart';
-import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/add_announcement_screen.dart';
 import 'package:gemini001/screens/list_announcements_screen.dart';
-import 'package:gemini001/screens/add_shipment_screen.dart';
+import 'package:gemini001/screens/add_bid_screen.dart';
+import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 
-class AddBidScreen extends StatefulWidget {
-  const AddBidScreen({super.key});
+class AddShipmentScreen extends StatefulWidget {
+  const AddShipmentScreen({super.key});
 
   @override
-  State<AddBidScreen> createState() => _AddBidScreenState();
+  State<AddShipmentScreen> createState() => _AddShipmentScreenState();
 }
 
-class _AddBidScreenState extends State<AddBidScreen> {
+class _AddShipmentScreenState extends State<AddShipmentScreen> {
   final _formKey = GlobalKey<FormState>();
   int? _selectedSupId;
-  int? _selectedAnnounceId;
-  int? _selectedAnnouncementQuantity; // To store selected announcement's Quantity
-  final _bidIdController = TextEditingController();
-  final _submittedDateController = TextEditingController();
-  final _quantityController = TextEditingController();
-  final _quantityAcceptedController = TextEditingController();
-  final _acceptRejectDateController = TextEditingController();
+  String? _selectedSupplierName;
+  int? _selectedBidId;
+  String? _selectedStatus;
+  final _shipmentIdController = TextEditingController();
+  final _shippedDateController = TextEditingController();
+  final _receivedDateController = TextEditingController();
   final _notesController = TextEditingController();
+  final _supplierController = TextEditingController();
   late Stream<List<Supplier>> _suppliersStream;
-  late Stream<List<Announcement>> _announcementsStream;
+  late Stream<List<Bid>> _bidsStream;
 
   @override
   void initState() {
     super.initState();
-    _bidIdController.text = _generateBidId();
+    _shipmentIdController.text = _generateShipmentId();
     _suppliersStream = FirestoreHelper().streamSuppliers();
-    _announcementsStream = FirestoreHelper().streamAnnouncements();
+    _bidsStream = FirestoreHelper().streamBids();
   }
 
   @override
   void dispose() {
-    _bidIdController.dispose();
-    _submittedDateController.dispose();
-    _quantityController.dispose();
-    _quantityAcceptedController.dispose();
-    _acceptRejectDateController.dispose();
+    _shipmentIdController.dispose();
+    _shippedDateController.dispose();
+    _receivedDateController.dispose();
     _notesController.dispose();
+    _supplierController.dispose();
     super.dispose();
   }
 
-  String _generateBidId() {
+  String _generateShipmentId() {
     final now = DateTime.now();
     final random = Random().nextInt(10);
-    return '2${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
+    return '3${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
   }
 
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
@@ -77,46 +76,44 @@ class _AddBidScreenState extends State<AddBidScreen> {
     }
   }
 
-  Future<void> _saveBid() async {
+  Future<void> _saveShipment() async {
     if (_formKey.currentState!.validate()) {
-      final bid = Bid(
-        supId: _selectedSupId!,
-        announceId: _selectedAnnounceId!,
-        bidId: int.parse(_bidIdController.text),
-        submittedDate: _submittedDateController.text,
-        quantity: int.parse(_quantityController.text),
-        status: 'Pending', // Hardcoded as per requirement
-        quantityAccepted: _quantityAcceptedController.text.isEmpty ? 0 : int.parse(_quantityAcceptedController.text),
-        acceptRejectDate: _acceptRejectDateController.text,
-        notes: _notesController.text,
+      final shipment = Shipment(
+        ShipmentId: _shipmentIdController.text,
+        SupId: _selectedSupId!,
+        BidId: _selectedBidId!,
+        Status: _selectedStatus!,
+        ShippedDate: _shippedDateController.text,
+        ReceivedDate: _receivedDateController.text,
+        Notes: _notesController.text,
       );
       try {
-        await FirestoreHelper().addBid(bid);
+        await FirestoreHelper().addShipment(shipment);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Bid added successfully!')),
+            const SnackBar(content: Text('Shipment added successfully!')),
           );
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ListBidsScreen()),
+            MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
           );
           _formKey.currentState!.reset();
           setState(() {
             _selectedSupId = null;
-            _selectedAnnounceId = null;
-            _selectedAnnouncementQuantity = null;
-            _bidIdController.text = _generateBidId();
-            _submittedDateController.clear();
-            _quantityController.clear();
-            _quantityAcceptedController.clear();
-            _acceptRejectDateController.clear();
+            _selectedSupplierName = null;
+            _selectedBidId = null;
+            _selectedStatus = null;
+            _shipmentIdController.text = _generateShipmentId();
+            _shippedDateController.clear();
+            _receivedDateController.clear();
             _notesController.clear();
+            _supplierController.clear();
           });
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error adding bid: $e')),
+            SnackBar(content: Text('Error adding shipment: $e')),
           );
         }
       }
@@ -150,7 +147,10 @@ class _AddBidScreenState extends State<AddBidScreen> {
         );
         break;
       case 4:
-        // Already on AddBidScreen, do nothing
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddBidScreen()),
+        );
         break;
       case 5:
         Navigator.push(
@@ -159,17 +159,14 @@ class _AddBidScreenState extends State<AddBidScreen> {
         );
         break;
       case 6:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddShipmentScreen()),
-        );
+        // Already on AddShipmentScreen
         break;
       case 7:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
         );
-        break;        
+        break;
     }
   }
 
@@ -178,9 +175,9 @@ class _AddBidScreenState extends State<AddBidScreen> {
     final userName = Provider.of<AuthProvider>(context).user?.email ?? 'User';
     final theme = Theme.of(context);
     return CommonLayout(
-      title: 'Add New Bid',
+      title: 'Add New Shipment',
       userName: userName,
-      selectedPageIndex: 4,
+      selectedPageIndex: 6,
       onMenuItemSelected: _onMenuItemSelected,
       mainContentPanel: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -189,60 +186,36 @@ class _AddBidScreenState extends State<AddBidScreen> {
           child: ListView(
             children: [
               _buildTextField(
-                controller: _bidIdController,
-                labelText: 'Bid ID',
+                controller: _shipmentIdController,
+                labelText: 'Shipment ID',
                 enabled: false,
                 fillColor: Colors.grey[300],
                 validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
               ),
-              _buildSupplierDropdown(theme),
-              _buildAnnouncementDropdown(theme),
+              _buildBidDropdown(theme),
+              _buildSupplierField(theme),
+              _buildStatusDropdown(theme),
               _buildTextFieldWithDatePicker(
-                controller: _submittedDateController,
-                labelText: 'Submitted Date (YYYY-MM-DD)',
-                onTap: () => _selectDate(context, _submittedDateController),
-                validator: (value) => value!.isEmpty ? 'Enter Submitted Date' : null,
-              ),
-              _buildTextField(
-                controller: _quantityController,
-                labelText: 'Quantity',
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Enter Quantity';
-                  final numValue = int.tryParse(value);
-                  if (numValue == null || numValue <= 0) return 'Enter a positive number';
-                  if (_selectedAnnouncementQuantity != null && numValue > _selectedAnnouncementQuantity!) {
-                    return 'Quantity must be less than or equal to $_selectedAnnouncementQuantity';
-                  }
-                  return null;
-                },
-              ),
-              _buildTextField(
-                controller: _quantityAcceptedController,
-                labelText: 'Quantity Accepted (Optional)',
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return null;
-                  final numValue = int.tryParse(value);
-                  if (numValue == null || numValue < 0) return 'Enter a non-negative number';
-                  return null;
-                },
+                controller: _shippedDateController,
+                labelText: 'Shipped Date (YYYY-MM-DD)',
+                onTap: () => _selectDate(context, _shippedDateController),
+                validator: (value) => value!.isEmpty ? 'Enter Shipped Date' : null,
               ),
               _buildTextFieldWithDatePicker(
-                controller: _acceptRejectDateController,
-                labelText: 'Accept/Reject Date (Optional, YYYY-MM-DD)',
-                onTap: () => _selectDate(context, _acceptRejectDateController),
+                controller: _receivedDateController,
+                labelText: 'Received Date (Optional, YYYY-MM-DD)',
+                onTap: () => _selectDate(context, _receivedDateController),
                 validator: null,
               ),
               _buildTextField(
                 controller: _notesController,
-                labelText: 'Notes',
+                labelText: 'Notes (Optional)',
                 maxLines: 5,
-                validator: null, // Optional field
+                validator: null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _saveBid,
+                onPressed: _saveShipment,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   textStyle: const TextStyle(fontSize: 18),
@@ -250,7 +223,7 @@ class _AddBidScreenState extends State<AddBidScreen> {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text('Save Bid'),
+                child: const Text('Save Shipment'),
               ),
             ],
           ),
@@ -326,88 +299,48 @@ class _AddBidScreenState extends State<AddBidScreen> {
             onPressed: onTap,
           ),
         ),
-        readOnly: true, // Prevent manual editing
+        readOnly: true,
         onTap: onTap,
         validator: validator,
       ),
     );
   }
 
-  Widget _buildSupplierDropdown(ThemeData theme) {
+  Widget _buildSupplierField(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: DropdownSearch<Supplier>(
-        popupProps: PopupProps.menu(
-          showSearchBox: true,
-          searchFieldProps: TextFieldProps(
-            decoration: InputDecoration(
-              labelText: 'Search Supplier ID or Name',
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
-              ),
-            ),
+      child: TextFormField(
+        controller: _supplierController,
+        decoration: InputDecoration(
+          labelText: 'Supplier',
+          hintText: 'Select a Bid to populate Supplier',
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
           ),
-          emptyBuilder: (context, searchEntry) => const Center(child: Text('No suppliers found')),
-        ),
-        dropdownDecoratorProps: DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
-            labelText: 'Supplier ID',
-            hintText: 'Select Supplier',
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
-            ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
+          ),
+          filled: true,
+          fillColor: Colors.grey[300],
         ),
-        asyncItems: (String filter) async {
-          try {
-            final suppliers = await _suppliersStream.first;
-            if (suppliers.isEmpty) return [];
-            return suppliers.where((supplier) {
-              final searchText = filter.toLowerCase();
-              return supplier.SupId.toString().contains(searchText) ||
-                  supplier.CompanyName.toLowerCase().contains(searchText);
-            }).toList();
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error loading suppliers: $e')),
-              );
-            }
-            return [];
-          }
-        },
-        itemAsString: (Supplier supplier) => '${supplier.SupId} - ${supplier.CompanyName}',
-        onChanged: (Supplier? supplier) {
-          setState(() {
-            _selectedSupId = supplier?.SupId;
-          });
-        },
-        validator: (Supplier? value) => value == null ? 'Select a Supplier' : null,
+        enabled: false,
+        validator: (value) => value!.isEmpty ? 'Select a Bid to populate Supplier' : null,
       ),
     );
   }
 
-  Widget _buildAnnouncementDropdown(ThemeData theme) {
+  Widget _buildBidDropdown(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: DropdownSearch<Announcement>(
+      child: DropdownSearch<Bid>(
         popupProps: PopupProps.menu(
           showSearchBox: true,
           searchFieldProps: TextFieldProps(
             decoration: InputDecoration(
-              labelText: 'Search Announcement ID, Fuel Type, or Quantity',
+              labelText: 'Search Bid ID or Supplier ID',
               border: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
               ),
@@ -419,12 +352,12 @@ class _AddBidScreenState extends State<AddBidScreen> {
               ),
             ),
           ),
-          emptyBuilder: (context, searchEntry) => const Center(child: Text('No announcements found')),
+          emptyBuilder: (context, searchEntry) => const Center(child: Text('No bids found')),
         ),
         dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
-            labelText: 'Announcement ID',
-            hintText: 'Select Announcement',
+            labelText: 'Bid ID',
+            hintText: 'Select Bid',
             border: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
             ),
@@ -438,31 +371,97 @@ class _AddBidScreenState extends State<AddBidScreen> {
         ),
         asyncItems: (String filter) async {
           try {
-            final announcements = await _announcementsStream.first;
-            if (announcements.isEmpty) return [];
-            return announcements.where((announcement) {
+            final bids = await _bidsStream.first;
+            if (bids.isEmpty) return [];
+            return bids.where((bid) {
               final searchText = filter.toLowerCase();
-              return announcement.announceId.toString().contains(searchText) ||
-                  announcement.fuelType.toLowerCase().contains(searchText) ||
-                  announcement.quantity.toString().contains(searchText);
+              return bid.bidId.toString().contains(searchText) ||
+                  bid.supId.toString().contains(searchText);
             }).toList();
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error loading announcements: $e')),
+                SnackBar(content: Text('Error loading bids: $e')),
               );
             }
             return [];
           }
         },
-        itemAsString: (Announcement announcement) => '${announcement.announceId} - ${announcement.fuelType} (Quantity: ${announcement.quantity})',
-        onChanged: (Announcement? announcement) {
+        itemAsString: (Bid bid) => '${bid.bidId} - SupId: ${bid.supId}, AnnounceId: ${bid.announceId}',
+        onChanged: (Bid? bid) async {
+          if (bid != null) {
+            try {
+              final suppliers = await _suppliersStream.first;
+              final supplier = suppliers.firstWhere(
+                (sup) => sup.SupId == bid.supId,
+                orElse: () => Supplier(
+                  SupId: 0,
+                  CompanyName: 'Unknown',
+                  Address: '',
+                  Tel: '',
+                  Email: '',
+                  TaxCode: '',
+                  Representative: '',
+                  Title: '',
+                  Status: '',
+                ),
+              );
+              setState(() {
+                _selectedBidId = bid.bidId;
+                _selectedSupId = bid.supId;
+                _selectedSupplierName = supplier.CompanyName;
+                _supplierController.text = '${bid.supId} - ${supplier.CompanyName}';
+              });
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error loading supplier: $e')),
+                );
+              }
+            }
+          } else {
+            setState(() {
+              _selectedBidId = null;
+              _selectedSupId = null;
+              _selectedSupplierName = null;
+              _supplierController.clear();
+            });
+          }
+        },
+        validator: (Bid? value) => value == null ? 'Select a Bid' : null,
+      ),
+    );
+  }
+
+  Widget _buildStatusDropdown(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: DropdownButtonFormField<String>(
+        decoration: InputDecoration(
+          labelText: 'Status',
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
+          ),
+        ),
+        initialValue: _selectedStatus,
+        items: ['Shipped', 'Received'].map((String status) {
+          return DropdownMenuItem<String>(
+            value: status,
+            child: Text(status),
+          );
+        }).toList(),
+        onChanged: (String? newValue) {
           setState(() {
-            _selectedAnnounceId = announcement?.announceId;
-            _selectedAnnouncementQuantity = announcement?.quantity;
+            _selectedStatus = newValue;
           });
         },
-        validator: (Announcement? value) => value == null ? 'Select an Announcement' : null,
+        validator: (value) => value == null ? 'Select a Status' : null,
       ),
     );
   }

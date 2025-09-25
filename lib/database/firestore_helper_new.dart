@@ -6,6 +6,7 @@ import 'package:gemini001/models/bank.dart';
 import 'package:gemini001/models/announcement.dart';
 import 'package:gemini001/models/credit_check.dart';
 import 'package:gemini001/models/bid.dart';
+import 'package:gemini001/models/shipment.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
 // for our application, making it easier to manage data and separate concerns.
@@ -30,6 +31,14 @@ class FirestoreHelper {
     return _db.collection('Suppliers').withConverter<Supplier>(
       fromFirestore: (snapshot, _) => Supplier.fromFirestore(snapshot),
       toFirestore: (supplier, _) => supplier.toMap(),
+    );
+  }
+
+  // This getter returns a collection reference for "Shipments" with a converter.
+  CollectionReference<Shipment> get _shipmentsCollection {
+    return _db.collection('Shipments').withConverter<Shipment>(
+      fromFirestore: (snapshot, _) => Shipment.fromFirestore(snapshot),
+      toFirestore: (shipment, _) => shipment.toMap(),
     );
   }
 
@@ -225,21 +234,35 @@ class FirestoreHelper {
     });
   }
 
+  // Add a new shipment
+  Future<void> addShipment(Shipment shipment) async {
+    try {
+      await _shipmentsCollection.add(shipment);
+    } catch (e) {
+      print('Error adding shipment: $e');
+      rethrow;
+    }
+  }
+
+  // Stream all shipments
+  Stream<List<Shipment>> streamShipments() {
+    return _shipmentsCollection.snapshots().map((querySnapshot) {
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
   Future<List<Bid>> getBidsBySupplier(int supId) async {
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('Bids')
           .where('SupId', isEqualTo: supId)
-          .get();
-      print('Found ${snapshot.docs.length} bids for SupId: $supId');    
+          .get();       
       return snapshot.docs.map((doc) => Bid.fromFirestore(doc)).toList();
     } catch (e) {
       print('Error fetching bids for SupId: $supId: $e');
       throw Exception('Failed to fetch bids: $e');
     }
   }
-
-
 
   // Check if a user is logged in.
   User? getCurrentUser() {

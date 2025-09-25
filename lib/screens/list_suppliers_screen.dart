@@ -8,6 +8,8 @@ import 'package:gemini001/screens/add_announcement_screen.dart';
 import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:gemini001/screens/add_bid_screen.dart';
 import 'package:gemini001/screens/list_bids_screen.dart';
+import 'package:gemini001/screens/add_shipment_screen.dart';
+import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
@@ -71,6 +73,18 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
           MaterialPageRoute(builder: (context) => const ListBidsScreen()),
         );
         break;
+      case 6:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddShipmentScreen()),
+        );
+        break;
+      case 7:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
+        );
+        break;        
     }
   }
 

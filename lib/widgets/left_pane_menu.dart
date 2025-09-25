@@ -63,7 +63,7 @@ class LeftPaneMenu extends StatelessWidget {
                 
                 ListTile(
                   leading: Icon(Icons.add_box, color: Theme.of(context).primaryColor),
-                  title: const Text('Add Bids'),
+                  title: const Text('Add Bid'),
                   selected: selectedPageIndex == 4,
                   onTap: () => onMenuItemSelected(4),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
@@ -77,23 +77,30 @@ class LeftPaneMenu extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.local_shipping, color: Theme.of(context).primaryColor),
-                  title: const Text('List Shipments'),
+                  title: const Text('Add Shipment'),
                   selected: selectedPageIndex == 6,
                   onTap: () => onMenuItemSelected(6),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
                 ),
                 ListTile(
-                  leading: Icon(Icons.assessment, color: Theme.of(context).primaryColor),
-                  title: const Text('List QA Results'),
+                  leading: Icon(Icons.traffic, color: Theme.of(context).primaryColor),
+                  title: const Text('List Shipments'),
                   selected: selectedPageIndex == 7,
                   onTap: () => onMenuItemSelected(7),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
                 ),
                 ListTile(
-                  leading: Icon(Icons.payments_sharp, color: Theme.of(context).primaryColor),
-                  title: const Text('List Payments'),
+                  leading: Icon(Icons.assessment, color: Theme.of(context).primaryColor),
+                  title: const Text('List QA Results'),
                   selected: selectedPageIndex == 8,
                   onTap: () => onMenuItemSelected(8),
+                  selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
+                ),
+                ListTile(
+                  leading: Icon(Icons.payments_sharp, color: Theme.of(context).primaryColor),
+                  title: const Text('List Payments'),
+                  selected: selectedPageIndex == 9,
+                  onTap: () => onMenuItemSelected(9),
                   selectedTileColor: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
                 ),
 
