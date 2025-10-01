@@ -123,7 +123,7 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
       case 'shipped':
         return const Color.fromARGB(255, 3, 126, 7);
       case 'received':
-        return Colors.blue.shade100;
+        return const Color.fromARGB(255, 12, 87, 148);
       default:
         return Colors.grey.shade100;
     }

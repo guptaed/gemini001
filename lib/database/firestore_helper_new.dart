@@ -167,6 +167,27 @@ class FirestoreHelper {
     }
   }
 
+  Future<void> addCreditCheck(CreditCheck creditCheck) async {
+    try {
+      final docRef = await _creditChecksCollection.add(creditCheck);
+      final currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        await _db.collection('audit_trails').add({
+          'action': 'credit_check_added',
+          'supplierId': creditCheck.supId,
+          'newStatus': creditCheck.status,
+          'userUid': currentUser.uid,
+          'userEmail': currentUser.email,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error adding credit check: $e');
+      rethrow;
+    }
+  }
+
+
   // Update credit check status and log to audit_trails.
   Future<void> updateCreditCheck(CreditCheck creditCheck, String oldStatus) async {
     try {

@@ -14,6 +14,7 @@ import 'package:gemini001/screens/add_bid_screen.dart';
 import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
+import 'package:gemini001/screens/add_credit_check_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
@@ -29,7 +30,7 @@ class SupplierDetailsScreen extends StatefulWidget {
 class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   late Future<ContractInfo?> _contractInfoFuture;
   late Future<BankDetails?> _bankDetailsFuture;
-  late Future<CreditCheck?> _creditCheckFuture;
+  late Future<CreditCheck?> _creditCheckFuture; // Keep as state variable
   late Future<List<Bid>> _bidsFuture;
 
   @override
@@ -39,6 +40,13 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     _bankDetailsFuture = FirestoreHelper().getBankDetails(widget.supplier.SupId);
     _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
     _bidsFuture = FirestoreHelper().getBidsBySupplier(widget.supplier.SupId);
+  }
+
+  // Method to refresh _creditCheckFuture
+  void _refreshCreditCheck() {
+    setState(() {
+      _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
+    });
   }
 
   void _onMenuItemSelected(int index) {
@@ -211,7 +219,20 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                     opacity: 1.0,
                                     duration: const Duration(milliseconds: 300),
                                     child: ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AddCreditCheckScreen(
+                                              supId: widget.supplier.SupId,
+                                              companyName: widget.supplier.CompanyName,
+                                            ),
+                                          ),
+                                        );  
+                                        if (mounted) {
+                                          _refreshCreditCheck(); // Refresh after returning
+                                        }                                                                             
+                                      },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: theme.colorScheme.primary,
                                         foregroundColor: theme.colorScheme.onPrimary,
