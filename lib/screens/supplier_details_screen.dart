@@ -30,7 +30,7 @@ class SupplierDetailsScreen extends StatefulWidget {
 class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   late Future<ContractInfo?> _contractInfoFuture;
   late Future<BankDetails?> _bankDetailsFuture;
-  late Future<CreditCheck?> _creditCheckFuture; // Keep as state variable
+  late Future<CreditCheck?> _creditCheckFuture;
   late Future<List<Bid>> _bidsFuture;
 
   @override
@@ -42,7 +42,6 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     _bidsFuture = FirestoreHelper().getBidsBySupplier(widget.supplier.SupId);
   }
 
-  // Method to refresh _creditCheckFuture
   void _refreshCreditCheck() {
     setState(() {
       _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
@@ -94,7 +93,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           context,
           MaterialPageRoute(builder: (context) => const ListBidsScreen()),
         );
-        break;      
+        break;
       case 6:
         Navigator.push(
           context,
@@ -106,8 +105,78 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           context,
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
         );
-        break;          
+        break;
     }
+  }
+
+  // Helper method for gradient badge colors
+  List<Color> _getStatusGradient(String status) {
+    switch (status.toLowerCase()) {
+      case 'new':
+        return [const Color.fromARGB(255, 19, 18, 18), const Color.fromARGB(255, 110, 110, 110)];
+      case 'active':
+        return [const Color.fromARGB(255, 19, 88, 82), const Color.fromARGB(255, 35, 170, 157)];
+      case 'at risk':
+        return [const Color.fromARGB(255, 238, 149, 16), const Color.fromARGB(255, 221, 146, 34)];
+      case 'terminated':
+        return [const Color.fromARGB(255, 151, 35, 33), const Color.fromARGB(255, 167, 41, 41)];
+      default:
+        return [Colors.grey[400]!, Colors.grey[200]!];
+    }
+  }
+
+  // Helper method for status icon
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'new':
+        return Icons.circle_outlined;
+      case 'active':
+        return Icons.check_circle_outline;
+      case 'at risk':
+        return Icons.warning_amber_outlined;
+      case 'terminated':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  // Helper method to build the gradient badge with icon
+  Widget _buildStatusBadge(String status, ThemeData theme) {
+    return Semantics(
+      label: 'Supplier status: $status',
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _getStatusGradient(status),
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _getStatusIcon(status),
+              size: 14,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              status.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -139,6 +208,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                         color: theme.colorScheme.primary,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    _buildStatusBadge(widget.supplier.Status, theme), // Add badge here
                     const Divider(
                       color: Colors.grey,
                       thickness: 1,
@@ -228,10 +299,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                               companyName: widget.supplier.CompanyName,
                                             ),
                                           ),
-                                        );  
+                                        );
                                         if (mounted) {
-                                          _refreshCreditCheck(); // Refresh after returning
-                                        }                                                                             
+                                          _refreshCreditCheck();
+                                        }
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: theme.colorScheme.primary,
@@ -252,8 +323,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                   _buildDetailRow('Supply Capacity', creditCheck.supplyCapacity.toString(), bodyMedium, theme),
                                   _buildDetailRow('Track Record', creditCheck.trackRecord, bodyMedium, theme),
                                   _buildDetailRow('Raw Material Types', creditCheck.rawMaterialTypes, bodyMedium, theme),
-                                  _buildDetailRow('Check Start Date', creditCheck.checkStartDate, bodyMedium, theme),
-                                  _buildDetailRow('Check Finish Date', creditCheck.checkFinishDate, bodyMedium, theme),
+                                  _buildDetailRow('Check Start Date', creditCheck.checkStartDate.isEmpty ? 'Not set' : creditCheck.checkStartDate, bodyMedium, theme),
+                                  _buildDetailRow('Check Finish Date', creditCheck.checkFinishDate.isEmpty ? 'Not set' : creditCheck.checkFinishDate, bodyMedium, theme),
                                   _buildDetailRow('Check Company', creditCheck.checkCompany, bodyMedium, theme),
                                   const SizedBox(height: 16),
                                   AnimatedOpacity(
@@ -589,4 +660,3 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 }
-
