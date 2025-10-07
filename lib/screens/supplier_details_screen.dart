@@ -3,7 +3,7 @@ import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
 import 'package:gemini001/models/credit_check.dart';
-import 'package:gemini001/models/bid.dart';
+import 'package:gemini001/models/bid_flow.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
@@ -15,6 +15,7 @@ import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:gemini001/screens/add_credit_check_screen.dart';
+import 'package:gemini001/screens/bid_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
@@ -31,7 +32,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   late Future<ContractInfo?> _contractInfoFuture;
   late Future<BankDetails?> _bankDetailsFuture;
   late Future<CreditCheck?> _creditCheckFuture;
-  late Future<List<Bid>> _bidsFuture;
+  late Future<List<BidFlow>> _bidFlowsFuture;
 
   @override
   void initState() {
@@ -39,7 +40,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     _contractInfoFuture = FirestoreHelper().getContractInfo(widget.supplier.SupId);
     _bankDetailsFuture = FirestoreHelper().getBankDetails(widget.supplier.SupId);
     _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
-    _bidsFuture = FirestoreHelper().getBidsBySupplier(widget.supplier.SupId);
+    _bidFlowsFuture = FirestoreHelper().getBidFlowsBySupplier(widget.supplier.SupId);
   }
 
   void _refreshCreditCheck() {
@@ -109,7 +110,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     }
   }
 
-  // Helper method for gradient badge colors
+  // Helper method for gradient badge colors (global supplier status)
   List<Color> _getStatusGradient(String status) {
     switch (status.toLowerCase()) {
       case 'new':
@@ -125,7 +126,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     }
   }
 
-  // Helper method for status icon
+  // Helper method for status icon (global supplier status)
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
       case 'new':
@@ -141,40 +142,211 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     }
   }
 
+  // Helper method for gradient badge colors (workflow stage-specific statuses)
+  List<Color> _getWorkflowStatusGradient(String stage, bool isCurrent) {
+    if (isCurrent) {
+      return [Colors.green[900]!, Colors.green[700]!]; // Green for current stage
+    }
+    return [Colors.black, Colors.grey[800]!]; // Dark grey for non-current
+  }
+
+  // Helper method for status icon (workflow stage-specific statuses)
+  IconData _getWorkflowStatusIcon(String stage) {
+    final stageIcons = {
+      'bidding': Icons.pending,
+      'shipment': Icons.local_shipping_outlined,
+      'qa': Icons.schedule,
+      'payment': Icons.payment,
+    };
+    return stageIcons[stage.toLowerCase()] ?? Icons.help_outline;
+  }
+
   // Helper method to build the gradient badge with icon
-  Widget _buildStatusBadge(String status, ThemeData theme) {
+  Widget _buildStatusBadge(String status, ThemeData theme, {String? stage, bool isWorkflow = false, String? id, bool isCurrent = false, String? currentStatus}) {
+    final double baseSizeFactor = 1.0;
+    final double sizeFactor = isCurrent ? 1.4 : baseSizeFactor; // 1.4 times larger for current status
+    final List<Color> gradientColors = isCurrent && isWorkflow && stage != null
+        ? _getWorkflowStatusGradient(stage, isCurrent)
+        : (isCurrent ? _getStatusGradient(status) : [Colors.grey[700]!, Colors.grey[500]!]);
+
     return Semantics(
-      label: 'Supplier status: $status',
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: _getStatusGradient(status),
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+      label: 'Status: ${isCurrent ? status : stage ?? status}${isWorkflow && stage != null ? ", Stage: $stage" : ""}${isCurrent ? ", current" : ""}${currentStatus != null ? ", Status: $currentStatus" : ""}',
+      child: GestureDetector(
+        onTap: isWorkflow && stage != null && isCurrent
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BidDetailsScreen(bidId: id ?? '', stage: stage),
+                  ),
+                );
+              }
+            : null,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 6 * sizeFactor, horizontal: 12 * sizeFactor),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: gradientColors,
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16 * sizeFactor),
           ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              _getStatusIcon(status),
-              size: 14,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              status.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isWorkflow && stage != null ? _getWorkflowStatusIcon(stage) : _getStatusIcon(status),
+                    size: 14 * sizeFactor,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    isCurrent ? status.toUpperCase() : stage?.toUpperCase() ?? status.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 12 * sizeFactor,
+                      fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              overflow: TextOverflow.ellipsis,
+
+
+              if (isCurrent && currentStatus != null)
+                Column(
+                  children: [
+                    SizedBox(
+                      width: 100, // or whatever width you want
+                      child: const Divider(
+                        color: Colors.white,
+                        thickness: 2,
+                        height: 14,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 1 * sizeFactor),
+                      child: Text(
+                        currentStatus,
+                        style: TextStyle(
+                          fontSize: 10 * sizeFactor,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+
+ 
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build workflow timeline
+  Widget _buildWorkflowTimeline(List<BidFlow> bidFlows, ThemeData theme) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bid Workflow Stages',
+              style: theme.textTheme.headlineSmall!.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
             ),
+            const Divider(color: Colors.grey, thickness: 1, height: 10),
+            const SizedBox(height: 16),
+            if (bidFlows.isNotEmpty)
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: bidFlows.length,
+                itemBuilder: (context, index) {
+                  final bidFlow = bidFlows[index];
+                  final currentStage = bidFlow.currentStage?.toLowerCase() ?? 'bidding';
+                  final currentStatus = bidFlow.currentStageStatus ?? 'N/A';
+                  return Column(
+                    children: [
+                      if (index > 0) const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start, 
+                        children: [
+                          Text(
+                            'Bid Flow: ${bidFlow.bidId} :  ',
+                            style: theme.textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildStatusBadge('Bidding', theme, stage: 'Bidding', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'bidding', currentStatus: currentStage == 'bidding' ? currentStatus : null),
+                          const SizedBox(width: 20),
+                          CustomPaint(
+                            painter: ArrowPainter(),
+                            size: const Size(60, 2), // Longer arrow
+                          ),
+                          const SizedBox(width: 20),
+                          _buildStatusBadge('Shipment', theme, stage: 'Shipment', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'shipment', currentStatus: currentStage == 'shipment' ? currentStatus : null),
+                          const SizedBox(width: 20),
+                          CustomPaint(
+                            painter: ArrowPainter(),
+                            size: const Size(60, 2),
+                          ),
+                          const SizedBox(width: 20),
+                          _buildStatusBadge('QA', theme, stage: 'QA', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'qa', currentStatus: currentStage == 'qa' ? currentStatus : null),
+                          const SizedBox(width: 20),
+                          CustomPaint(
+                            painter: ArrowPainter(),
+                            size: const Size(60, 2),
+                          ),
+                          const SizedBox(width: 20),
+                          _buildStatusBadge('Payment', theme, stage: 'Payment', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'payment', currentStatus: currentStage == 'payment' ? currentStatus : null),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              )
+            else
+              const Center(child: Text('No bid flows found for this supplier')),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: style.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: style.copyWith(color: theme.colorScheme.onSurface),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -209,7 +381,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildStatusBadge(widget.supplier.Status, theme), // Add badge here
+                    _buildStatusBadge(widget.supplier.Status, theme), // Global status badge
                     const Divider(
                       color: Colors.grey,
                       thickness: 1,
@@ -223,7 +395,6 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                     _buildDetailRow('Telephone', widget.supplier.Tel, bodyMedium, theme),
                     _buildDetailRow('Email', widget.supplier.Email, bodyMedium, theme),
                     _buildDetailRow('Tax Code', widget.supplier.TaxCode, bodyMedium, theme),
-                    _buildDetailRow('Latest Status', widget.supplier.Status, bodyMedium, theme),
                     const SizedBox(height: 16),
                     AnimatedOpacity(
                       opacity: 1.0,
@@ -247,6 +418,20 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            FutureBuilder<List<BidFlow>>(
+              future: _bidFlowsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}', style: bodyMedium);
+                }
+                final bidFlows = snapshot.data ?? [];
+                return _buildWorkflowTimeline(bidFlows, theme);
+              },
             ),
             const SizedBox(height: 16),
             Row(
@@ -537,96 +722,6 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bids',
-                      style: headlineSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const Divider(
-                      color: Colors.grey,
-                      thickness: 1,
-                      height: 10,
-                    ),
-                    const SizedBox(height: 16),
-                    FutureBuilder<List<Bid>>(
-                      future: _bidsFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}', style: bodyMedium);
-                        }
-                        final bids = snapshot.data ?? [];
-                        if (bids.isEmpty) {
-                          return const Center(child: Text('No bids found for this supplier'));
-                        }
-                        return ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: bids.length,
-                          separatorBuilder: (context, index) => const Divider(height: 8),
-                          itemBuilder: (context, index) {
-                            final bid = bids[index];
-                            return ExpansionTile(
-                              title: Text(
-                                'Bid ID: ${bid.bidId}',
-                                style: bodyMedium.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                'Announcement ID: ${bid.announceId} | Quantity: ${bid.quantity} | Status: ${bid.status}',
-                                style: bodyMedium,
-                              ),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _buildDetailRow('Submitted Date', bid.submittedDate, bodyMedium, theme),
-                                      _buildDetailRow('Quantity Accepted', bid.quantityAccepted.toString(), bodyMedium, theme),
-                                      _buildDetailRow('Accept/Reject Date', bid.acceptRejectDate.isEmpty ? 'Not set' : bid.acceptRejectDate, bodyMedium, theme),
-                                      _buildDetailRow('Notes', bid.notes.isEmpty ? 'None' : bid.notes, bodyMedium, theme),
-                                      const SizedBox(height: 8),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            // Placeholder for BidDetailsScreen navigation
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: theme.colorScheme.primary,
-                                            foregroundColor: theme.colorScheme.onPrimary,
-                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          ),
-                                          child: const Text('View Bid'),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -635,28 +730,27 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       onMenuItemSelected: _onMenuItemSelected,
     );
   }
+}
 
-  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: style.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.7)),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: style.copyWith(color: theme.colorScheme.onSurface),
-            ),
-          ),
-        ],
-      ),
-    );
+// Custom painter for the arrow-shaped line
+class ArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.teal
+      ..strokeWidth = 4.0
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..moveTo(0, size.height / 2)
+      ..lineTo(size.width - 15, size.height / 2) // Longer main line
+      ..moveTo(size.width - 15, size.height / 2 - 5) // Top of arrowhead
+      ..lineTo(size.width, size.height / 2) // Right point
+      ..lineTo(size.width - 15, size.height / 2 + 5); // Bottom of arrowhead
+
+    canvas.drawPath(path, paint);
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

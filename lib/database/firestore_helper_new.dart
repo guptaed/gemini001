@@ -7,6 +7,7 @@ import 'package:gemini001/models/announcement.dart';
 import 'package:gemini001/models/credit_check.dart';
 import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/models/shipment.dart';
+import 'package:gemini001/models/bid_flow.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
 // for our application, making it easier to manage data and separate concerns.
@@ -135,6 +136,13 @@ class FirestoreHelper {
     );
   }
 
+
+Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
+  final querySnapshot = await _db.collection('BidFlows').where('SupId', isEqualTo: supId).get();
+  return querySnapshot.docs.map((doc) => BidFlow.fromFirestore(doc)).toList();
+}
+
+
   // Get contract information for a given SupId.
   Future<ContractInfo?> getContractInfo(int supId) async {
     final querySnapshot = await _contractsCollection
@@ -169,7 +177,7 @@ class FirestoreHelper {
 
   Future<void> addCreditCheck(CreditCheck creditCheck) async {
     try {
-      final docRef = await _creditChecksCollection.add(creditCheck);
+      await _creditChecksCollection.add(creditCheck);
       final currentUser = _auth.currentUser;
       if (currentUser != null) {
         await _db.collection('audit_trails').add({
