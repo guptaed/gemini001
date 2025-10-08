@@ -217,6 +217,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 ],
               ),
 
+              // wanted to add a divider. somehow it was not showing. 
+              // lots of iterations with Grok and Gemini without any success.
+              // then got the following from Claude.
+              // One part which is not ideal is that width is being set manually.
 
               if (isCurrent && currentStatus != null)
                 Column(
