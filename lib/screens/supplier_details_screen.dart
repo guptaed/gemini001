@@ -18,6 +18,7 @@ import 'package:gemini001/screens/add_credit_check_screen.dart';
 import 'package:gemini001/screens/bid_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
+import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
 
 class SupplierDetailsScreen extends StatefulWidget {
   final Supplier supplier;
@@ -107,6 +108,13 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
         );
         break;
+      case 10:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+        );
+        break;
+
     }
   }
 
@@ -161,10 +169,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     return stageIcons[stage.toLowerCase()] ?? Icons.help_outline;
   }
 
-  // Helper method to build the gradient badge with icon
+  // Helper method to build the gradient badge with icon - NOW WITH SHADOW!
   Widget _buildStatusBadge(String status, ThemeData theme, {String? stage, bool isWorkflow = false, String? id, bool isCurrent = false, String? currentStatus}) {
     final double baseSizeFactor = 1.0;
-    final double sizeFactor = isCurrent ? 1.4 : baseSizeFactor; // 1.4 times larger for current status
+    final double sizeFactor = isCurrent ? 1.4 : baseSizeFactor;
     final List<Color> gradientColors = isCurrent && isWorkflow && stage != null
         ? _getWorkflowStatusGradient(stage, isCurrent)
         : (isCurrent ? _getStatusGradient(status) : [Colors.grey[700]!, Colors.grey[500]!]);
@@ -191,6 +199,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
               end: Alignment.centerRight,
             ),
             borderRadius: BorderRadius.circular(16 * sizeFactor),
+            // ADDED: Subtle shadow for depth
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isCurrent ? 0.3 : 0.15),
+                blurRadius: isCurrent ? 8 : 4,
+                offset: Offset(0, isCurrent ? 3 : 2),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -216,17 +232,11 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                   ),
                 ],
               ),
-
-              // wanted to add a divider. somehow it was not showing. 
-              // lots of iterations with Grok and Gemini without any success.
-              // then got the following from Claude.
-              // One part which is not ideal is that width is being set manually.
-
               if (isCurrent && currentStatus != null)
                 Column(
                   children: [
                     SizedBox(
-                      width: 100, // or whatever width you want
+                      width: 100,
                       child: const Divider(
                         color: Colors.white,
                         thickness: 2,
@@ -247,8 +257,6 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                     ),
                   ],
                 ),
-
- 
             ],
           ),
         ),
@@ -256,25 +264,53 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 
-  // Helper method to build workflow timeline
+  // Helper method to determine if connector should be active
+  bool _isConnectorActive(String currentStage, String fromStage) {
+    const stageOrder = ['bidding', 'shipment', 'qa', 'payment'];
+    final currentIndex = stageOrder.indexOf(currentStage.toLowerCase());
+    final fromIndex = stageOrder.indexOf(fromStage.toLowerCase());
+    return currentIndex > fromIndex;
+  }
+
+  // Helper method to build workflow timeline - ENHANCED VERSION
   Widget _buildWorkflowTimeline(List<BidFlow> bidFlows, ThemeData theme) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      elevation: 4, // Increased elevation
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // More rounded
+      child: Container(
+        decoration: BoxDecoration(
+          // ADDED: Subtle gradient background
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.white, Colors.grey[50]!],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.all(24.0), // Increased padding
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Bid Workflow Stages',
-              style: theme.textTheme.headlineSmall!.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
-              ),
+            // ENHANCED: Header with icon
+            Row(
+              children: [
+                Icon(
+                  Icons.timeline,
+                  color: theme.colorScheme.primary,
+                  size: 28,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Bid Workflow Progress',
+                  style: theme.textTheme.headlineSmall!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
             ),
-            const Divider(color: Colors.grey, thickness: 1, height: 10),
-            const SizedBox(height: 16),
+            const Divider(color: Colors.grey, thickness: 1, height: 30),
+            const SizedBox(height: 8),
             if (bidFlows.isNotEmpty)
               ListView.builder(
                 shrinkWrap: true,
@@ -286,36 +322,56 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                   final currentStatus = bidFlow.currentStageStatus ?? 'N/A';
                   return Column(
                     children: [
-                      if (index > 0) const SizedBox(height: 16),
+                      if (index > 0) const SizedBox(height: 24), // Increased spacing
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.start, 
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text(
-                            'Bid Flow: ${bidFlow.bidId} :  ',
-                            style: theme.textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: theme.colorScheme.primary.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              'Bid: ${bidFlow.bidId}',
+                              style: theme.textTheme.bodyMedium!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(width: 24), // Increased spacing
                           _buildStatusBadge('Bidding', theme, stage: 'Bidding', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'bidding', currentStatus: currentStage == 'bidding' ? currentStatus : null),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 24), // Increased spacing
                           CustomPaint(
-                            painter: ArrowPainter(),
-                            size: const Size(60, 2), // Longer arrow
+                            painter: CurvedConnectorPainter(
+                              isActive: _isConnectorActive(currentStage, 'bidding'),
+                            ),
+                            size: const Size(80, 20), // Longer and taller
                           ),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 24),
                           _buildStatusBadge('Shipment', theme, stage: 'Shipment', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'shipment', currentStatus: currentStage == 'shipment' ? currentStatus : null),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 24),
                           CustomPaint(
-                            painter: ArrowPainter(),
-                            size: const Size(60, 2),
+                            painter: CurvedConnectorPainter(
+                              isActive: _isConnectorActive(currentStage, 'shipment'),
+                            ),
+                            size: const Size(80, 20),
                           ),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 24),
                           _buildStatusBadge('QA', theme, stage: 'QA', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'qa', currentStatus: currentStage == 'qa' ? currentStatus : null),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 24),
                           CustomPaint(
-                            painter: ArrowPainter(),
-                            size: const Size(60, 2),
+                            painter: CurvedConnectorPainter(
+                              isActive: _isConnectorActive(currentStage, 'qa'),
+                            ),
+                            size: const Size(80, 20),
                           ),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 24),
                           _buildStatusBadge('Payment', theme, stage: 'Payment', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'payment', currentStatus: currentStage == 'payment' ? currentStatus : null),
                         ],
                       ),
@@ -324,7 +380,27 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 },
               )
             else
-              const Center(child: Text('No bid flows found for this supplier')),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.inventory_2_outlined,
+                        size: 48,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No bid flows found for this supplier',
+                        style: theme.textTheme.bodyLarge!.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -385,7 +461,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildStatusBadge(widget.supplier.Status, theme), // Global status badge
+                    _buildStatusBadge(widget.supplier.Status, theme),
                     const Divider(
                       color: Colors.grey,
                       thickness: 1,
@@ -736,25 +812,48 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   }
 }
 
-// Custom painter for the arrow-shaped line
-class ArrowPainter extends CustomPainter {
+// Custom painter for curved connector with gradient - OPTION 1
+class CurvedConnectorPainter extends CustomPainter {
+  final bool isActive;
+  
+  CurvedConnectorPainter({this.isActive = false});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.teal
-      ..strokeWidth = 4.0
+      ..shader = LinearGradient(
+        colors: isActive 
+          ? [Colors.green[700]!, Colors.green[400]!]
+          : [Colors.grey[600]!, Colors.grey[400]!],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
     final path = Path()
       ..moveTo(0, size.height / 2)
-      ..lineTo(size.width - 15, size.height / 2) // Longer main line
-      ..moveTo(size.width - 15, size.height / 2 - 5) // Top of arrowhead
-      ..lineTo(size.width, size.height / 2) // Right point
-      ..lineTo(size.width - 15, size.height / 2 + 5); // Bottom of arrowhead
+      ..cubicTo(
+        size.width * 0.3, size.height / 2,
+        size.width * 0.7, size.height / 2,
+        size.width, size.height / 2,
+      );
 
     canvas.drawPath(path, paint);
+
+    // Arrowhead
+    final arrowPaint = Paint()
+      ..color = isActive ? Colors.green[400]! : Colors.grey[400]!
+      ..style = PaintingStyle.fill;
+
+    final arrowPath = Path()
+      ..moveTo(size.width - 8, size.height / 2 - 6)
+      ..lineTo(size.width, size.height / 2)
+      ..lineTo(size.width - 8, size.height / 2 + 6)
+      ..close();
+
+    canvas.drawPath(arrowPath, arrowPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

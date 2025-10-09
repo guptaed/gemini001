@@ -11,6 +11,7 @@ import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/widgets/common_layout.dart';
+import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
 
 class ListBidsScreen extends StatefulWidget {
   const ListBidsScreen({super.key});
@@ -85,7 +86,12 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
         );
         break;
 
-
+      case 10:  
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+        );
+        break;  
 
 
 

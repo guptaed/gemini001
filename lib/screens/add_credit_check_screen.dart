@@ -13,6 +13,7 @@ import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
 
 class AddCreditCheckScreen extends StatefulWidget {
   final int supId;
@@ -147,6 +148,13 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
+        );
+        break;
+
+      case 10:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }

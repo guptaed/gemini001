@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
+import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
 
 class AddShipmentScreen extends StatefulWidget {
   const AddShipmentScreen({super.key});
@@ -165,6 +166,12 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
+        );
+        break;
+      case 10:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }

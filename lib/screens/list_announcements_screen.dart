@@ -11,6 +11,7 @@ import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/widgets/common_layout.dart';
+import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
 
 class ListAnnouncementsScreen extends StatefulWidget {
   const ListAnnouncementsScreen({super.key});
@@ -82,6 +83,12 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
+        );
+        break;
+      case 10:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }
