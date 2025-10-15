@@ -253,7 +253,7 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                     }
                     final filteredShipments = shipments.where((shipment) {
                       final fields = [
-                        shipment.ShipmentId.toLowerCase(),
+                        shipment.ShipmentId.toString(),
                         shipment.SupId.toString(),
                         shipment.BidId.toString(),
                         shipment.Status.toLowerCase(),

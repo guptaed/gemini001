@@ -80,7 +80,7 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
   Future<void> _saveShipment() async {
     if (_formKey.currentState!.validate()) {
       final shipment = Shipment(
-        ShipmentId: _shipmentIdController.text,
+        ShipmentId: int.parse(_shipmentIdController.text),
         SupId: _selectedSupId!,
         BidId: _selectedBidId!,
         Status: _selectedStatus!,

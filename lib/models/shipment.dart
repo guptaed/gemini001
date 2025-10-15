@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Shipment {
   final String? id; // Firestore document ID
-  final String ShipmentId;
+  final int ShipmentId;
   final int SupId;
   final int BidId;
   final String Status;
@@ -26,7 +26,7 @@ class Shipment {
     final data = doc.data() as Map<String, dynamic>;
     return Shipment(
       id: doc.id,
-      ShipmentId: data['ShipmentId'] ?? '',
+      ShipmentId: data['ShipmentId'] ?? 0,
       SupId: data['SupId'] ?? 0,
       BidId: data['BidId'] ?? 0,
       Status: data['Status'] ?? '',
