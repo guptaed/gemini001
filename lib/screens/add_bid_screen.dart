@@ -86,7 +86,7 @@ class _AddBidScreenState extends State<AddBidScreen> {
         bidId: int.parse(_bidIdController.text),
         submittedDate: _submittedDateController.text,
         quantity: int.parse(_quantityController.text),
-        status: 'Pending', // Hardcoded as per requirement
+        status: 'Submitted', // Hardcoded as per requirement
         quantityAccepted: _quantityAcceptedController.text.isEmpty ? 0 : int.parse(_quantityAcceptedController.text),
         acceptRejectDate: _acceptRejectDateController.text,
         notes: _notesController.text,
@@ -249,16 +249,42 @@ class _AddBidScreenState extends State<AddBidScreen> {
                 validator: null, // Optional field
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveBid,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontSize: 18),
-                  backgroundColor: theme.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.teal[700]!, Colors.teal[600]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.teal[700]!.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: const Text('Save Bid'),
+                child: ElevatedButton(
+                  onPressed: _saveBid,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Save Bid',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
