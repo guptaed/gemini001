@@ -31,15 +31,12 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   final _taxCodeController = TextEditingController();
   final _representativeController = TextEditingController();
   final _titleController = TextEditingController();
-  String? _selectedStatus;
 
-  final List<String> _statusOptions = ['New', 'CreditCheckOk', 'ContractSigned'];
 
   @override
   void initState() {
     super.initState();
     _supIdController.text = _generateSupplierId();
-    _selectedStatus = _statusOptions[0];
   }
 
   @override
@@ -58,7 +55,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   String _generateSupplierId() {
     final now = DateTime.now();
     final random = Random().nextInt(10);
-    return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
+    return '5${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
   }
 
   Future<void> _saveSupplier() async {
@@ -72,7 +69,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         TaxCode: _taxCodeController.text,
         Representative: _representativeController.text,
         Title: _titleController.text,
-        Status: _selectedStatus!,
+        Status: 'New',
       );
       try {
         await FirestoreHelper().addSupplier(supplier);
@@ -91,7 +88,6 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           _representativeController.clear();
           _titleController.clear();
           setState(() {
-            _selectedStatus = 'New';
             _supIdController.text = _generateSupplierId();
           });
         }
@@ -182,6 +178,12 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                 validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
               ),
               _buildTextField(
+                controller: TextEditingController(text: 'New'),
+                labelText: 'Status',
+                enabled: false,
+                fillColor: Colors.grey[300],
+              ),              
+              _buildTextField(
                 controller: _companyNameController,
                 labelText: 'Company Name',
                 validator: (value) => value!.isEmpty ? 'Enter Company Name' : null,
@@ -212,47 +214,43 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                 controller: _taxCodeController,
                 labelText: 'Tax Code',
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: DropdownButtonFormField<String>(
-                  initialValue: _selectedStatus,
-                  decoration: InputDecoration(
-                    labelText: 'Status',
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+              const SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.teal[700]!, Colors.teal[600]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.teal[700]!.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _saveSupplier,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  items: _statusOptions.map((String status) {
-                    return DropdownMenuItem<String>(
-                      value: status,
-                      child: Text(status),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedStatus = newValue;
-                    });
-                  },
-                  validator: (value) => value == null ? 'Please select a status' : null,
+                  child: const Text(
+                    'Save Supplier',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveSupplier,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontSize: 18),
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Save Supplier'),
               ),
             ],
           ),
