@@ -13,6 +13,7 @@ import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class AddAnnouncementScreen extends StatefulWidget {
   const AddAnnouncementScreen({super.key});
@@ -111,6 +112,7 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error adding announcement: $e')),
           );
+          logger.e('Error adding announcement with AnnouncementId: ${_announceIdController.text}', e);
         }
       }
     }

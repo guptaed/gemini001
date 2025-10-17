@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class CreditCheck {
   final String? id;
@@ -87,7 +88,7 @@ class CreditCheck {
         pdfUrlPhotoERC: data['PdfUrlPhotoERC'] as String,
       );
     } catch (e) {
-      print('Error parsing credit check data from Firestore: $e');
+      logger.e('Error parsing credit check data from Firestore: $e');
       return CreditCheck(
         supId: 0,
         status: '',

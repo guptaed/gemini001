@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class AddCreditCheckScreen extends StatefulWidget {
   final int supId;
@@ -95,6 +96,7 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error adding credit check: $e')),
           );
+          logger.e('Error adding credit check for SupplierId: ${widget.supId}', e);
         }
       }
     }

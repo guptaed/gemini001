@@ -1,3 +1,8 @@
+
+// THIS IS A DUMMY FILE FOR ANNOUNCEMENT DETAILS SCREEN
+// TO BE IMPLEMENTED PROPERLY LATER
+
+
 import 'package:flutter/material.dart';
 import 'package:gemini001/models/announcement.dart';
 import 'package:gemini001/widgets/common_layout.dart';

@@ -17,6 +17,7 @@ import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class AddBidScreen extends StatefulWidget {
   const AddBidScreen({super.key});
@@ -119,6 +120,7 @@ class _AddBidScreenState extends State<AddBidScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error adding bid: $e')),
           );
+          logger.e('Error adding bid with BidId: ${_bidIdController.text}', e);
         }
       }
     }
@@ -418,6 +420,7 @@ class _AddBidScreenState extends State<AddBidScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error loading suppliers: $e')),
               );
+              logger.e('Error loading suppliers', e);
             }
             return [];
           }
@@ -485,6 +488,7 @@ class _AddBidScreenState extends State<AddBidScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error loading announcements: $e')),
               );
+              logger.e('Error loading announcements', e);
             }
             return [];
           }

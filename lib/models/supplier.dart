@@ -6,6 +6,7 @@
 // in our application and will be used to interact with the database.
 // The data for this class is now handled by Firestore.
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class Supplier {
   // `id` is now a nullable `String?` because Firestore will automatically
@@ -108,7 +109,7 @@ Supplier copyWith({
     } catch (e) {
       // If there's an error during conversion, we print it and return a default
       // empty `Supplier` object to prevent the app from crashing.
-      print('Error parsing supplier data from Firestore: $e');
+      logger.e('Error parsing supplier data from Firestore: $e');
       return Supplier(
         SupId: 0,
         CompanyName: '',
@@ -119,7 +120,7 @@ Supplier copyWith({
         Representative: '',
         Title: '',
         Status: '',
-      );
+      );      
     }
   }
 }

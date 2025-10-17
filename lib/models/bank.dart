@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class BankDetails {
   final int SupId;
@@ -52,7 +53,7 @@ class BankDetails {
         PreferredBank: data['PreferredBank'] as bool,
       );
     } catch (e) {
-      print('Error parsing bank details from Firestore: $e');
+      logger.e('Error parsing bank details from Firestore: $e');
       return BankDetails(
         SupId: 0,
         PaymentMethodId: '',

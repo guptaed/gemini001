@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class ContractInfo {
   final int SupId;
@@ -52,7 +53,7 @@ class ContractInfo {
         PdfUrlAppendix1: data['PdfUrlAppendix1'] as String?,
       );
     } catch (e) {
-      print('Error parsing contract info from Firestore: $e');
+      logger.e('Error parsing contract info from Firestore: $e');
       return ContractInfo(
         SupId: 0,
         ContractNo: '',

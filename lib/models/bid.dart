@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class Bid {
   final String? id;
@@ -55,7 +56,7 @@ class Bid {
         notes: data['Notes'] as String,
       );
     } catch (e) {
-      print('Error parsing bid data from Firestore: $e');
+      logger.e('Error parsing bid data from Firestore: $e');
       return Bid(
         supId: 0,
         announceId: 0,

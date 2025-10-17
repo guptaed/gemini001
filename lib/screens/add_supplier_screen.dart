@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class AddSupplierScreen extends StatefulWidget {
   const AddSupplierScreen({super.key});
@@ -94,6 +95,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding supplier: $e')));
+          logger.e('Error adding supplier with SupId: ${supplier.SupId}', e);
         }
       }
     }

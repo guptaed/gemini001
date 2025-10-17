@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/widgets/custom_text_field.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -59,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _errorMessage = 'An unexpected error occurred.';
         });
+        logger.e('Unexpected error during login for user: ${_usernameController.text}', e);
       }
     }
   }

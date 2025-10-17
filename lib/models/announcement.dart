@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class Announcement {
   final String? id;
@@ -81,7 +82,7 @@ class Announcement {
         notes: data['Notes'] as String,
       );
     } catch (e) {
-      print('Error parsing announcement data from Firestore: $e');
+      logger.e('Error parsing announcement data from Firestore: $e');
       return Announcement(
         announceId: 0,
         announceDate: '',

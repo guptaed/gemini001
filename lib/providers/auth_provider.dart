@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/screens/login_screen.dart';
+import 'package:gemini001/utils/logging.dart';
 //import 'package:gemini001/screens/home_screen.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -27,6 +28,7 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error signing out: $e')));
+        logger.e('Error signing out user: ${_user?.email}', e);
       }
     }
   }

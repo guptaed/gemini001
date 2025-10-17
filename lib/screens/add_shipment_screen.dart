@@ -17,6 +17,7 @@ import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class AddShipmentScreen extends StatefulWidget {
   const AddShipmentScreen({super.key});
@@ -116,6 +117,7 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error adding shipment: $e')),
           );
+          logger.e('Error adding shipment with ShipmentId: ${_shipmentIdController.text}', e);
         }
       }
     }
@@ -391,6 +393,7 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
                 SnackBar(content: Text('Error loading bids: $e')),
               );
             }
+            logger.e('Error loading bids', e);
             return [];
           }
         },
@@ -424,6 +427,7 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Error loading supplier: $e')),
                 );
+              logger.e('Error loading supplier for SupId: ${bid.supId}', e);
               }
             }
           } else {

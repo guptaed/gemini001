@@ -8,6 +8,7 @@ import 'package:gemini001/models/credit_check.dart';
 import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/models/shipment.dart';
 import 'package:gemini001/models/bid_flow.dart';
+import 'package:gemini001/utils/logging.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
 // for our application, making it easier to manage data and separate concerns.
@@ -48,7 +49,7 @@ class FirestoreHelper {
     try {
       await _suppliersCollection.add(supplier);
     } catch (e) {
-      print('Error adding supplier: $e');
+      logger.e('Error adding supplier: $e');
       rethrow;
     }
   }
@@ -69,7 +70,7 @@ class FirestoreHelper {
     try {
       await _suppliersCollection.doc(supplierId).delete();
     } catch (e) {
-      print('Error deleting supplier: $e');
+      logger.e('Error deleting supplier: $e');
       rethrow;
     }
   }
@@ -99,7 +100,7 @@ class FirestoreHelper {
         }
       }
     } catch (e) {
-      print('Error updating supplier: $e');
+      logger.e('Error updating supplier: $e');
       rethrow;
     }
   }
@@ -170,7 +171,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
           .get();
       return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.first.data() : null;
     } catch (e) {
-      print('Error fetching credit check: $e');
+      logger.e('Error fetching credit check: $e');
       rethrow;
     }
   }
@@ -190,7 +191,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
         });
       }
     } catch (e) {
-      print('Error adding credit check: $e');
+      logger.e('Error adding credit check: $e');
       rethrow;
     }
   }
@@ -216,7 +217,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
         }
       }
     } catch (e) {
-      print('Error updating credit check: $e');
+      logger.e('Error updating credit check: $e');
       rethrow;
     }
   }
@@ -234,7 +235,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
     try {
       await _announcementsCollection.add(announcement);
     } catch (e) {
-      print('Error adding announcement: $e');
+      logger.e('Error adding announcement: $e');
       rethrow;
     }
   }
@@ -251,7 +252,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
     try {
       await _bidsCollection.add(bid);
     } catch (e) {
-      print('Error adding bid: $e');
+      logger.e('Error adding bid: $e');
       rethrow;
     }
   }
@@ -268,7 +269,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
     try {
       await _shipmentsCollection.add(shipment);
     } catch (e) {
-      print('Error adding shipment: $e');
+      logger.e('Error adding shipment: $e');
       rethrow;
     }
   }
@@ -288,7 +289,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
           .get();       
       return snapshot.docs.map((doc) => Bid.fromFirestore(doc)).toList();
     } catch (e) {
-      print('Error fetching bids for SupId: $supId: $e');
+      logger.e('Error fetching bids for SupId: $supId: $e');
       throw Exception('Failed to fetch bids: $e');
     }
   }
@@ -307,10 +308,10 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
       );
       return credential.user;
     } on FirebaseAuthException catch (e) {
-      print('Firebase Auth Error: ${e.message}');
+      logger.e('Firebase Auth Error: ${e.message}');
       rethrow; // Let callers handle the error
     } catch (e) {
-      print('Error signing in: $e');
+      logger.e('Error signing in: $e');
       rethrow;
     }
   }
@@ -320,7 +321,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
     try {
       await _auth.signOut();
     } catch (e) {
-      print('Error signing out: $e');
+      logger.e('Error signing out: $e');
       rethrow;
     }
   }
@@ -334,10 +335,10 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
       );
       return credential.user;
     } on FirebaseAuthException catch (e) {
-      print('Firebase Auth Error: ${e.message}');
+      logger.e('Firebase Auth Error: ${e.message}');
       rethrow;
     } catch (e) {
-      print('Error creating user: $e');
+      logger.e('Error creating user: $e');
       rethrow;
     }
   }

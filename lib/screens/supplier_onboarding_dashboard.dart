@@ -16,6 +16,7 @@ import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:gemini001/utils/logging.dart';
 
 class SupplierOnboardingDashboard extends StatefulWidget {
   const SupplierOnboardingDashboard({super.key});
@@ -135,7 +136,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
           _generatePasswordsNormal.length;
       
     } catch (e) {
-      print('Error loading dashboard data: $e');
+      logger.e('Error loading supplier onboarding dashboard data', e);
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
