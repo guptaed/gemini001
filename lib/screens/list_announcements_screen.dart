@@ -8,6 +8,7 @@ import 'package:gemini001/screens/add_bid_screen.dart';
 import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
+import 'package:gemini001/screens/announcement_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/widgets/common_layout.dart';
@@ -101,7 +102,7 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 110,
             child: Text(
               '$label:',
               style: style.copyWith(
@@ -125,135 +126,314 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
     );
   }
 
+  // Helper method for gradient badge colors based on announcement status
+  List<Color> _getStatusGradient(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return [const Color.fromARGB(255, 19, 88, 82), const Color.fromARGB(255, 35, 170, 157)];        
+      case 'closed':
+        return [const Color.fromARGB(255, 151, 35, 33), const Color.fromARGB(255, 167, 41, 41)];
+      default:
+        return [Colors.grey[400]!, Colors.grey[200]!];
+    }
+  }
+
+  // Helper method for status icon
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Icons.campaign_outlined;
+      case 'closed':
+        return Icons.lock_clock;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  // Helper method to build the gradient badge with icon
+  Widget _buildStatusBadge(String status, ThemeData theme) {
+    return Semantics(
+      label: 'Announcement status: $status',
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _getStatusGradient(status),
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _getStatusIcon(status),
+              size: 14,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              status.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userName = Provider.of<AuthProvider>(context).user?.email ?? 'User';
     final theme = Theme.of(context);
     final bodyMedium = theme.textTheme.bodyMedium!;
+    final titleMedium = theme.textTheme.titleMedium!;
 
     return CommonLayout(
       title: 'List Announcements',
       userName: userName,
       selectedPageIndex: 3,
       onMenuItemSelected: _onMenuItemSelected,
-      mainContentPanel: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Search Announcements',
-                hintText: 'Enter any field (e.g., Fuel Type, ID, Notes)',
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
-                ),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
+      mainContentPanel: Container(
+        color: Colors.grey[100],
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Search Announcements',
+                    hintText: 'Enter Fuel Type, ID, Status, or Notes',
+                    prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.clear, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    ),
+                  ),
+                  onChanged: (value) {
                     setState(() {
-                      _searchQuery = '';
+                      _searchQuery = value.toLowerCase();
                     });
                   },
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
             ),
-          ),
-          Expanded(
-            child: StreamBuilder<List<Announcement>>(
-              stream: _announcementsStream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-                if (snapshot.hasData) {
-                  final announcements = snapshot.data!;
-                  if (announcements.isEmpty) {
-                    return const Center(child: Text('No announcements added yet.'));
+            Expanded(
+              child: StreamBuilder<List<Announcement>>(
+                stream: _announcementsStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
                   }
-                  final filteredAnnouncements = announcements.where((announcement) {
-                    final fields = [
-                      announcement.announceId.toString(),
-                      announcement.announceDate.toLowerCase(),
-                      announcement.bidCloseDate.toLowerCase(),
-                      announcement.deliveryDate.toLowerCase(),
-                      announcement.fuelType.toLowerCase(),
-                      announcement.quantity.toString(),
-                      announcement.price.toString(),
-                      announcement.status.toLowerCase(),
-                      announcement.notes.toLowerCase(),
-                    ];
-                    return fields.any((field) => field.contains(_searchQuery));
-                  }).toList();
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 2.5,
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
-                    ),
-                    itemCount: filteredAnnouncements.length,
-                    itemBuilder: (context, index) {
-                      final announcement = filteredAnnouncements[index];
+                  if (snapshot.hasError) {
+                    return Card(
+                      margin: const EdgeInsets.all(16),
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.error_outline, color: theme.colorScheme.error, size: 40),
+                            const SizedBox(height: 8),
+                            Text('Error: ${snapshot.error}', style: bodyMedium),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  if (snapshot.hasData) {
+                    final announcements = snapshot.data!;
+                    if (announcements.isEmpty) {
                       return Card(
-                        elevation: 2,
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  announcement.fuelType,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.teal,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                        margin: const EdgeInsets.all(16),
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                              const SizedBox(height: 8),
+                              Text('No announcements added yet.', style: bodyMedium),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: theme.colorScheme.primary,
+                                  foregroundColor: theme.colorScheme.onPrimary,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                 ),
-                                const Divider(
-                                  color: Colors.grey,
-                                  thickness: 1,
-                                  height: 10,
-                                ),
-                                _buildDetailRow('ID', announcement.announceId.toString(), bodyMedium, theme),
-                                _buildDetailRow('Status', announcement.status, bodyMedium, theme),
-                                _buildDetailRow('Announce Date', announcement.announceDate, bodyMedium, theme),
-                                _buildDetailRow('Bid Close Date', announcement.bidCloseDate, bodyMedium, theme),
-                                _buildDetailRow('Delivery Date', announcement.deliveryDate, bodyMedium, theme),
-                                _buildDetailRow('Quantity', announcement.quantity.toString(), bodyMedium, theme),
-                                _buildDetailRow('Price', announcement.price.toString(), bodyMedium, theme),
-                                _buildDetailRow('Notes', announcement.notes, bodyMedium, theme),
-                              ],
-                            ),
+                                child: const Text('Add Announcement'),
+                              ),
+                            ],
                           ),
                         ),
                       );
-                    },
+                    }
+                    final filteredAnnouncements = announcements.where((announcement) {
+                      final fields = [
+                        announcement.announceId.toString(),
+                        announcement.announceDate.toLowerCase(),
+                        announcement.bidCloseDate.toLowerCase(),
+                        announcement.deliveryDate.toLowerCase(),
+                        announcement.fuelType.toLowerCase(),
+                        announcement.quantity.toString(),
+                        announcement.price.toString(),
+                        announcement.status.toLowerCase(),
+                        announcement.notes.toLowerCase(),
+                      ];
+                      return fields.any((field) => field.contains(_searchQuery));
+                    }).toList();
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 400,
+                        childAspectRatio: 1.4,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
+                      ),
+                      itemCount: filteredAnnouncements.length,
+                      itemBuilder: (context, index) {
+                        final announcement = filteredAnnouncements[index];
+                        return MouseRegion(
+                          onEnter: (_) => setState(() {}),
+                          onExit: (_) => setState(() {}),
+                          child: Card(
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            color: Colors.white,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AnnouncementDetailsScreen(announcement: announcement),
+                                  ),
+                                );
+                              },
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: MediaQuery.of(context).size.width / 2.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withOpacity(0.1),
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(12),
+                                          topRight: Radius.circular(12),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        announcement.fuelType,
+                                        style: titleMedium.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Flexible(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            _buildDetailRow('ID', announcement.announceId.toString(), bodyMedium, theme),
+                                            _buildDetailRow('Quantity', '${announcement.quantity} liters', bodyMedium, theme),
+                                            _buildDetailRow('Price', '${announcement.price} VND/L', bodyMedium, theme),
+                                            _buildDetailRow('Bid Close', announcement.bidCloseDate, bodyMedium, theme),
+                                            _buildDetailRow('Delivery', announcement.deliveryDate, bodyMedium, theme),
+                                            const SizedBox(height: 4),
+                                            _buildStatusBadge(announcement.status, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return Card(
+                    margin: const EdgeInsets.all(16),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                          const SizedBox(height: 8),
+                          Text('Start adding announcements!', style: bodyMedium),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            ),
+                            child: const Text('Add Announcement'),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
-                }
-                return const Center(child: Text('Start adding announcements!'));
-              },
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
