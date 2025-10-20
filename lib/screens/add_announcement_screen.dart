@@ -4,6 +4,7 @@ import 'package:gemini001/models/announcement.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
+import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/add_bid_screen.dart';
 import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
@@ -126,6 +127,12 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
         );
         break;
+        case 1:
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
+          );
+          break;
       case 2:
         // Already on AddAnnouncementScreen, do nothing
         break;

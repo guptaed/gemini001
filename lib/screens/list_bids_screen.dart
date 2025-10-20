@@ -138,7 +138,7 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
     return CommonLayout(
       title: 'List Bids',
       userName: userName,
-      selectedPageIndex: 4,
+      selectedPageIndex: 5,
       onMenuItemSelected: _onMenuItemSelected,
       mainContentPanel: Column(
         children: [
