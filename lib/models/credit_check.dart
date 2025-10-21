@@ -71,7 +71,8 @@ class CreditCheck {
     };
   }
 
-  factory CreditCheck.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory CreditCheck.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     try {
       final data = doc.data()!;
       return CreditCheck(

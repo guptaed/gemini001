@@ -55,13 +55,15 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -89,14 +91,15 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
-
     }
   }
 
-  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+  Widget _buildDetailRow(
+      String label, String value, TextStyle style, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
@@ -108,7 +111,7 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
               '$label:',
               style: style.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -158,22 +161,27 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
                     labelText: 'Search Shipments',
-                    hintText: 'Enter any field (e.g., Shipment ID, Status, Notes)',
-                    prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
+                    hintText:
+                        'Enter any field (e.g., Shipment ID, Status, Notes)',
+                    prefixIcon:
+                        Icon(Icons.search, color: theme.colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     suffixIcon: IconButton(
-                      icon: Icon(Icons.clear, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                      icon: Icon(Icons.clear,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       onPressed: () {
                         _searchController.clear();
                         setState(() {
@@ -201,13 +209,15 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                     return Card(
                       margin: const EdgeInsets.all(16),
                       elevation: 4,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.error_outline, color: theme.colorScheme.error, size: 40),
+                            Icon(Icons.error_outline,
+                                color: theme.colorScheme.error, size: 40),
                             const SizedBox(height: 8),
                             Text('Error: ${snapshot.error}', style: bodyMedium),
                           ],
@@ -221,28 +231,35 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                       return Card(
                         margin: const EdgeInsets.all(16),
                         elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                              Icon(Icons.info_outline,
+                                  color: theme.colorScheme.primary, size: 40),
                               const SizedBox(height: 8),
-                              Text('No shipments added yet.', style: bodyMedium),
+                              Text('No shipments added yet.',
+                                  style: bodyMedium),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const AddShipmentScreen()),
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const AddShipmentScreen()),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: theme.colorScheme.primary,
                                   foregroundColor: theme.colorScheme.onPrimary,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 12),
                                 ),
                                 child: const Text('Add Shipment'),
                               ),
@@ -261,11 +278,13 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                         shipment.ReceivedDate.toLowerCase(),
                         shipment.Notes.toLowerCase(),
                       ];
-                      return fields.any((field) => field.contains(_searchQuery));
+                      return fields
+                          .any((field) => field.contains(_searchQuery));
                     }).toList();
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 300,
                         childAspectRatio: 1.2,
                         crossAxisSpacing: 16,
@@ -279,14 +298,16 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                           onExit: (_) => setState(() {}),
                           child: Card(
                             elevation: 4,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             color: Colors.white,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () {}, // Non-interactive, per bid screens
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxHeight: MediaQuery.of(context).size.width / 2.0,
+                                  maxHeight:
+                                      MediaQuery.of(context).size.width / 2.0,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,7 +316,8 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withOpacity(0.1),
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(12),
                                           topRight: Radius.circular(12),
@@ -315,11 +337,20 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            _buildDetailRow('Supplier ID', shipment.SupId.toString(), bodyMedium, theme),
-                                            _buildDetailRow('Bid ID', shipment.BidId.toString(), bodyMedium, theme),
+                                            _buildDetailRow(
+                                                'Supplier ID',
+                                                shipment.SupId.toString(),
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Bid ID',
+                                                shipment.BidId.toString(),
+                                                bodyMedium,
+                                                theme),
                                             Row(
                                               children: [
                                                 SizedBox(
@@ -327,27 +358,50 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                                                   child: Text(
                                                     'Status:',
                                                     style: bodyMedium.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: theme
+                                                          .colorScheme.onSurface
+                                                          .withValues(alpha: 0.7),
                                                     ),
                                                     maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                                 Chip(
                                                   label: Text(
                                                     shipment.Status,
-                                                    style: bodyMedium.copyWith(color: theme.colorScheme.onPrimary),
+                                                    style: bodyMedium.copyWith(
+                                                        color: theme.colorScheme
+                                                            .onPrimary),
                                                   ),
-                                                  backgroundColor: _getStatusColor(shipment.Status),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                  backgroundColor:
+                                                      _getStatusColor(
+                                                          shipment.Status),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(horizontal: 8),
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
                                                 ),
                                               ],
                                             ),
-                                            _buildDetailRow('Shipped Date', shipment.ShippedDate, bodyMedium, theme),
-                                            _buildDetailRow('Received Date', shipment.ReceivedDate, bodyMedium, theme),
-                                            _buildDetailRow('Notes', shipment.Notes, bodyMedium, theme),
+                                            _buildDetailRow(
+                                                'Shipped Date',
+                                                shipment.ShippedDate,
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Received Date',
+                                                shipment.ReceivedDate,
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Notes',
+                                                shipment.Notes,
+                                                bodyMedium,
+                                                theme),
                                           ],
                                         ),
                                       ),
@@ -363,14 +417,16 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                   }
                   return Card(
                     margin: const EdgeInsets.all(16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     elevation: 4,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                          Icon(Icons.info_outline,
+                              color: theme.colorScheme.primary, size: 40),
                           const SizedBox(height: 8),
                           Text('Start adding shipments!', style: bodyMedium),
                           const SizedBox(height: 16),
@@ -378,14 +434,18 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const AddShipmentScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AddShipmentScreen()),
                               );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
                             ),
                             child: const Text('Add Shipment'),
                           ),

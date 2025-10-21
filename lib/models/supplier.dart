@@ -21,7 +21,7 @@ class Supplier {
   final String TaxCode;
   final String Representative;
   final String Title;
-  final String Status; 
+  final String Status;
 
   // The constructor for the `Supplier` class.
   // The `id` is optional when creating a new supplier object, as it will be null initially.
@@ -41,7 +41,7 @@ class Supplier {
 // `copyWith` method: This method allows us to create a new `Supplier` object
 // by copying the existing one and overriding specific fields.
 // This is useful for updating supplier information without modifying the original object.
-Supplier copyWith({
+  Supplier copyWith({
     String? id,
     int? SupId,
     String? CompanyName,
@@ -66,7 +66,6 @@ Supplier copyWith({
       Status: Status ?? this.Status,
     );
   }
-
 
   // `toMap` method: This method converts a `Supplier` object into a `Map<String, dynamic>`.
   // This format is what the Firestore SDK uses to write data to the database.
@@ -120,7 +119,7 @@ Supplier copyWith({
         Representative: '',
         Title: '',
         Status: '',
-      );      
+      );
     }
   }
 }

@@ -33,7 +33,6 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   final _representativeController = TextEditingController();
   final _titleController = TextEditingController();
 
-
   @override
   void initState() {
     super.initState();
@@ -75,10 +74,12 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       try {
         await FirestoreHelper().addSupplier(supplier);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Supplier added successfully!')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Supplier added successfully!')));
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
+            MaterialPageRoute(
+                builder: (context) => const ListSuppliersScreen()),
           );
           _formKey.currentState!.reset();
           _companyNameController.clear();
@@ -94,7 +95,8 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding supplier: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error adding supplier: $e')));
           logger.e('Error adding supplier with SupId: ${supplier.SupId}', e);
         }
       }
@@ -115,13 +117,15 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -135,7 +139,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           context,
           MaterialPageRoute(builder: (context) => const ListBidsScreen()),
         );
-        break;      
+        break;
       case 6:
         Navigator.push(
           context,
@@ -147,12 +151,13 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           context,
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
         );
-        break;       
+        break;
 
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }
@@ -177,18 +182,20 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                 labelText: 'Supplier ID',
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'ID should be generated' : null,
               ),
               _buildTextField(
                 controller: TextEditingController(text: 'New'),
                 labelText: 'Status',
                 enabled: false,
                 fillColor: Colors.grey[300],
-              ),              
+              ),
               _buildTextField(
                 controller: _companyNameController,
                 labelText: 'Company Name',
-                validator: (value) => value!.isEmpty ? 'Enter Company Name' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Company Name' : null,
               ),
               _buildTextField(
                 controller: _representativeController,
@@ -227,7 +234,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.teal[700]!.withOpacity(0.3),
+                      color: Colors.teal[700]!.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -295,12 +302,13 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         maxLength: maxLength,
         textInputAction: textInputAction,
         enabled: enabled,
-        validator: validator ?? (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter $labelText';
-          }
-          return null;
-        },
+        validator: validator ??
+            (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter $labelText';
+              }
+              return null;
+            },
       ),
     );
   }

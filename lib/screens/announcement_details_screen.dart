@@ -1,7 +1,5 @@
-
 // THIS IS A DUMMY FILE FOR ANNOUNCEMENT DETAILS SCREEN
 // TO BE IMPLEMENTED PROPERLY LATER
-
 
 import 'package:flutter/material.dart';
 import 'package:gemini001/models/announcement.dart';
@@ -40,13 +38,15 @@ class AnnouncementDetailsScreen extends StatelessWidget {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -76,7 +76,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }
@@ -97,7 +98,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Card(
           elevation: 3,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -116,7 +118,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.local_gas_station, color: Colors.white, size: 32),
+                      const Icon(Icons.local_gas_station,
+                          color: Colors.white, size: 32),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -133,23 +136,30 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // Details Section
-                _buildDetailRow('Announcement ID', announcement.announceId.toString(), theme),
+                _buildDetailRow('Announcement ID',
+                    announcement.announceId.toString(), theme),
                 _buildDetailRow('Status', announcement.status, theme),
                 const Divider(height: 32),
-                
-                _buildDetailRow('Announce Date', announcement.announceDate, theme),
-                _buildDetailRow('Bid Close Date', announcement.bidCloseDate, theme),
-                _buildDetailRow('Delivery Date', announcement.deliveryDate, theme),
+
+                _buildDetailRow(
+                    'Announce Date', announcement.announceDate, theme),
+                _buildDetailRow(
+                    'Bid Close Date', announcement.bidCloseDate, theme),
+                _buildDetailRow(
+                    'Delivery Date', announcement.deliveryDate, theme),
                 const Divider(height: 32),
-                
-                _buildDetailRow('Quantity', '${announcement.quantity} liters', theme),
-                _buildDetailRow('Price', '${announcement.price} VND/liter', theme),
+
+                _buildDetailRow(
+                    'Quantity', '${announcement.quantity} liters', theme),
+                _buildDetailRow(
+                    'Price', '${announcement.price} VND/liter', theme),
                 const Divider(height: 32),
-                
-                _buildDetailRow('Notes', announcement.notes, theme, isMultiline: true),
-                
+
+                _buildDetailRow('Notes', announcement.notes, theme,
+                    isMultiline: true),
+
                 const SizedBox(height: 32),
-                
+
                 // Action Buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -161,7 +171,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                       icon: const Icon(Icons.arrow_back),
                       label: const Text('Back to List'),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -169,7 +180,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                       onPressed: () {
                         // TODO: Navigate to edit screen or show bids
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('View bids feature coming soon!')),
+                          const SnackBar(
+                              content: Text('View bids feature coming soon!')),
                         );
                       },
                       icon: const Icon(Icons.visibility),
@@ -177,7 +189,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                     ),
                   ],
@@ -190,7 +203,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, ThemeData theme, {bool isMultiline = false}) {
+  Widget _buildDetailRow(String label, String value, ThemeData theme,
+      {bool isMultiline = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: isMultiline

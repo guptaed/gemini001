@@ -36,9 +36,10 @@ class ContractInfo {
       'PdfUrlMain': PdfUrlMain,
       'PdfUrlAppendix1': PdfUrlAppendix1,
     };
-  } 
+  }
 
-  factory ContractInfo.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory ContractInfo.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     try {
       final data = doc.data()!;
       return ContractInfo(
@@ -68,4 +69,3 @@ class ContractInfo {
     }
   }
 }
-

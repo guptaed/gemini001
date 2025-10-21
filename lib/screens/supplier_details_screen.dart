@@ -38,15 +38,20 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _contractInfoFuture = FirestoreHelper().getContractInfo(widget.supplier.SupId);
-    _bankDetailsFuture = FirestoreHelper().getBankDetails(widget.supplier.SupId);
-    _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
-    _bidFlowsFuture = FirestoreHelper().getBidFlowsBySupplier(widget.supplier.SupId);
+    _contractInfoFuture =
+        FirestoreHelper().getContractInfo(widget.supplier.SupId);
+    _bankDetailsFuture =
+        FirestoreHelper().getBankDetails(widget.supplier.SupId);
+    _creditCheckFuture =
+        FirestoreHelper().getCreditCheck(widget.supplier.SupId);
+    _bidFlowsFuture =
+        FirestoreHelper().getBidFlowsBySupplier(widget.supplier.SupId);
   }
 
   void _refreshCreditCheck() {
     setState(() {
-      _creditCheckFuture = FirestoreHelper().getCreditCheck(widget.supplier.SupId);
+      _creditCheckFuture =
+          FirestoreHelper().getCreditCheck(widget.supplier.SupId);
     });
   }
 
@@ -62,7 +67,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         if (ModalRoute.of(context)?.settings.name != '/list_suppliers') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
+            MaterialPageRoute(
+                builder: (context) => const ListSuppliersScreen()),
           );
         }
         break;
@@ -75,13 +81,15 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -111,10 +119,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
-
     }
   }
 
@@ -122,13 +130,25 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   List<Color> _getStatusGradient(String status) {
     switch (status.toLowerCase()) {
       case 'new':
-        return [const Color.fromARGB(255, 19, 18, 18), const Color.fromARGB(255, 110, 110, 110)];
+        return [
+          const Color.fromARGB(255, 19, 18, 18),
+          const Color.fromARGB(255, 110, 110, 110)
+        ];
       case 'active':
-        return [const Color.fromARGB(255, 19, 88, 82), const Color.fromARGB(255, 35, 170, 157)];
+        return [
+          const Color.fromARGB(255, 19, 88, 82),
+          const Color.fromARGB(255, 35, 170, 157)
+        ];
       case 'at risk':
-        return [const Color.fromARGB(255, 238, 149, 16), const Color.fromARGB(255, 221, 146, 34)];
+        return [
+          const Color.fromARGB(255, 238, 149, 16),
+          const Color.fromARGB(255, 221, 146, 34)
+        ];
       case 'terminated':
-        return [const Color.fromARGB(255, 151, 35, 33), const Color.fromARGB(255, 167, 41, 41)];
+        return [
+          const Color.fromARGB(255, 151, 35, 33),
+          const Color.fromARGB(255, 167, 41, 41)
+        ];
       default:
         return [Colors.grey[400]!, Colors.grey[200]!];
     }
@@ -153,7 +173,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   // Helper method for gradient badge colors (workflow stage-specific statuses)
   List<Color> _getWorkflowStatusGradient(String stage, bool isCurrent) {
     if (isCurrent) {
-      return [Colors.green[900]!, Colors.green[700]!]; // Green for current stage
+      return [
+        Colors.green[900]!,
+        Colors.green[700]!
+      ]; // Green for current stage
     }
     return [Colors.black, Colors.grey[800]!]; // Dark grey for non-current
   }
@@ -170,28 +193,38 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   }
 
   // Helper method to build the gradient badge with icon - NOW WITH SHADOW!
-  Widget _buildStatusBadge(String status, ThemeData theme, {String? stage, bool isWorkflow = false, String? id, bool isCurrent = false, String? currentStatus}) {
+  Widget _buildStatusBadge(String status, ThemeData theme,
+      {String? stage,
+      bool isWorkflow = false,
+      String? id,
+      bool isCurrent = false,
+      String? currentStatus}) {
     final double baseSizeFactor = 1.0;
     final double sizeFactor = isCurrent ? 1.4 : baseSizeFactor;
     final List<Color> gradientColors = isCurrent && isWorkflow && stage != null
         ? _getWorkflowStatusGradient(stage, isCurrent)
-        : (isCurrent ? _getStatusGradient(status) : [Colors.grey[700]!, Colors.grey[500]!]);
+        : (isCurrent
+            ? _getStatusGradient(status)
+            : [Colors.grey[700]!, Colors.grey[500]!]);
 
     return Semantics(
-      label: 'Status: ${isCurrent ? status : stage ?? status}${isWorkflow && stage != null ? ", Stage: $stage" : ""}${isCurrent ? ", current" : ""}${currentStatus != null ? ", Status: $currentStatus" : ""}',
+      label:
+          'Status: ${isCurrent ? status : stage ?? status}${isWorkflow && stage != null ? ", Stage: $stage" : ""}${isCurrent ? ", current" : ""}${currentStatus != null ? ", Status: $currentStatus" : ""}',
       child: GestureDetector(
         onTap: isWorkflow && stage != null && isCurrent
             ? () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => BidDetailsScreen(bidId: id ?? '', stage: stage),
+                    builder: (context) =>
+                        BidDetailsScreen(bidId: id ?? '', stage: stage),
                   ),
                 );
               }
             : null,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 6 * sizeFactor, horizontal: 12 * sizeFactor),
+          padding: EdgeInsets.symmetric(
+              vertical: 6 * sizeFactor, horizontal: 12 * sizeFactor),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: gradientColors,
@@ -202,7 +235,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             // ADDED: Subtle shadow for depth
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isCurrent ? 0.3 : 0.15),
+                color: Colors.black..withValues(alpha: isCurrent ? 0.3 : 0.15),
                 blurRadius: isCurrent ? 8 : 4,
                 offset: Offset(0, isCurrent ? 3 : 2),
               ),
@@ -216,13 +249,17 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    isWorkflow && stage != null ? _getWorkflowStatusIcon(stage) : _getStatusIcon(status),
+                    isWorkflow && stage != null
+                        ? _getWorkflowStatusIcon(stage)
+                        : _getStatusIcon(status),
                     size: 14 * sizeFactor,
                     color: Colors.white,
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    isCurrent ? status.toUpperCase() : stage?.toUpperCase() ?? status.toUpperCase(),
+                    isCurrent
+                        ? status.toUpperCase()
+                        : stage?.toUpperCase() ?? status.toUpperCase(),
                     style: TextStyle(
                       fontSize: 12 * sizeFactor,
                       fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
@@ -276,7 +313,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   Widget _buildWorkflowTimeline(List<BidFlow> bidFlows, ThemeData theme) {
     return Card(
       elevation: 4, // Increased elevation
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // More rounded
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16)), // More rounded
       child: Container(
         decoration: BoxDecoration(
           // ADDED: Subtle gradient background
@@ -318,21 +356,25 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 itemCount: bidFlows.length,
                 itemBuilder: (context, index) {
                   final bidFlow = bidFlows[index];
-                  final currentStage = bidFlow.currentStage?.toLowerCase() ?? 'bidding';
+                  final currentStage =
+                      bidFlow.currentStage?.toLowerCase() ?? 'bidding';
                   final currentStatus = bidFlow.currentStageStatus ?? 'N/A';
                   return Column(
                     children: [
-                      if (index > 0) const SizedBox(height: 24), // Increased spacing
+                      if (index > 0)
+                        const SizedBox(height: 24), // Increased spacing
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              color: theme.colorScheme.primary..withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: theme.colorScheme.primary.withOpacity(0.3),
+                                color:
+                                    theme.colorScheme.primary.withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -345,25 +387,47 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                             ),
                           ),
                           const SizedBox(width: 24), // Increased spacing
-                          _buildStatusBadge('Bidding', theme, stage: 'Bidding', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'bidding', currentStatus: currentStage == 'bidding' ? currentStatus : null),
+                          _buildStatusBadge('Bidding', theme,
+                              stage: 'Bidding',
+                              isWorkflow: true,
+                              id: bidFlow.bidId.toString(),
+                              isCurrent: currentStage == 'bidding',
+                              currentStatus: currentStage == 'bidding'
+                                  ? currentStatus
+                                  : null),
                           const SizedBox(width: 24), // Increased spacing
                           CustomPaint(
                             painter: CurvedConnectorPainter(
-                              isActive: _isConnectorActive(currentStage, 'bidding'),
+                              isActive:
+                                  _isConnectorActive(currentStage, 'bidding'),
                             ),
                             size: const Size(80, 20), // Longer and taller
                           ),
                           const SizedBox(width: 24),
-                          _buildStatusBadge('Shipment', theme, stage: 'Shipment', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'shipment', currentStatus: currentStage == 'shipment' ? currentStatus : null),
+                          _buildStatusBadge('Shipment', theme,
+                              stage: 'Shipment',
+                              isWorkflow: true,
+                              id: bidFlow.bidId.toString(),
+                              isCurrent: currentStage == 'shipment',
+                              currentStatus: currentStage == 'shipment'
+                                  ? currentStatus
+                                  : null),
                           const SizedBox(width: 24),
                           CustomPaint(
                             painter: CurvedConnectorPainter(
-                              isActive: _isConnectorActive(currentStage, 'shipment'),
+                              isActive:
+                                  _isConnectorActive(currentStage, 'shipment'),
                             ),
                             size: const Size(80, 20),
                           ),
                           const SizedBox(width: 24),
-                          _buildStatusBadge('QA', theme, stage: 'QA', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'qa', currentStatus: currentStage == 'qa' ? currentStatus : null),
+                          _buildStatusBadge('QA', theme,
+                              stage: 'QA',
+                              isWorkflow: true,
+                              id: bidFlow.bidId.toString(),
+                              isCurrent: currentStage == 'qa',
+                              currentStatus:
+                                  currentStage == 'qa' ? currentStatus : null),
                           const SizedBox(width: 24),
                           CustomPaint(
                             painter: CurvedConnectorPainter(
@@ -372,7 +436,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                             size: const Size(80, 20),
                           ),
                           const SizedBox(width: 24),
-                          _buildStatusBadge('Payment', theme, stage: 'Payment', isWorkflow: true, id: bidFlow.bidId.toString(), isCurrent: currentStage == 'payment', currentStatus: currentStage == 'payment' ? currentStatus : null),
+                          _buildStatusBadge('Payment', theme,
+                              stage: 'Payment',
+                              isWorkflow: true,
+                              id: bidFlow.bidId.toString(),
+                              isCurrent: currentStage == 'payment',
+                              currentStatus: currentStage == 'payment'
+                                  ? currentStatus
+                                  : null),
                         ],
                       ),
                     ],
@@ -407,7 +478,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+  Widget _buildDetailRow(
+      String label, String value, TextStyle style, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -417,7 +489,9 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             width: 120,
             child: Text(
               '$label:',
-              style: style.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+              style: style.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface..withValues(alpha: 0.7)),
             ),
           ),
           Expanded(
@@ -447,7 +521,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           children: [
             Card(
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -468,13 +543,20 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                       height: 10,
                     ),
                     const SizedBox(height: 16),
-                    _buildDetailRow('Supplier ID', widget.supplier.SupId.toString(), bodyMedium, theme),
-                    _buildDetailRow('Representative', widget.supplier.Representative, bodyMedium, theme),
-                    _buildDetailRow('Title', widget.supplier.Title, bodyMedium, theme),
-                    _buildDetailRow('Address', widget.supplier.Address, bodyMedium, theme),
-                    _buildDetailRow('Telephone', widget.supplier.Tel, bodyMedium, theme),
-                    _buildDetailRow('Email', widget.supplier.Email, bodyMedium, theme),
-                    _buildDetailRow('Tax Code', widget.supplier.TaxCode, bodyMedium, theme),
+                    _buildDetailRow('Supplier ID',
+                        widget.supplier.SupId.toString(), bodyMedium, theme),
+                    _buildDetailRow('Representative',
+                        widget.supplier.Representative, bodyMedium, theme),
+                    _buildDetailRow(
+                        'Title', widget.supplier.Title, bodyMedium, theme),
+                    _buildDetailRow(
+                        'Address', widget.supplier.Address, bodyMedium, theme),
+                    _buildDetailRow(
+                        'Telephone', widget.supplier.Tel, bodyMedium, theme),
+                    _buildDetailRow(
+                        'Email', widget.supplier.Email, bodyMedium, theme),
+                    _buildDetailRow(
+                        'Tax Code', widget.supplier.TaxCode, bodyMedium, theme),
                     const SizedBox(height: 16),
                     AnimatedOpacity(
                       opacity: 1.0,
@@ -487,8 +569,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                             ),
                             child: const Text('Edit'),
                           ),
@@ -520,7 +604,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 Expanded(
                   child: Card(
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -542,11 +627,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                           FutureBuilder<CreditCheck?>(
                             future: _creditCheckFuture,
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const Center(child: CircularProgressIndicator());
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
                               }
                               if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}', style: bodyMedium);
+                                return Text('Error: ${snapshot.error}',
+                                    style: bodyMedium);
                               }
                               final creditCheck = snapshot.data;
                               if (creditCheck == null) {
@@ -559,9 +647,11 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                         await Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => AddCreditCheckScreen(
+                                            builder: (context) =>
+                                                AddCreditCheckScreen(
                                               supId: widget.supplier.SupId,
-                                              companyName: widget.supplier.CompanyName,
+                                              companyName:
+                                                  widget.supplier.CompanyName,
                                             ),
                                           ),
                                         );
@@ -570,10 +660,15 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                         }
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: theme.colorScheme.primary,
-                                        foregroundColor: theme.colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        backgroundColor:
+                                            theme.colorScheme.primary,
+                                        foregroundColor:
+                                            theme.colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
                                       ),
                                       child: const Text('Add Credit Check'),
                                     ),
@@ -583,28 +678,67 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildDetailRow('Status', creditCheck.status, bodyMedium, theme),
-                                  _buildDetailRow('Established Date', creditCheck.establishedDate, bodyMedium, theme),
-                                  _buildDetailRow('Supply Capacity', creditCheck.supplyCapacity.toString(), bodyMedium, theme),
-                                  _buildDetailRow('Track Record', creditCheck.trackRecord, bodyMedium, theme),
-                                  _buildDetailRow('Raw Material Types', creditCheck.rawMaterialTypes, bodyMedium, theme),
-                                  _buildDetailRow('Check Start Date', creditCheck.checkStartDate.isEmpty ? 'Not set' : creditCheck.checkStartDate, bodyMedium, theme),
-                                  _buildDetailRow('Check Finish Date', creditCheck.checkFinishDate.isEmpty ? 'Not set' : creditCheck.checkFinishDate, bodyMedium, theme),
-                                  _buildDetailRow('Check Company', creditCheck.checkCompany, bodyMedium, theme),
+                                  _buildDetailRow('Status', creditCheck.status,
+                                      bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Established Date',
+                                      creditCheck.establishedDate,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Supply Capacity',
+                                      creditCheck.supplyCapacity.toString(),
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Track Record',
+                                      creditCheck.trackRecord,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Raw Material Types',
+                                      creditCheck.rawMaterialTypes,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Check Start Date',
+                                      creditCheck.checkStartDate.isEmpty
+                                          ? 'Not set'
+                                          : creditCheck.checkStartDate,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Check Finish Date',
+                                      creditCheck.checkFinishDate.isEmpty
+                                          ? 'Not set'
+                                          : creditCheck.checkFinishDate,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Check Company',
+                                      creditCheck.checkCompany,
+                                      bodyMedium,
+                                      theme),
                                   const SizedBox(height: 16),
                                   AnimatedOpacity(
                                     opacity: 1.0,
                                     duration: const Duration(milliseconds: 300),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
                                       children: [
                                         ElevatedButton(
                                           onPressed: () {},
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: theme.colorScheme.primary,
-                                            foregroundColor: theme.colorScheme.onPrimary,
-                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            backgroundColor:
+                                                theme.colorScheme.primary,
+                                            foregroundColor:
+                                                theme.colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
                                           ),
                                           child: const Text('Edit'),
                                         ),
@@ -624,7 +758,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 Expanded(
                   child: Card(
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -646,11 +781,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                           FutureBuilder<ContractInfo?>(
                             future: _contractInfoFuture,
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const Center(child: CircularProgressIndicator());
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
                               }
                               if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}', style: bodyMedium);
+                                return Text('Error: ${snapshot.error}',
+                                    style: bodyMedium);
                               }
                               final contractInfo = snapshot.data;
                               if (contractInfo == null) {
@@ -661,12 +799,18 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                     child: ElevatedButton(
                                       onPressed: () {},
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: theme.colorScheme.primary,
-                                        foregroundColor: theme.colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        backgroundColor:
+                                            theme.colorScheme.primary,
+                                        foregroundColor:
+                                            theme.colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
                                       ),
-                                      child: const Text('Add Contract Information'),
+                                      child: const Text(
+                                          'Add Contract Information'),
                                     ),
                                   ),
                                 );
@@ -674,26 +818,56 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildDetailRow('Contract No', contractInfo.ContractNo, bodyMedium, theme),
-                                  _buildDetailRow('Signed Date', contractInfo.SignedDate, bodyMedium, theme),
-                                  _buildDetailRow('Validity Years', contractInfo.ValidityYrs.toString(), bodyMedium, theme),
-                                  _buildDetailRow('Max Auto Validity', contractInfo.MaxAutoValidity.toString(), bodyMedium, theme),
-                                  _buildDetailRow('STT1 Price', contractInfo.STT1Price.toString(), bodyMedium, theme),
-                                  _buildDetailRow('STT2 Price', contractInfo.STT2Price.toString(), bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Contract No',
+                                      contractInfo.ContractNo,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Signed Date',
+                                      contractInfo.SignedDate,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Validity Years',
+                                      contractInfo.ValidityYrs.toString(),
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Max Auto Validity',
+                                      contractInfo.MaxAutoValidity.toString(),
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'STT1 Price',
+                                      contractInfo.STT1Price.toString(),
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'STT2 Price',
+                                      contractInfo.STT2Price.toString(),
+                                      bodyMedium,
+                                      theme),
                                   const SizedBox(height: 16),
                                   AnimatedOpacity(
                                     opacity: 1.0,
                                     duration: const Duration(milliseconds: 300),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
                                       children: [
                                         ElevatedButton(
                                           onPressed: () {},
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: theme.colorScheme.primary,
-                                            foregroundColor: theme.colorScheme.onPrimary,
-                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            backgroundColor:
+                                                theme.colorScheme.primary,
+                                            foregroundColor:
+                                                theme.colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
                                           ),
                                           child: const Text('Edit'),
                                         ),
@@ -713,7 +887,8 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                 Expanded(
                   child: Card(
                     elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -735,11 +910,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                           FutureBuilder<BankDetails?>(
                             future: _bankDetailsFuture,
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const Center(child: CircularProgressIndicator());
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
                               }
                               if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}', style: bodyMedium);
+                                return Text('Error: ${snapshot.error}',
+                                    style: bodyMedium);
                               }
                               final bankDetails = snapshot.data;
                               if (bankDetails == null) {
@@ -750,10 +928,15 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                     child: ElevatedButton(
                                       onPressed: () {},
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: theme.colorScheme.primary,
-                                        foregroundColor: theme.colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        backgroundColor:
+                                            theme.colorScheme.primary,
+                                        foregroundColor:
+                                            theme.colorScheme.onPrimary,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
                                       ),
                                       child: const Text('Add Bank Information'),
                                     ),
@@ -763,28 +946,57 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildDetailRow('Payment Method ID', bankDetails.PaymentMethodId, bodyMedium, theme),
-                                  _buildDetailRow('Bank Name', bankDetails.BankName, bodyMedium, theme),
-                                  _buildDetailRow('Branch Name', bankDetails.BranchName, bodyMedium, theme),
-                                  _buildDetailRow('Bank ID', bankDetails.BankId, bodyMedium, theme),
-                                  _buildDetailRow('Branch ID', bankDetails.BranchId, bodyMedium, theme),
-                                  _buildDetailRow('Account Name', bankDetails.AccountName, bodyMedium, theme),
-                                  _buildDetailRow('Account Number', bankDetails.AccountNumber, bodyMedium, theme),
-                                  _buildDetailRow('Preferred Bank', bankDetails.PreferredBank.toString(), bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Payment Method ID',
+                                      bankDetails.PaymentMethodId,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow('Bank Name',
+                                      bankDetails.BankName, bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Branch Name',
+                                      bankDetails.BranchName,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow('Bank ID', bankDetails.BankId,
+                                      bodyMedium, theme),
+                                  _buildDetailRow('Branch ID',
+                                      bankDetails.BranchId, bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Account Name',
+                                      bankDetails.AccountName,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Account Number',
+                                      bankDetails.AccountNumber,
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow(
+                                      'Preferred Bank',
+                                      bankDetails.PreferredBank.toString(),
+                                      bodyMedium,
+                                      theme),
                                   const SizedBox(height: 16),
                                   AnimatedOpacity(
                                     opacity: 1.0,
                                     duration: const Duration(milliseconds: 300),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
                                       children: [
                                         ElevatedButton(
                                           onPressed: () {},
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: theme.colorScheme.primary,
-                                            foregroundColor: theme.colorScheme.onPrimary,
-                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            backgroundColor:
+                                                theme.colorScheme.primary,
+                                            foregroundColor:
+                                                theme.colorScheme.onPrimary,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
                                           ),
                                           child: const Text('Edit'),
                                         ),
@@ -815,16 +1027,16 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
 // Custom painter for curved connector with gradient - OPTION 1
 class CurvedConnectorPainter extends CustomPainter {
   final bool isActive;
-  
+
   CurvedConnectorPainter({this.isActive = false});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..shader = LinearGradient(
-        colors: isActive 
-          ? [Colors.green[700]!, Colors.green[400]!]
-          : [Colors.grey[600]!, Colors.grey[400]!],
+        colors: isActive
+            ? [Colors.green[700]!, Colors.green[400]!]
+            : [Colors.grey[600]!, Colors.grey[400]!],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round
@@ -833,9 +1045,12 @@ class CurvedConnectorPainter extends CustomPainter {
     final path = Path()
       ..moveTo(0, size.height / 2)
       ..cubicTo(
-        size.width * 0.3, size.height / 2,
-        size.width * 0.7, size.height / 2,
-        size.width, size.height / 2,
+        size.width * 0.3,
+        size.height / 2,
+        size.width * 0.7,
+        size.height / 2,
+        size.width,
+        size.height / 2,
       );
 
     canvas.drawPath(path, paint);

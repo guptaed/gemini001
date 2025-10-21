@@ -27,7 +27,8 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error signing out: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error signing out: $e')));
         logger.e('Error signing out user: ${_user?.email}', e);
       }
     }

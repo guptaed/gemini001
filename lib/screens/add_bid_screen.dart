@@ -30,7 +30,8 @@ class _AddBidScreenState extends State<AddBidScreen> {
   final _formKey = GlobalKey<FormState>();
   int? _selectedSupId;
   int? _selectedAnnounceId;
-  int? _selectedAnnouncementQuantity; // To store selected announcement's Quantity
+  int?
+      _selectedAnnouncementQuantity; // To store selected announcement's Quantity
   final _bidIdController = TextEditingController();
   final _submittedDateController = TextEditingController();
   final _quantityController = TextEditingController();
@@ -65,7 +66,8 @@ class _AddBidScreenState extends State<AddBidScreen> {
     return '2${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -88,7 +90,9 @@ class _AddBidScreenState extends State<AddBidScreen> {
         submittedDate: _submittedDateController.text,
         quantity: int.parse(_quantityController.text),
         status: 'Submitted', // Hardcoded as per requirement
-        quantityAccepted: _quantityAcceptedController.text.isEmpty ? 0 : int.parse(_quantityAcceptedController.text),
+        quantityAccepted: _quantityAcceptedController.text.isEmpty
+            ? 0
+            : int.parse(_quantityAcceptedController.text),
         acceptRejectDate: _acceptRejectDateController.text,
         notes: _notesController.text,
       );
@@ -143,13 +147,15 @@ class _AddBidScreenState extends State<AddBidScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -177,9 +183,10 @@ class _AddBidScreenState extends State<AddBidScreen> {
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
-        break;              
+        break;
     }
   }
 
@@ -203,7 +210,8 @@ class _AddBidScreenState extends State<AddBidScreen> {
                 labelText: 'Bid ID',
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'ID should be generated' : null,
               ),
               _buildSupplierDropdown(theme),
               _buildAnnouncementDropdown(theme),
@@ -211,7 +219,8 @@ class _AddBidScreenState extends State<AddBidScreen> {
                 controller: _submittedDateController,
                 labelText: 'Submitted Date (YYYY-MM-DD)',
                 onTap: () => _selectDate(context, _submittedDateController),
-                validator: (value) => value!.isEmpty ? 'Enter Submitted Date' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Submitted Date' : null,
               ),
               _buildTextField(
                 controller: _quantityController,
@@ -220,8 +229,11 @@ class _AddBidScreenState extends State<AddBidScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Enter Quantity';
                   final numValue = int.tryParse(value);
-                  if (numValue == null || numValue <= 0) return 'Enter a positive number';
-                  if (_selectedAnnouncementQuantity != null && numValue > _selectedAnnouncementQuantity!) {
+                  if (numValue == null || numValue <= 0) {
+                    return 'Enter a positive number';
+                  }
+                  if (_selectedAnnouncementQuantity != null &&
+                      numValue > _selectedAnnouncementQuantity!) {
                     return 'Quantity must be less than or equal to $_selectedAnnouncementQuantity';
                   }
                   return null;
@@ -234,7 +246,9 @@ class _AddBidScreenState extends State<AddBidScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return null;
                   final numValue = int.tryParse(value);
-                  if (numValue == null || numValue < 0) return 'Enter a non-negative number';
+                  if (numValue == null || numValue < 0) {
+                    return 'Enter a non-negative number';
+                  }
                   return null;
                 },
               ),
@@ -261,7 +275,7 @@ class _AddBidScreenState extends State<AddBidScreen> {
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.teal[700]!.withOpacity(0.3),
+                      color: Colors.teal[700]!.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -389,7 +403,8 @@ class _AddBidScreenState extends State<AddBidScreen> {
               ),
             ),
           ),
-          emptyBuilder: (context, searchEntry) => const Center(child: Text('No suppliers found')),
+          emptyBuilder: (context, searchEntry) =>
+              const Center(child: Text('No suppliers found')),
         ),
         dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
@@ -425,13 +440,15 @@ class _AddBidScreenState extends State<AddBidScreen> {
             return [];
           }
         },
-        itemAsString: (Supplier supplier) => '${supplier.SupId} - ${supplier.CompanyName}',
+        itemAsString: (Supplier supplier) =>
+            '${supplier.SupId} - ${supplier.CompanyName}',
         onChanged: (Supplier? supplier) {
           setState(() {
             _selectedSupId = supplier?.SupId;
           });
         },
-        validator: (Supplier? value) => value == null ? 'Select a Supplier' : null,
+        validator: (Supplier? value) =>
+            value == null ? 'Select a Supplier' : null,
       ),
     );
   }
@@ -456,7 +473,8 @@ class _AddBidScreenState extends State<AddBidScreen> {
               ),
             ),
           ),
-          emptyBuilder: (context, searchEntry) => const Center(child: Text('No announcements found')),
+          emptyBuilder: (context, searchEntry) =>
+              const Center(child: Text('No announcements found')),
         ),
         dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
@@ -493,14 +511,16 @@ class _AddBidScreenState extends State<AddBidScreen> {
             return [];
           }
         },
-        itemAsString: (Announcement announcement) => '${announcement.announceId} - ${announcement.fuelType} (Quantity: ${announcement.quantity})',
+        itemAsString: (Announcement announcement) =>
+            '${announcement.announceId} - ${announcement.fuelType} (Quantity: ${announcement.quantity})',
         onChanged: (Announcement? announcement) {
           setState(() {
             _selectedAnnounceId = announcement?.announceId;
             _selectedAnnouncementQuantity = announcement?.quantity;
           });
         },
-        validator: (Announcement? value) => value == null ? 'Select an Announcement' : null,
+        validator: (Announcement? value) =>
+            value == null ? 'Select an Announcement' : null,
       ),
     );
   }

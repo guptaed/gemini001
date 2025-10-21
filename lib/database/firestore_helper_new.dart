@@ -13,17 +13,21 @@ import 'package:gemini001/utils/logging.dart';
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
 // for our application, making it easier to manage data and separate concerns.
 
-class FirestoreHelper {                                                                   
-  static final FirestoreHelper _instance = FirestoreHelper._internal();                       // We create a private static instance of the class to implement the Singleton pattern.
-                                                                                             // This ensures that we only have one instance of FirestoreHelper throughout the app.  
-  factory FirestoreHelper() {                                                                // The factory constructor returns the single instance of FirestoreHelper.
+class FirestoreHelper {
+  static final FirestoreHelper _instance = FirestoreHelper
+      ._internal(); // We create a private static instance of the class to implement the Singleton pattern.
+  // This ensures that we only have one instance of FirestoreHelper throughout the app.
+  factory FirestoreHelper() {
+    // The factory constructor returns the single instance of FirestoreHelper.
     return _instance;
   }
 
-  FirestoreHelper._internal();                                                               // Private constructor to prevent instantiation from outside the class.                                                                                                                             
-  final FirebaseAuth _auth = FirebaseAuth.instance;                                          // Get the FirebaseAuth instance to handle user authentication.
+  FirestoreHelper._internal(); // Private constructor to prevent instantiation from outside the class.
+  final FirebaseAuth _auth = FirebaseAuth
+      .instance; // Get the FirebaseAuth instance to handle user authentication.
 
-  final FirebaseFirestore _db = FirebaseFirestore.instance;                                  // Get the FirebaseFirestore instance to interact with Firestore database.    
+  final FirebaseFirestore _db = FirebaseFirestore
+      .instance; // Get the FirebaseFirestore instance to interact with Firestore database.
 
   // This getter returns a collection reference for "suppliers" with a converter.
   // The converter automatically handles the conversion between a `Supplier` object
@@ -31,17 +35,17 @@ class FirestoreHelper {
   // This makes our code much cleaner and prevents type-casting errors.
   CollectionReference<Supplier> get _suppliersCollection {
     return _db.collection('Suppliers').withConverter<Supplier>(
-      fromFirestore: (snapshot, _) => Supplier.fromFirestore(snapshot),
-      toFirestore: (supplier, _) => supplier.toMap(),
-    );
+          fromFirestore: (snapshot, _) => Supplier.fromFirestore(snapshot),
+          toFirestore: (supplier, _) => supplier.toMap(),
+        );
   }
 
   // This getter returns a collection reference for "Shipments" with a converter.
   CollectionReference<Shipment> get _shipmentsCollection {
     return _db.collection('Shipments').withConverter<Shipment>(
-      fromFirestore: (snapshot, _) => Shipment.fromFirestore(snapshot),
-      toFirestore: (shipment, _) => shipment.toMap(),
-    );
+          fromFirestore: (snapshot, _) => Shipment.fromFirestore(snapshot),
+          toFirestore: (shipment, _) => shipment.toMap(),
+        );
   }
 
   // Add a new supplier to the 'suppliers' collection.
@@ -82,9 +86,9 @@ class FirestoreHelper {
         // Fetch old supplier for audit
         final oldDoc = await _suppliersCollection.doc(supplier.id).get();
         final oldSupplier = oldDoc.data();
-        
+
         await _suppliersCollection.doc(supplier.id).set(supplier);
-        
+
         // Log audit
         final currentUser = _auth.currentUser;
         if (currentUser != null && oldSupplier?.Status != supplier.Status) {
@@ -108,41 +112,40 @@ class FirestoreHelper {
   // This getter returns a collection reference for "Contracts" with a converter.
   CollectionReference<ContractInfo> get _contractsCollection {
     return _db.collection('Contracts').withConverter<ContractInfo>(
-      fromFirestore: (snapshot, _) => ContractInfo.fromFirestore(snapshot),
-      toFirestore: (contract, _) => contract.toMap(),
-    );
+          fromFirestore: (snapshot, _) => ContractInfo.fromFirestore(snapshot),
+          toFirestore: (contract, _) => contract.toMap(),
+        );
   }
 
   // This getter returns a collection reference for "Banks" with a converter.
   CollectionReference<BankDetails> get _banksCollection {
     return _db.collection('Banks').withConverter<BankDetails>(
-      fromFirestore: (snapshot, _) => BankDetails.fromFirestore(snapshot),
-      toFirestore: (bank, _) => bank.toMap(),
-    );
+          fromFirestore: (snapshot, _) => BankDetails.fromFirestore(snapshot),
+          toFirestore: (bank, _) => bank.toMap(),
+        );
   }
 
   // This getter returns a collection reference for "CreditChecks" with a converter.
   CollectionReference<CreditCheck> get _creditChecksCollection {
     return _db.collection('CreditChecks').withConverter<CreditCheck>(
-      fromFirestore: (snapshot, _) => CreditCheck.fromFirestore(snapshot),
-      toFirestore: (creditCheck, _) => creditCheck.toMap(),
-    );
+          fromFirestore: (snapshot, _) => CreditCheck.fromFirestore(snapshot),
+          toFirestore: (creditCheck, _) => creditCheck.toMap(),
+        );
   }
 
   // This getter returns a collection reference for "Bids" with a converter.
   CollectionReference<Bid> get _bidsCollection {
     return _db.collection('Bids').withConverter<Bid>(
-      fromFirestore: (snapshot, _) => Bid.fromFirestore(snapshot),
-      toFirestore: (bid, _) => bid.toMap(),
-    );
+          fromFirestore: (snapshot, _) => Bid.fromFirestore(snapshot),
+          toFirestore: (bid, _) => bid.toMap(),
+        );
   }
 
-
-Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
-  final querySnapshot = await _db.collection('BidFlows').where('SupId', isEqualTo: supId).get();
-  return querySnapshot.docs.map((doc) => BidFlow.fromFirestore(doc)).toList();
-}
-
+  Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
+    final querySnapshot =
+        await _db.collection('BidFlows').where('SupId', isEqualTo: supId).get();
+    return querySnapshot.docs.map((doc) => BidFlow.fromFirestore(doc)).toList();
+  }
 
   // Get contract information for a given SupId.
   Future<ContractInfo?> getContractInfo(int supId) async {
@@ -150,16 +153,18 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
         .where('SupId', isEqualTo: supId)
         .limit(1)
         .get();
-    return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.first.data() : null;
+    return querySnapshot.docs.isNotEmpty
+        ? querySnapshot.docs.first.data()
+        : null;
   }
 
   // Get bank details for a given SupId.
   Future<BankDetails?> getBankDetails(int supId) async {
-    final querySnapshot = await _banksCollection
-        .where('SupId', isEqualTo: supId)
-        .limit(1)
-        .get();
-    return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.first.data() : null;
+    final querySnapshot =
+        await _banksCollection.where('SupId', isEqualTo: supId).limit(1).get();
+    return querySnapshot.docs.isNotEmpty
+        ? querySnapshot.docs.first.data()
+        : null;
   }
 
   // Get credit check details for a given SupId.
@@ -169,7 +174,9 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
           .where('SupId', isEqualTo: supId)
           .limit(1)
           .get();
-      return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.first.data() : null;
+      return querySnapshot.docs.isNotEmpty
+          ? querySnapshot.docs.first.data()
+          : null;
     } catch (e) {
       logger.e('Error fetching credit check: $e');
       rethrow;
@@ -196,9 +203,9 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
     }
   }
 
-
   // Update credit check status and log to audit_trails.
-  Future<void> updateCreditCheck(CreditCheck creditCheck, String oldStatus) async {
+  Future<void> updateCreditCheck(
+      CreditCheck creditCheck, String oldStatus) async {
     try {
       if (creditCheck.id != null) {
         await _creditChecksCollection.doc(creditCheck.id).set(creditCheck);
@@ -225,9 +232,9 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
   // Collection reference for "Announcements" with converter
   CollectionReference<Announcement> get _announcementsCollection {
     return _db.collection('Announcements').withConverter<Announcement>(
-      fromFirestore: (snapshot, _) => Announcement.fromFirestore(snapshot),
-      toFirestore: (announcement, _) => announcement.toMap(),
-    );
+          fromFirestore: (snapshot, _) => Announcement.fromFirestore(snapshot),
+          toFirestore: (announcement, _) => announcement.toMap(),
+        );
   }
 
   // Add a new announcement
@@ -286,7 +293,7 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
       final snapshot = await FirebaseFirestore.instance
           .collection('Bids')
           .where('SupId', isEqualTo: supId)
-          .get();       
+          .get();
       return snapshot.docs.map((doc) => Bid.fromFirestore(doc)).toList();
     } catch (e) {
       logger.e('Error fetching bids for SupId: $supId: $e');
@@ -300,7 +307,8 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
   }
 
   // Sign in with email and password
-  Future<User?> signInWithEmailAndPassword(String email, String password) async {
+  Future<User?> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
       final UserCredential credential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -327,9 +335,11 @@ Future<List<BidFlow>> getBidFlowsBySupplier(int supId) async {
   }
 
   // Optional: Sign up (if needed for new users)
-  Future<User?> createUserWithEmailAndPassword(String email, String password) async {
+  Future<User?> createUserWithEmailAndPassword(
+      String email, String password) async {
     try {
-      final UserCredential credential = await _auth.createUserWithEmailAndPassword(
+      final UserCredential credential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );

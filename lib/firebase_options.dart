@@ -13,13 +13,12 @@ import 'package:flutter/foundation.dart'
 ///
 /// Example: `Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);`
 const FirebaseOptions defaultFirebaseOptions = FirebaseOptions(
-  apiKey: "AIzaSyCgNNxTCWmAuygURSFYpOzbdz9ZfEOP-LI",
-  authDomain: "vietfuelprocapp.firebaseapp.com",
-  projectId: "vietfuelprocapp",
-  storageBucket: "vietfuelprocapp.firebasestorage.app",
-  messagingSenderId: "490924808031",
-  appId: "1:490924808031:web:c3276a58bb7458decac8ea"
-);
+    apiKey: "AIzaSyCgNNxTCWmAuygURSFYpOzbdz9ZfEOP-LI",
+    authDomain: "vietfuelprocapp.firebaseapp.com",
+    projectId: "vietfuelprocapp",
+    storageBucket: "vietfuelprocapp.firebasestorage.app",
+    messagingSenderId: "490924808031",
+    appId: "1:490924808031:web:c3276a58bb7458decac8ea");
 
 /// The default [FirebaseOptions] for the current platform.
 ///
@@ -27,13 +26,12 @@ const FirebaseOptions defaultFirebaseOptions = FirebaseOptions(
 FirebaseOptions get currentPlatform {
   if (kIsWeb) {
     return const FirebaseOptions(
-      apiKey: "AIzaSyCgNNxTCWmAuygURSFYpOzbdz9ZfEOP-LI",
-      authDomain: "vietfuelprocapp.firebaseapp.com",
-      projectId: "vietfuelprocapp",
-      storageBucket: "vietfuelprocapp.firebasestorage.app",
-      messagingSenderId: "490924808031",
-      appId: "1:490924808031:web:c3276a58bb7458decac8ea"
-    );
+        apiKey: "AIzaSyCgNNxTCWmAuygURSFYpOzbdz9ZfEOP-LI",
+        authDomain: "vietfuelprocapp.firebaseapp.com",
+        projectId: "vietfuelprocapp",
+        storageBucket: "vietfuelprocapp.firebasestorage.app",
+        messagingSenderId: "490924808031",
+        appId: "1:490924808031:web:c3276a58bb7458decac8ea");
   }
   // The original CLI tool generates an empty options object for other platforms
   // if they are not explicitly configured.
@@ -51,13 +49,12 @@ class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       return const FirebaseOptions(
-        apiKey: "AIzaSyCgNNxTCWmAuygURSFYpOzbdz9ZfEOP-LI",
-        authDomain: "vietfuelprocapp.firebaseapp.com",
-        projectId: "vietfuelprocapp",
-        storageBucket: "vietfuelprocapp.firebasestorage.app",
-        messagingSenderId: "490924808031",
-        appId: "1:490924808031:web:c3276a58bb7458decac8ea"
-      );
+          apiKey: "AIzaSyCgNNxTCWmAuygURSFYpOzbdz9ZfEOP-LI",
+          authDomain: "vietfuelprocapp.firebaseapp.com",
+          projectId: "vietfuelprocapp",
+          storageBucket: "vietfuelprocapp.firebasestorage.app",
+          messagingSenderId: "490924808031",
+          appId: "1:490924808031:web:c3276a58bb7458decac8ea");
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -97,4 +94,3 @@ class DefaultFirebaseOptions {
     }
   }
 }
-

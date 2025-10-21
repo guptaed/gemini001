@@ -38,7 +38,8 @@ class BankDetails {
     };
   }
 
-  factory BankDetails.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory BankDetails.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     try {
       final data = doc.data()!;
       return BankDetails(

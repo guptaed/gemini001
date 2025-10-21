@@ -29,7 +29,6 @@ class AddShipmentScreen extends StatefulWidget {
 class _AddShipmentScreenState extends State<AddShipmentScreen> {
   final _formKey = GlobalKey<FormState>();
   int? _selectedSupId;
-  String? _selectedSupplierName;
   int? _selectedBidId;
   String? _selectedStatus;
   final _shipmentIdController = TextEditingController();
@@ -64,7 +63,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
     return '3${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -97,12 +97,12 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
           );
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
+            MaterialPageRoute(
+                builder: (context) => const ListShipmentsScreen()),
           );
           _formKey.currentState!.reset();
           setState(() {
             _selectedSupId = null;
-            _selectedSupplierName = null;
             _selectedBidId = null;
             _selectedStatus = null;
             _shipmentIdController.text = _generateShipmentId();
@@ -117,7 +117,9 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error adding shipment: $e')),
           );
-          logger.e('Error adding shipment with ShipmentId: ${_shipmentIdController.text}', e);
+          logger.e(
+              'Error adding shipment with ShipmentId: ${_shipmentIdController.text}',
+              e);
         }
       }
     }
@@ -140,13 +142,15 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -173,7 +177,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }
@@ -199,7 +204,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
                 labelText: 'Shipment ID',
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'ID should be generated' : null,
               ),
               _buildBidDropdown(theme),
               _buildSupplierField(theme),
@@ -208,7 +214,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
                 controller: _shippedDateController,
                 labelText: 'Shipped Date (YYYY-MM-DD)',
                 onTap: () => _selectDate(context, _shippedDateController),
-                validator: (value) => value!.isEmpty ? 'Enter Shipped Date' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Shipped Date' : null,
               ),
               _buildTextFieldWithDatePicker(
                 controller: _receivedDateController,
@@ -230,7 +237,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
                   textStyle: const TextStyle(fontSize: 18),
                   backgroundColor: theme.primaryColor,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text('Save Shipment'),
               ),
@@ -336,7 +344,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
           fillColor: Colors.grey[300],
         ),
         enabled: false,
-        validator: (value) => value!.isEmpty ? 'Select a Bid to populate Supplier' : null,
+        validator: (value) =>
+            value!.isEmpty ? 'Select a Bid to populate Supplier' : null,
       ),
     );
   }
@@ -361,7 +370,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
               ),
             ),
           ),
-          emptyBuilder: (context, searchEntry) => const Center(child: Text('No bids found')),
+          emptyBuilder: (context, searchEntry) =>
+              const Center(child: Text('No bids found')),
         ),
         dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
@@ -397,7 +407,8 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
             return [];
           }
         },
-        itemAsString: (Bid bid) => '${bid.bidId} - SupId: ${bid.supId}, AnnounceId: ${bid.announceId}',
+        itemAsString: (Bid bid) =>
+            '${bid.bidId} - SupId: ${bid.supId}, AnnounceId: ${bid.announceId}',
         onChanged: (Bid? bid) async {
           if (bid != null) {
             try {
@@ -419,22 +430,21 @@ class _AddShipmentScreenState extends State<AddShipmentScreen> {
               setState(() {
                 _selectedBidId = bid.bidId;
                 _selectedSupId = bid.supId;
-                _selectedSupplierName = supplier.CompanyName;
-                _supplierController.text = '${bid.supId} - ${supplier.CompanyName}';
+                _supplierController.text =
+                    '${bid.supId} - ${supplier.CompanyName}';
               });
             } catch (e) {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Error loading supplier: $e')),
                 );
-              logger.e('Error loading supplier for SupId: ${bid.supId}', e);
+                logger.e('Error loading supplier for SupId: ${bid.supId}', e);
               }
             }
           } else {
             setState(() {
               _selectedBidId = null;
               _selectedSupId = null;
-              _selectedSupplierName = null;
               _supplierController.clear();
             });
           }

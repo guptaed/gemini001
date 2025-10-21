@@ -18,7 +18,8 @@ class ListAnnouncementsScreen extends StatefulWidget {
   const ListAnnouncementsScreen({super.key});
 
   @override
-  State<ListAnnouncementsScreen> createState() => _ListAnnouncementsScreenState();
+  State<ListAnnouncementsScreen> createState() =>
+      _ListAnnouncementsScreenState();
 }
 
 class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
@@ -56,7 +57,8 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
@@ -89,13 +91,15 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }
   }
 
-  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+  Widget _buildDetailRow(
+      String label, String value, TextStyle style, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
@@ -107,7 +111,7 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
               '$label:',
               style: style.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -130,9 +134,15 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
   List<Color> _getStatusGradient(String status) {
     switch (status.toLowerCase()) {
       case 'active':
-        return [const Color.fromARGB(255, 19, 88, 82), const Color.fromARGB(255, 35, 170, 157)];        
+        return [
+          const Color.fromARGB(255, 19, 88, 82),
+          const Color.fromARGB(255, 35, 170, 157)
+        ];
       case 'closed':
-        return [const Color.fromARGB(255, 151, 35, 33), const Color.fromARGB(255, 167, 41, 41)];
+        return [
+          const Color.fromARGB(255, 151, 35, 33),
+          const Color.fromARGB(255, 167, 41, 41)
+        ];
       default:
         return [Colors.grey[400]!, Colors.grey[200]!];
     }
@@ -208,22 +218,26 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Card(
                 elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
                     labelText: 'Search Announcements',
                     hintText: 'Enter Fuel Type, ID, Status, or Notes',
-                    prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
+                    prefixIcon:
+                        Icon(Icons.search, color: theme.colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     suffixIcon: IconButton(
-                      icon: Icon(Icons.clear, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                      icon: Icon(Icons.clear,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       onPressed: () {
                         _searchController.clear();
                         setState(() {
@@ -251,13 +265,15 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                     return Card(
                       margin: const EdgeInsets.all(16),
                       elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.error_outline, color: theme.colorScheme.error, size: 40),
+                            Icon(Icons.error_outline,
+                                color: theme.colorScheme.error, size: 40),
                             const SizedBox(height: 8),
                             Text('Error: ${snapshot.error}', style: bodyMedium),
                           ],
@@ -271,28 +287,35 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                       return Card(
                         margin: const EdgeInsets.all(16),
                         elevation: 3,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                              Icon(Icons.info_outline,
+                                  color: theme.colorScheme.primary, size: 40),
                               const SizedBox(height: 8),
-                              Text('No announcements added yet.', style: bodyMedium),
+                              Text('No announcements added yet.',
+                                  style: bodyMedium),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const AddAnnouncementScreen()),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: theme.colorScheme.primary,
                                   foregroundColor: theme.colorScheme.onPrimary,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 12),
                                 ),
                                 child: const Text('Add Announcement'),
                               ),
@@ -301,7 +324,8 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                         ),
                       );
                     }
-                    final filteredAnnouncements = announcements.where((announcement) {
+                    final filteredAnnouncements =
+                        announcements.where((announcement) {
                       final fields = [
                         announcement.announceId.toString(),
                         announcement.announceDate.toLowerCase(),
@@ -313,11 +337,13 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                         announcement.status.toLowerCase(),
                         announcement.notes.toLowerCase(),
                       ];
-                      return fields.any((field) => field.contains(_searchQuery));
+                      return fields
+                          .any((field) => field.contains(_searchQuery));
                     }).toList();
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 400,
                         childAspectRatio: 1.4,
                         crossAxisSpacing: 14,
@@ -331,7 +357,8 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                           onExit: (_) => setState(() {}),
                           child: Card(
                             elevation: 5,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             color: Colors.white,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
@@ -339,13 +366,16 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AnnouncementDetailsScreen(announcement: announcement),
+                                    builder: (context) =>
+                                        AnnouncementDetailsScreen(
+                                            announcement: announcement),
                                   ),
                                 );
                               },
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxHeight: MediaQuery.of(context).size.width / 2.0,
+                                  maxHeight:
+                                      MediaQuery.of(context).size.width / 2.0,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,7 +384,8 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withOpacity(0.1),
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(12),
                                           topRight: Radius.circular(12),
@@ -374,16 +405,39 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            _buildDetailRow('ID', announcement.announceId.toString(), bodyMedium, theme),
-                                            _buildDetailRow('Quantity', '${announcement.quantity} liters', bodyMedium, theme),
-                                            _buildDetailRow('Price', '${announcement.price} VND/L', bodyMedium, theme),
-                                            _buildDetailRow('Bid Close', announcement.bidCloseDate, bodyMedium, theme),
-                                            _buildDetailRow('Delivery', announcement.deliveryDate, bodyMedium, theme),
+                                            _buildDetailRow(
+                                                'ID',
+                                                announcement.announceId
+                                                    .toString(),
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Quantity',
+                                                '${announcement.quantity} liters',
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Price',
+                                                '${announcement.price} VND/L',
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Bid Close',
+                                                announcement.bidCloseDate,
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Delivery',
+                                                announcement.deliveryDate,
+                                                bodyMedium,
+                                                theme),
                                             const SizedBox(height: 4),
-                                            _buildStatusBadge(announcement.status, theme),
+                                            _buildStatusBadge(
+                                                announcement.status, theme),
                                           ],
                                         ),
                                       ),
@@ -400,28 +454,35 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                   return Card(
                     margin: const EdgeInsets.all(16),
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                          Icon(Icons.info_outline,
+                              color: theme.colorScheme.primary, size: 40),
                           const SizedBox(height: 8),
-                          Text('Start adding announcements!', style: bodyMedium),
+                          Text('Start adding announcements!',
+                              style: bodyMedium),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AddAnnouncementScreen()),
                               );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
                             ),
                             child: const Text('Add Announcement'),
                           ),

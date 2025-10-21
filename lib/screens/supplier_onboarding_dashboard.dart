@@ -22,27 +22,29 @@ class SupplierOnboardingDashboard extends StatefulWidget {
   const SupplierOnboardingDashboard({super.key});
 
   @override
-  State<SupplierOnboardingDashboard> createState() => _SupplierOnboardingDashboardState();
+  State<SupplierOnboardingDashboard> createState() =>
+      _SupplierOnboardingDashboardState();
 }
 
-class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboard> {
+class _SupplierOnboardingDashboardState
+    extends State<SupplierOnboardingDashboard> {
   final FirestoreHelper _firestoreHelper = FirestoreHelper();
-  
+
   // Data holders
-  List<TaskItem> _initiateCreditChecksOverdue = [];
-  List<TaskItem> _completeCreditChecksOverdue = [];
-  List<TaskItem> _completeContractsOverdue = [];
-  List<TaskItem> _generatePasswordsOverdue = [];
-  
-  List<TaskItem> _initiateCreditChecksNormal = [];
-  List<TaskItem> _completeCreditChecksNormal = [];
-  List<TaskItem> _completeContractsNormal = [];
-  List<TaskItem> _generatePasswordsNormal = [];
-  
+  final List<TaskItem> _initiateCreditChecksOverdue = [];
+  final List<TaskItem> _completeCreditChecksOverdue = [];
+  final List<TaskItem> _completeContractsOverdue = [];
+  final List<TaskItem> _generatePasswordsOverdue = [];
+
+  final List<TaskItem> _initiateCreditChecksNormal = [];
+  final List<TaskItem> _completeCreditChecksNormal = [];
+  final List<TaskItem> _completeContractsNormal = [];
+  final List<TaskItem> _generatePasswordsNormal = [];
+
   int _totalOverdue = 0;
   int _totalDueToday = 0;
   int _totalUpcoming = 0;
-  
+
   bool _isLoading = true;
 
   @override
@@ -53,11 +55,11 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
 
   Future<void> _loadDashboardData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Get all suppliers
       final suppliers = await _firestoreHelper.streamSuppliers().first;
-      
+
       // Clear existing data
       _initiateCreditChecksOverdue.clear();
       _completeCreditChecksOverdue.clear();
@@ -67,25 +69,26 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
       _completeCreditChecksNormal.clear();
       _completeContractsNormal.clear();
       _generatePasswordsNormal.clear();
-      
+
       // Process each supplier
       for (var supplier in suppliers) {
-        final creditCheck = await _firestoreHelper.getCreditCheck(supplier.SupId);
+        final creditCheck =
+            await _firestoreHelper.getCreditCheck(supplier.SupId);
         final contract = await _firestoreHelper.getContractInfo(supplier.SupId);
-        
+
         // Determine current stage and waiting days
         final stage = _determineStage(supplier, creditCheck, contract);
         final waitingDays = stage['waitingDays'] as int;
         final stageName = stage['stage'] as String;
         final dateAdded = stage['dateAdded'] as String;
-        
+
         final taskItem = TaskItem(
           supplier: supplier,
           stage: stageName,
           dateAdded: dateAdded,
           waitingDays: waitingDays,
         );
-        
+
         // Categorize tasks
         switch (stageName) {
           case 'Initiate Credit Check':
@@ -118,23 +121,30 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             break;
         }
       }
-      
+
       // Calculate totals
       _totalOverdue = _initiateCreditChecksOverdue.length +
           _completeCreditChecksOverdue.length +
           _completeContractsOverdue.length +
           _generatePasswordsOverdue.length;
-      
-      _totalDueToday = _initiateCreditChecksNormal.where((t) => t.waitingDays >= 25 && t.waitingDays <= 30).length +
-          _completeCreditChecksNormal.where((t) => t.waitingDays >= 55 && t.waitingDays <= 60).length +
-          _completeContractsNormal.where((t) => t.waitingDays >= 40 && t.waitingDays <= 45).length +
-          _generatePasswordsNormal.where((t) => t.waitingDays >= 3 && t.waitingDays <= 5).length;
-      
+
+      _totalDueToday = _initiateCreditChecksNormal
+              .where((t) => t.waitingDays >= 25 && t.waitingDays <= 30)
+              .length +
+          _completeCreditChecksNormal
+              .where((t) => t.waitingDays >= 55 && t.waitingDays <= 60)
+              .length +
+          _completeContractsNormal
+              .where((t) => t.waitingDays >= 40 && t.waitingDays <= 45)
+              .length +
+          _generatePasswordsNormal
+              .where((t) => t.waitingDays >= 3 && t.waitingDays <= 5)
+              .length;
+
       _totalUpcoming = _initiateCreditChecksNormal.length +
           _completeCreditChecksNormal.length +
           _completeContractsNormal.length +
           _generatePasswordsNormal.length;
-      
     } catch (e) {
       logger.e('Error loading supplier onboarding dashboard data', e);
     } finally {
@@ -144,9 +154,10 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
     }
   }
 
-  Map<String, dynamic> _determineStage(Supplier supplier, CreditCheck? creditCheck, ContractInfo? contract) {
+  Map<String, dynamic> _determineStage(
+      Supplier supplier, CreditCheck? creditCheck, ContractInfo? contract) {
     final now = DateTime.now();
-    
+
     // Stage 4: Generate Password (Contract exists, check if password generated)
     if (contract != null) {
       final contractDate = _parseDate(contract.SignedDate);
@@ -162,9 +173,10 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         }
       }
     }
-    
+
     // Stage 3: Complete Contract (Credit check complete, no contract)
-    if (creditCheck != null && creditCheck.status.toLowerCase() == 'successful') {
+    if (creditCheck != null &&
+        creditCheck.status.toLowerCase() == 'successful') {
       if (contract == null) {
         final creditCheckDate = _parseDate(creditCheck.checkFinishDate);
         if (creditCheckDate != null) {
@@ -177,9 +189,10 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         }
       }
     }
-    
+
     // Stage 2: Complete Credit Check (Credit check in progress)
-    if (creditCheck != null && creditCheck.status.toLowerCase() == 'in progress') {
+    if (creditCheck != null &&
+        creditCheck.status.toLowerCase() == 'in progress') {
       final creditCheckStartDate = _parseDate(creditCheck.checkStartDate);
       if (creditCheckStartDate != null) {
         final daysSinceStart = now.difference(creditCheckStartDate).inDays;
@@ -190,7 +203,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         };
       }
     }
-    
+
     // Stage 1: Initiate Credit Check (No credit check or status is 'To Start')
     if (creditCheck == null || creditCheck.status.toLowerCase() == 'to start') {
       // Use supplier creation date or credit check date
@@ -205,7 +218,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         };
       }
     }
-    
+
     // Default: Completed onboarding
     return {
       'stage': 'Completed',
@@ -234,28 +247,44 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
   void _onMenuItemSelected(int index) {
     switch (index) {
       case 0:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListSuppliersScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const ListSuppliersScreen()));
         break;
       case 1:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddSupplierScreen()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AddSupplierScreen()));
         break;
       case 2:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const AddAnnouncementScreen()));
         break;
       case 3:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const ListAnnouncementsScreen()));
         break;
       case 4:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddBidScreen()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AddBidScreen()));
         break;
       case 5:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListBidsScreen()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ListBidsScreen()));
         break;
       case 6:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddShipmentScreen()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AddShipmentScreen()));
         break;
       case 7:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListShipmentsScreen()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const ListShipmentsScreen()));
         break;
     }
   }
@@ -283,21 +312,21 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
                     // Welcome Section
                     _buildWelcomeSection(userName, theme),
                     const SizedBox(height: 24),
-                    
+
                     // KPI Cards
                     _buildKPICards(theme),
                     const SizedBox(height: 24),
-                    
+
                     // Critical Section
                     if (_totalOverdue > 0) ...[
                       _buildCriticalSection(theme),
                       const SizedBox(height: 24),
                     ],
-                    
+
                     // Normal Tasks Section
                     _buildNormalTasksSection(theme),
                     const SizedBox(height: 24),
-                    
+
                     // Pipeline Summary
                     _buildPipelineSummary(theme),
                   ],
@@ -325,7 +354,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
                 child: Icon(
                   Icons.local_shipping,
                   size: 50,
-                  color: theme.primaryColor.withOpacity(0.3 + (value * 0.7)),
+                  color: theme.primaryColor.withValues(alpha: 0.3 + (value * 0.7)),
                 ),
               );
             },
@@ -336,7 +365,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             },
           ),
           const SizedBox(height: 32),
-          
+
           // Loading text with animation
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
@@ -360,7 +389,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             },
           ),
           const SizedBox(height: 16),
-          
+
           // Subtitle
           Text(
             'Fetching supplier onboarding information',
@@ -369,17 +398,17 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             ),
           ),
           const SizedBox(height: 32),
-          
+
           // Progress indicator
           SizedBox(
             width: 200,
             child: LinearProgressIndicator(
-              backgroundColor: theme.primaryColor.withOpacity(0.1),
+              backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Loading steps indicator
           Container(
             padding: const EdgeInsets.all(20),
@@ -440,7 +469,10 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.7)],
+            colors: [
+              theme.colorScheme.primary,
+              theme.colorScheme.primary.withValues(alpha: 0.7)
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -479,7 +511,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             Text(
               'Last updated: ${DateFormat('MMM dd, yyyy - hh:mm a').format(DateTime.now())}',
               style: theme.textTheme.bodySmall!.copyWith(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -538,7 +570,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color.withOpacity(0.1), Colors.white],
+            colors: [color.withValues(alpha: 0.1), Colors.white],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -565,7 +597,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
               title,
               style: theme.textTheme.bodyMedium!.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -581,7 +613,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.red.withOpacity(0.05), Colors.white],
+            colors: [Colors.red.withValues(alpha: 0.05), Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -594,7 +626,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
@@ -659,7 +691,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -667,7 +699,8 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             ),
             child: Row(
               children: [
-                Icon(Icons.assignment, color: theme.colorScheme.primary, size: 28),
+                Icon(Icons.assignment,
+                    color: theme.colorScheme.primary, size: 28),
                 const SizedBox(width: 12),
                 Text(
                   '📋 TASKS REQUIRING ATTENTION',
@@ -716,11 +749,13 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
+                    Icon(Icons.check_circle_outline,
+                        size: 64, color: Colors.green),
                     const SizedBox(height: 16),
                     Text(
                       'All tasks are up to date!',
-                      style: theme.textTheme.titleLarge!.copyWith(color: Colors.green),
+                      style: theme.textTheme.titleLarge!
+                          .copyWith(color: Colors.green),
                     ),
                   ],
                 ),
@@ -750,15 +785,29 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
-            headingRowColor: MaterialStateProperty.all(color.withOpacity(0.1)),
+            headingRowColor: WidgetStateProperty.all(color.withValues(alpha: 0.1)),
             columns: const [
-              DataColumn(label: Text('Supplier ID', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Company Name', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Representative', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Address', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Date Added', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Days Waiting', style: TextStyle(fontWeight: FontWeight.bold))),
-              DataColumn(label: Text('Action', style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Supplier ID',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Company Name',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Representative',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Address',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Date Added',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Days Waiting',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              DataColumn(
+                  label: Text('Action',
+                      style: TextStyle(fontWeight: FontWeight.bold))),
             ],
             rows: tasks.map((task) {
               return DataRow(
@@ -786,9 +835,10 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
                   DataCell(Text(task.dateAdded)),
                   DataCell(
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.2),
+                        color: color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -808,15 +858,18 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => SupplierDetailsScreen(supplier: task.supplier),
+                            builder: (context) =>
+                                SupplierDetailsScreen(supplier: task.supplier),
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
                   ),
@@ -849,7 +902,8 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
           children: [
             Row(
               children: [
-                Icon(Icons.bar_chart, color: theme.colorScheme.primary, size: 28),
+                Icon(Icons.bar_chart,
+                    color: theme.colorScheme.primary, size: 28),
                 const SizedBox(width: 12),
                 Text(
                   '📊 ONBOARDING PIPELINE SUMMARY',
@@ -864,10 +918,31 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildPipelineItem('Total in Pipeline', totalInPipeline, Icons.people, Colors.blue, theme),
-                _buildPipelineItem('Credit Checks', _initiateCreditChecksOverdue.length + _initiateCreditChecksNormal.length + _completeCreditChecksOverdue.length + _completeCreditChecksNormal.length, Icons.fact_check, Colors.purple, theme),
-                _buildPipelineItem('Contracts', _completeContractsOverdue.length + _completeContractsNormal.length, Icons.description, Colors.teal, theme),
-                _buildPipelineItem('Passwords', _generatePasswordsOverdue.length + _generatePasswordsNormal.length, Icons.vpn_key, Colors.indigo, theme),
+                _buildPipelineItem('Total in Pipeline', totalInPipeline,
+                    Icons.people, Colors.blue, theme),
+                _buildPipelineItem(
+                    'Credit Checks',
+                    _initiateCreditChecksOverdue.length +
+                        _initiateCreditChecksNormal.length +
+                        _completeCreditChecksOverdue.length +
+                        _completeCreditChecksNormal.length,
+                    Icons.fact_check,
+                    Colors.purple,
+                    theme),
+                _buildPipelineItem(
+                    'Contracts',
+                    _completeContractsOverdue.length +
+                        _completeContractsNormal.length,
+                    Icons.description,
+                    Colors.teal,
+                    theme),
+                _buildPipelineItem(
+                    'Passwords',
+                    _generatePasswordsOverdue.length +
+                        _generatePasswordsNormal.length,
+                    Icons.vpn_key,
+                    Colors.indigo,
+                    theme),
               ],
             ),
           ],
@@ -876,13 +951,14 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
     );
   }
 
-  Widget _buildPipelineItem(String label, int value, IconData icon, Color color, ThemeData theme) {
+  Widget _buildPipelineItem(
+      String label, int value, IconData icon, Color color, ThemeData theme) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color, size: 32),
@@ -898,7 +974,7 @@ class _SupplierOnboardingDashboardState extends State<SupplierOnboardingDashboar
         Text(
           label,
           style: theme.textTheme.bodySmall!.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
           textAlign: TextAlign.center,
         ),

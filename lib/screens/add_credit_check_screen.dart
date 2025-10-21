@@ -55,7 +55,8 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -96,7 +97,8 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error adding credit check: $e')),
           );
-          logger.e('Error adding credit check for SupplierId: ${widget.supId}', e);
+          logger.e(
+              'Error adding credit check for SupplierId: ${widget.supId}', e);
         }
       }
     }
@@ -119,13 +121,15 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -156,7 +160,8 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
     }
@@ -182,25 +187,29 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
                 initialValue: widget.supId.toString(),
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) => value!.isEmpty ? 'Supplier ID is required' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Supplier ID is required' : null,
               ),
               _buildTextField(
                 labelText: 'Supplier Name',
                 initialValue: widget.companyName,
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) => value!.isEmpty ? 'Supplier Name is required' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Supplier Name is required' : null,
               ),
               _buildTextFieldWithDatePicker(
                 controller: _establishedDateController,
                 labelText: 'Established Date (YYYY-MM-DD)',
                 onTap: () => _selectDate(context, _establishedDateController),
-                validator: (value) => value!.isEmpty ? 'Enter Established Date' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Established Date' : null,
               ),
               _buildTextField(
                 controller: _rawMaterialTypesController,
                 labelText: 'Raw Material Types',
-                validator: (value) => value!.isEmpty ? 'Enter Raw Material Types' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Raw Material Types' : null,
               ),
               _buildTextField(
                 controller: _supplyCapacityController,
@@ -208,21 +217,26 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value!.isEmpty) return 'Enter Supply Capacity';
-                  if (int.tryParse(value) == null) return 'Enter a valid number';
+                  if (int.tryParse(value) == null) {
+                    return 'Enter a valid number';
+                  }
                   return null;
                 },
               ),
               _buildTextField(
                 controller: _trackRecordController,
                 labelText: 'Track Record',
-                validator: (value) => value!.isEmpty ? 'Enter Track Record' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Track Record' : null,
               ),
               _buildTextField(
                 controller: _pdfUrlPhotoERCController,
                 labelText: 'PDF URL for ERC (Optional)',
                 validator: (value) {
                   if (value!.isNotEmpty) {
-                    if (!Uri.parse(value).isAbsolute) return 'Enter a valid URL';
+                    if (!Uri.parse(value).isAbsolute) {
+                      return 'Enter a valid URL';
+                    }
                   }
                   return null;
                 },
@@ -230,7 +244,8 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
               _buildTextField(
                 controller: _checkCompanyController,
                 labelText: 'Check Company',
-                validator: (value) => value!.isEmpty ? 'Enter Credit Check Company Name' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Credit Check Company Name' : null,
               ),
               _buildTextFieldWithDatePicker(
                 controller: _checkStartDateController,
@@ -253,7 +268,8 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
                   textStyle: const TextStyle(fontSize: 18),
                   backgroundColor: theme.primaryColor,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text('Save Credit Check'),
               ),
@@ -357,7 +373,8 @@ class _AddCreditCheckScreenState extends State<AddCreditCheckScreen> {
           ),
         ),
         initialValue: _selectedStatus,
-        items: ['To Start', 'In Progress', 'Successful', 'Rejected'].map((String status) {
+        items: ['To Start', 'In Progress', 'Successful', 'Rejected']
+            .map((String status) {
           return DropdownMenuItem<String>(
             value: status,
             child: Text(status),

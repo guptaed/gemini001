@@ -1,12 +1,5 @@
-
-
 // THIS IS A DUMMY FILE FOR BID DETAILS SCREEN
 // TO BE IMPLEMENTED LATER
-
-
-
-
-
 
 import 'package:flutter/material.dart';
 

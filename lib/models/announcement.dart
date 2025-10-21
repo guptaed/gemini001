@@ -66,7 +66,8 @@ class Announcement {
     };
   }
 
-  factory Announcement.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory Announcement.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     try {
       final data = doc.data()!;
       return Announcement(

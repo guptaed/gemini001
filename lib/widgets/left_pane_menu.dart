@@ -13,7 +13,7 @@ class LeftPaneMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       width: 250,
       decoration: BoxDecoration(
@@ -41,7 +41,7 @@ class LeftPaneMenu extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.teal[700]!.withOpacity(0.3),
+                  color: Colors.teal[700]!.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -52,7 +52,7 @@ class LeftPaneMenu extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Icon(
@@ -73,7 +73,7 @@ class LeftPaneMenu extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Menu Items
           Expanded(
             child: ListView(
@@ -88,11 +88,11 @@ class LeftPaneMenu extends StatelessWidget {
                   index: 10,
                   theme: theme,
                 ),
-                
+
                 const SizedBox(height: 8),
                 const Divider(height: 1, thickness: 1),
                 const SizedBox(height: 8),
-                
+
                 // Suppliers Section
                 _buildSectionHeader('SUPPLIERS', theme),
                 _buildMenuItem(
@@ -109,11 +109,11 @@ class LeftPaneMenu extends StatelessWidget {
                   index: 1,
                   theme: theme,
                 ),
-                
+
                 const SizedBox(height: 8),
                 const Divider(height: 1, thickness: 1),
                 const SizedBox(height: 8),
-                
+
                 // Announcements Section
                 _buildSectionHeader('ANNOUNCEMENTS', theme),
                 _buildMenuItem(
@@ -130,11 +130,11 @@ class LeftPaneMenu extends StatelessWidget {
                   index: 2,
                   theme: theme,
                 ),
-                
+
                 const SizedBox(height: 8),
                 const Divider(height: 1, thickness: 1),
                 const SizedBox(height: 8),
-                
+
                 // Bids Section
                 _buildSectionHeader('BIDS', theme),
                 _buildMenuItem(
@@ -151,11 +151,11 @@ class LeftPaneMenu extends StatelessWidget {
                   index: 4,
                   theme: theme,
                 ),
-                
+
                 const SizedBox(height: 8),
                 const Divider(height: 1, thickness: 1),
                 const SizedBox(height: 8),
-                
+
                 // Shipments Section
                 _buildSectionHeader('SHIPMENTS', theme),
                 _buildMenuItem(
@@ -172,11 +172,11 @@ class LeftPaneMenu extends StatelessWidget {
                   index: 6,
                   theme: theme,
                 ),
-                
+
                 const SizedBox(height: 8),
                 const Divider(height: 1, thickness: 1),
                 const SizedBox(height: 8),
-                
+
                 // Operations Section
                 _buildSectionHeader('OPERATIONS', theme),
                 _buildMenuItem(
@@ -227,7 +227,7 @@ class LeftPaneMenu extends StatelessWidget {
     String? badge,
   }) {
     final isSelected = selectedPageIndex == index;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
       child: Material(
@@ -240,19 +240,19 @@ class LeftPaneMenu extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Colors.teal[700]!.withOpacity(0.15)
+                  ? Colors.teal[700]!.withValues(alpha: 0.15)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isSelected
-                    ? Colors.teal[700]!.withOpacity(0.4)
+                    ? Colors.teal[700]!.withValues(alpha: 0.4)
                     : Colors.transparent,
                 width: 1.5,
               ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: Colors.teal[700]!.withOpacity(0.25),
+                        color: Colors.teal[700]!.withValues(alpha: 0.25),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -266,7 +266,7 @@ class LeftPaneMenu extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Colors.teal[700]
-                        : Colors.teal[700]!.withOpacity(0.15),
+                        : Colors.teal[700]!.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(7),
                   ),
                   child: Icon(
@@ -280,10 +280,9 @@ class LeftPaneMenu extends StatelessWidget {
                   child: Text(
                     title,
                     style: theme.textTheme.bodyMedium!.copyWith(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                      color: isSelected
-                          ? Colors.teal[900]
-                          : Colors.grey[850],
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.w600,
+                      color: isSelected ? Colors.teal[900] : Colors.grey[850],
                       fontSize: 14.5,
                       height: 1.2,
                     ),
@@ -291,12 +290,13 @@ class LeftPaneMenu extends StatelessWidget {
                 ),
                 if (badge != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.2),
+                      color: Colors.orange.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: Colors.orange.withOpacity(0.5),
+                        color: Colors.orange.withValues(alpha: 0.5),
                         width: 1,
                       ),
                     ),

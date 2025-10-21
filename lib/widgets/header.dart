@@ -37,7 +37,8 @@ class Header extends StatelessWidget {
                   decoration: TextDecoration.none,
                 ),
               ),
-              const SizedBox(width: 20), // Spacing between app name and page title
+              const SizedBox(
+                  width: 20), // Spacing between app name and page title
               Text(
                 title,
                 style: const TextStyle(
@@ -62,7 +63,8 @@ class Header extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               GestureDetector(
-                onTap: () => Provider.of<AuthProvider>(context, listen: false).signOut(context),
+                onTap: () => Provider.of<AuthProvider>(context, listen: false)
+                    .signOut(context),
                 child: const Text(
                   'Logout',
                   style: TextStyle(

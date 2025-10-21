@@ -59,7 +59,8 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
     return '1${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
   }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -94,7 +95,8 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           );
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+            MaterialPageRoute(
+                builder: (context) => const ListAnnouncementsScreen()),
           );
           _formKey.currentState!.reset();
           _announceDateController.clear();
@@ -113,7 +115,9 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error adding announcement: $e')),
           );
-          logger.e('Error adding announcement with AnnouncementId: ${_announceIdController.text}', e);
+          logger.e(
+              'Error adding announcement with AnnouncementId: ${_announceIdController.text}',
+              e);
         }
       }
     }
@@ -127,19 +131,20 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
         );
         break;
-        case 1:
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
-          );
-          break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
+        );
+        break;
       case 2:
         // Already on AddAnnouncementScreen, do nothing
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -154,7 +159,7 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           MaterialPageRoute(builder: (context) => const ListBidsScreen()),
         );
         break;
-      
+
       case 6:
         Navigator.push(
           context,
@@ -166,16 +171,15 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           context,
           MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
         );
-        break;      
+        break;
 
       case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
-
-
     }
   }
 
@@ -198,25 +202,29 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
                 labelText: 'Announcement ID',
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) => value!.isEmpty ? 'ID should be generated' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'ID should be generated' : null,
               ),
               _buildTextFieldWithDatePicker(
                 controller: _announceDateController,
                 labelText: 'Announce Date (YYYY-MM-DD)',
                 onTap: () => _selectDate(context, _announceDateController),
-                validator: (value) => value!.isEmpty ? 'Enter Announce Date' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Announce Date' : null,
               ),
               _buildTextFieldWithDatePicker(
                 controller: _bidCloseDateController,
                 labelText: 'Bid Close Date (YYYY-MM-DD)',
                 onTap: () => _selectDate(context, _bidCloseDateController),
-                validator: (value) => value!.isEmpty ? 'Enter Bid Close Date' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Bid Close Date' : null,
               ),
               _buildTextFieldWithDatePicker(
                 controller: _deliveryDateController,
                 labelText: 'Delivery Date (YYYY-MM-DD)',
                 onTap: () => _selectDate(context, _deliveryDateController),
-                validator: (value) => value!.isEmpty ? 'Enter Delivery Date' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter Delivery Date' : null,
               ),
               _buildTextField(
                 controller: _fuelTypeController,
@@ -230,18 +238,23 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Enter Quantity';
                   final numValue = int.tryParse(value);
-                  if (numValue == null || numValue <= 0) return 'Enter a positive number';
+                  if (numValue == null || numValue <= 0) {
+                    return 'Enter a positive number';
+                  }
                   return null;
                 },
               ),
               _buildTextField(
                 controller: _priceController,
                 labelText: 'Price',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Enter Price';
                   final numValue = double.tryParse(value);
-                  if (numValue == null || numValue < 0) return 'Enter a non-negative number';
+                  if (numValue == null || numValue < 0) {
+                    return 'Enter a non-negative number';
+                  }
                   return null;
                 },
               ),
@@ -259,7 +272,8 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
                   textStyle: const TextStyle(fontSize: 18),
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text('Save Announcement'),
               ),

@@ -53,13 +53,15 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -88,15 +90,17 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
         break;
 
       case 10:
-        Navigator.push( 
+        Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
-        );  
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
+        );
         break;
     }
   }
 
-  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+  Widget _buildDetailRow(
+      String label, String value, TextStyle style, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
@@ -108,7 +112,7 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
               '$label:',
               style: style.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -131,13 +135,25 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
   List<Color> _getStatusGradient(String status) {
     switch (status.toLowerCase()) {
       case 'new':
-        return [const Color.fromARGB(255, 19, 18, 18), const Color.fromARGB(255, 110, 110, 110)];
+        return [
+          const Color.fromARGB(255, 19, 18, 18),
+          const Color.fromARGB(255, 110, 110, 110)
+        ];
       case 'active':
-        return [const Color.fromARGB(255, 19, 88, 82), const Color.fromARGB(255, 35, 170, 157)];
+        return [
+          const Color.fromARGB(255, 19, 88, 82),
+          const Color.fromARGB(255, 35, 170, 157)
+        ];
       case 'at risk':
-        return [const Color.fromARGB(255, 238, 149, 16), const Color.fromARGB(255, 221, 146, 34)];
+        return [
+          const Color.fromARGB(255, 238, 149, 16),
+          const Color.fromARGB(255, 221, 146, 34)
+        ];
       case 'terminated':
-        return [const Color.fromARGB(255, 151, 35, 33), const Color.fromARGB(255, 167, 41, 41)];
+        return [
+          const Color.fromARGB(255, 151, 35, 33),
+          const Color.fromARGB(255, 167, 41, 41)
+        ];
       default:
         return [Colors.grey[400]!, Colors.grey[200]!];
     }
@@ -217,22 +233,26 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Card(
                 elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
                     labelText: 'Search Suppliers',
                     hintText: 'Enter Name, ID, or Status',
-                    prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
+                    prefixIcon:
+                        Icon(Icons.search, color: theme.colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     suffixIcon: IconButton(
-                      icon: Icon(Icons.clear, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                      icon: Icon(Icons.clear,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       onPressed: () {
                         _searchController.clear();
                         setState(() {
@@ -260,13 +280,15 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                     return Card(
                       margin: const EdgeInsets.all(16),
                       elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.error_outline, color: theme.colorScheme.error, size: 40),
+                            Icon(Icons.error_outline,
+                                color: theme.colorScheme.error, size: 40),
                             const SizedBox(height: 8),
                             Text('Error: ${snapshot.error}', style: bodyMedium),
                           ],
@@ -280,28 +302,35 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                       return Card(
                         margin: const EdgeInsets.all(16),
                         elevation: 3,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                              Icon(Icons.info_outline,
+                                  color: theme.colorScheme.primary, size: 40),
                               const SizedBox(height: 8),
-                              Text('No suppliers added yet.', style: bodyMedium),
+                              Text('No suppliers added yet.',
+                                  style: bodyMedium),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const AddSupplierScreen()),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: theme.colorScheme.primary,
                                   foregroundColor: theme.colorScheme.onPrimary,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 12),
                                 ),
                                 child: const Text('Add Supplier'),
                               ),
@@ -322,11 +351,13 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                         supplier.Title.toLowerCase(),
                         supplier.Status.toLowerCase(),
                       ];
-                      return fields.any((field) => field.contains(_searchQuery));
+                      return fields
+                          .any((field) => field.contains(_searchQuery));
                     }).toList();
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 400,
                         childAspectRatio: 1.5, // Adjusted for more content
                         crossAxisSpacing: 14,
@@ -340,7 +371,8 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                           onExit: (_) => setState(() {}),
                           child: Card(
                             elevation: 5,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             color: Colors.white,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
@@ -348,13 +380,15 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => SupplierDetailsScreen(supplier: supplier),
+                                    builder: (context) => SupplierDetailsScreen(
+                                        supplier: supplier),
                                   ),
                                 );
                               },
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxHeight: MediaQuery.of(context).size.width / 2.0,
+                                  maxHeight:
+                                      MediaQuery.of(context).size.width / 2.0,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,7 +397,8 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withOpacity(0.1),
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(12),
                                           topRight: Radius.circular(12),
@@ -383,15 +418,33 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            _buildDetailRow('ID', supplier.SupId.toString(), bodyMedium, theme),
-                                            _buildDetailRow('Representative', supplier.Representative, bodyMedium, theme),
-                                            _buildDetailRow('Address', supplier.Address, bodyMedium, theme),
-                                            _buildDetailRow('Email', supplier.Email, bodyMedium, theme),
+                                            _buildDetailRow(
+                                                'ID',
+                                                supplier.SupId.toString(),
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Representative',
+                                                supplier.Representative,
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Address',
+                                                supplier.Address,
+                                                bodyMedium,
+                                                theme),
+                                            _buildDetailRow(
+                                                'Email',
+                                                supplier.Email,
+                                                bodyMedium,
+                                                theme),
                                             const SizedBox(height: 4),
-                                            _buildStatusBadge(supplier.Status, theme),
+                                            _buildStatusBadge(
+                                                supplier.Status, theme),
                                           ],
                                         ),
                                       ),
@@ -408,13 +461,15 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                   return Card(
                     margin: const EdgeInsets.all(16),
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 40),
+                          Icon(Icons.info_outline,
+                              color: theme.colorScheme.primary, size: 40),
                           const SizedBox(height: 8),
                           Text('Start adding suppliers!', style: bodyMedium),
                           const SizedBox(height: 16),
@@ -422,14 +477,18 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AddSupplierScreen()),
                               );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
                             ),
                             child: const Text('Add Supplier'),
                           ),

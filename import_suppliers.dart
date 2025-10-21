@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:gemini001/utils/logging.dart';
 
 const String jsonFilePath = '../data/Suppliers.json';
 
@@ -24,7 +25,7 @@ Future<void> main() async {
     // Read the JSON file
     final file = File(jsonFilePath);
     if (!await file.exists()) {
-      print('Error: $jsonFilePath not found. Please check the path.');
+      logger.e('Error: $jsonFilePath not found. Please check the path.');
       return;
     }
 
@@ -32,7 +33,7 @@ Future<void> main() async {
     final data = jsonDecode(jsonString)['Suppliers'] as List;
 
     if (data.isEmpty) {
-      print('Error: No "Suppliers" array found in the JSON file.');
+      logger.e('Error: No "Suppliers" array found in the JSON file.');
       return;
     }
 
@@ -44,7 +45,7 @@ Future<void> main() async {
     for (var supplier in data) {
       final supId = supplier['SupId'] as String?;
       if (supId == null) {
-        print('Warning: Skipping supplier due to missing SupId: $supplier');
+        logger.e('Warning: Skipping supplier due to missing SupId: $supplier');
         continue;
       }
 
@@ -54,19 +55,21 @@ Future<void> main() async {
 
       if (importedCount % batchSize == 0) {
         await batch.commit();
-        print('Committed batch of $importedCount suppliers...');
+        logger.e('Committed batch of $importedCount suppliers...');
         batch = firestore.batch();
       }
     }
 
     if (importedCount % batchSize != 0) {
       await batch.commit();
-      print('Committed final batch of ${importedCount % batchSize} suppliers...');
+      logger.e(
+          'Committed final batch of ${importedCount % batchSize} suppliers...');
     }
 
-    print('Upload completed! Total suppliers processed: $importedCount');
-    print('Verify the data in the Firebase Console under the "suppliers" collection.');
+    logger.e('Upload completed! Total suppliers processed: $importedCount');
+    logger.e(
+        'Verify the data in the Firebase Console under the "suppliers" collection.');
   } catch (e) {
-    print('An error occurred: $e');
+    logger.e('An error occurred: $e');
   }
 }

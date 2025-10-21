@@ -5,7 +5,6 @@ import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -20,23 +19,24 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkAuthState();
   }
 
-  void _checkAuthState() async {
-    await Future.delayed(const Duration(seconds: 1));
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (mounted) {
-      if (authProvider.user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
-      }
-    }
-  }
+void _checkAuthState() async {
+  await Future.delayed(const Duration(seconds: 1));
+
+  if (!mounted) return;                 // ✅ guard immediately after the await
+
+  final authProvider = context.read<AuthProvider>(); // safe: widget is mounted
+
+  final next = (authProvider.user != null)
+      ? const ListSuppliersScreen()
+      : const LoginScreen();
+
+  // (Optional) another guard right before navigating if you want to be extra safe
+  if (!mounted) return;
+
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (_) => next),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

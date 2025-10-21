@@ -55,13 +55,15 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()),
+          MaterialPageRoute(
+              builder: (context) => const AddAnnouncementScreen()),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()),
+          MaterialPageRoute(
+              builder: (context) => const ListAnnouncementsScreen()),
         );
         break;
       case 4:
@@ -86,19 +88,18 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
         );
         break;
 
-      case 10:  
+      case 10:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()),
+          MaterialPageRoute(
+              builder: (context) => const SupplierOnboardingDashboard()),
         );
-        break;  
-
-
-
+        break;
     }
   }
 
-  Widget _buildDetailRow(String label, String value, TextStyle style, ThemeData theme) {
+  Widget _buildDetailRow(
+      String label, String value, TextStyle style, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
@@ -110,7 +111,7 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
               '$label:',
               style: style.copyWith(
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -206,7 +207,8 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
                   }).toList();
                   return GridView.builder(
                     padding: const EdgeInsets.all(8.0),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 2.5,
                       crossAxisSpacing: 8.0,
@@ -237,15 +239,30 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
                                   thickness: 1,
                                   height: 10,
                                 ),
-                                _buildDetailRow('Supplier ID', bid.supId.toString(), bodyMedium, theme),
-                                _buildDetailRow('Announcement ID', bid.announceId.toString(), bodyMedium, theme),
-                                _buildDetailRow('Bid ID', bid.bidId.toString(), bodyMedium, theme),
-                                _buildDetailRow('Submitted Date', bid.submittedDate, bodyMedium, theme),
-                                _buildDetailRow('Quantity', bid.quantity.toString(), bodyMedium, theme),
-                                _buildDetailRow('Status', bid.status, bodyMedium, theme),
-                                _buildDetailRow('Quantity Accepted', bid.quantityAccepted.toString(), bodyMedium, theme),
-                                _buildDetailRow('Accept/Reject Date', bid.acceptRejectDate, bodyMedium, theme),
-                                _buildDetailRow('Notes', bid.notes, bodyMedium, theme),
+                                _buildDetailRow('Supplier ID',
+                                    bid.supId.toString(), bodyMedium, theme),
+                                _buildDetailRow(
+                                    'Announcement ID',
+                                    bid.announceId.toString(),
+                                    bodyMedium,
+                                    theme),
+                                _buildDetailRow('Bid ID', bid.bidId.toString(),
+                                    bodyMedium, theme),
+                                _buildDetailRow('Submitted Date',
+                                    bid.submittedDate, bodyMedium, theme),
+                                _buildDetailRow('Quantity',
+                                    bid.quantity.toString(), bodyMedium, theme),
+                                _buildDetailRow(
+                                    'Status', bid.status, bodyMedium, theme),
+                                _buildDetailRow(
+                                    'Quantity Accepted',
+                                    bid.quantityAccepted.toString(),
+                                    bodyMedium,
+                                    theme),
+                                _buildDetailRow('Accept/Reject Date',
+                                    bid.acceptRejectDate, bodyMedium, theme),
+                                _buildDetailRow(
+                                    'Notes', bid.notes, bodyMedium, theme),
                               ],
                             ),
                           ),

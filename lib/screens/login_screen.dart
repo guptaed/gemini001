@@ -39,7 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
         if (user != null && mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
+            MaterialPageRoute(
+                builder: (context) => const ListSuppliersScreen()),
           );
         } else {
           setState(() {
@@ -60,7 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _errorMessage = 'An unexpected error occurred.';
         });
-        logger.e('Unexpected error during login for user: ${_usernameController.text}', e);
+        logger.e(
+            'Unexpected error during login for user: ${_usernameController.text}',
+            e);
       }
     }
   }
@@ -105,8 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: 'Email',
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter your email';
-                        if (!value.contains('@')) return 'Please enter a valid email';
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid email';
+                        }
                         return null;
                       },
                     ),
@@ -116,7 +123,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: 'Password',
                       obscureText: true,
                       validator: (value) {
-                        return value == null || value.isEmpty ? 'Please enter your password' : null;
+                        return value == null || value.isEmpty
+                            ? 'Please enter your password'
+                            : null;
                       },
                     ),
                     const SizedBox(height: 24),
@@ -125,7 +134,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         padding: const EdgeInsets.only(bottom: 16.0),
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(color: Colors.red, fontSize: 14),
+                          style:
+                              const TextStyle(color: Colors.red, fontSize: 14),
                           textAlign: TextAlign.center,
                         ),
                       ),
