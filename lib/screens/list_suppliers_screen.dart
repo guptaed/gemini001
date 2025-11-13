@@ -252,7 +252,8 @@ class _ListSuppliersScreenState extends State<ListSuppliersScreen> {
                         horizontal: 16, vertical: 12),
                     suffixIcon: IconButton(
                       icon: Icon(Icons.clear,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.7)),
                       onPressed: () {
                         _searchController.clear();
                         setState(() {

@@ -19,24 +19,25 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkAuthState();
   }
 
-void _checkAuthState() async {
-  await Future.delayed(const Duration(seconds: 1));
+  void _checkAuthState() async {
+    await Future.delayed(const Duration(seconds: 1));
 
-  if (!mounted) return;                 // ✅ guard immediately after the await
+    if (!mounted) return; // ✅ guard immediately after the await
 
-  final authProvider = context.read<AuthProvider>(); // safe: widget is mounted
+    final authProvider =
+        context.read<AuthProvider>(); // safe: widget is mounted
 
-  final next = (authProvider.user != null)
-      ? const ListSuppliersScreen()
-      : const LoginScreen();
+    final next = (authProvider.user != null)
+        ? const ListSuppliersScreen()
+        : const LoginScreen();
 
-  // (Optional) another guard right before navigating if you want to be extra safe
-  if (!mounted) return;
+    // (Optional) another guard right before navigating if you want to be extra safe
+    if (!mounted) return;
 
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (_) => next),
-  );
-}
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => next),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,7 @@ void main() {
   testWidgets('App boots a basic MaterialApp', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(body: Text('App boots')) ,
+        home: Scaffold(body: Text('App boots')),
       ),
     );
 

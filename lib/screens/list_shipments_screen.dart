@@ -181,7 +181,8 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                         horizontal: 16, vertical: 12),
                     suffixIcon: IconButton(
                       icon: Icon(Icons.clear,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.7)),
                       onPressed: () {
                         _searchController.clear();
                         setState(() {
@@ -362,7 +363,8 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                                                           FontWeight.bold,
                                                       color: theme
                                                           .colorScheme.onSurface
-                                                          .withValues(alpha: 0.7),
+                                                          .withValues(
+                                                              alpha: 0.7),
                                                     ),
                                                     maxLines: 1,
                                                     overflow:

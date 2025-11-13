@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/models/contract.dart';
 import 'package:gemini001/models/bank.dart';
+import 'package:gemini001/models/smartphoneaccess.dart';
 import 'package:gemini001/models/announcement.dart';
 import 'package:gemini001/models/credit_check.dart';
 import 'package:gemini001/models/bid.dart';
@@ -133,6 +134,16 @@ class FirestoreHelper {
         );
   }
 
+
+  // This getter returns a collection reference for "Smartphoneaccess" with a converter.
+  CollectionReference<SmartphoneAccess> get _smartphoneaccessCollection {
+    return _db.collection('Smartphoneaccess').withConverter<SmartphoneAccess>(
+          fromFirestore: (snapshot, _) => SmartphoneAccess.fromFirestore(snapshot),
+          toFirestore: (smartphoneAccess, _) => smartphoneAccess.toMap(),
+        );
+  }
+
+
   // This getter returns a collection reference for "Bids" with a converter.
   CollectionReference<Bid> get _bidsCollection {
     return _db.collection('Bids').withConverter<Bid>(
@@ -166,6 +177,18 @@ class FirestoreHelper {
         ? querySnapshot.docs.first.data()
         : null;
   }
+
+  // Get Smartphone Access for a given SupId.
+  Future<SmartphoneAccess?> getSmartphoneAccess(int supId) async {
+    final querySnapshot =
+        await _smartphoneaccessCollection.where('SupId', isEqualTo: supId).limit(1).get();
+    return querySnapshot.docs.isNotEmpty
+        ? querySnapshot.docs.first.data()
+        : null;
+  }
+
+
+
 
   // Get credit check details for a given SupId.
   Future<CreditCheck?> getCreditCheck(int supId) async {
