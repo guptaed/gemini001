@@ -43,8 +43,8 @@ class _SupplierOnboardingDashboardState
   final List<TaskItem> _generatePasswordsNormal = [];
 
   int _totalOverdue = 0;
-  int _totalDueToday = 0;
-  int _totalUpcoming = 0;
+  int _totalDueSoon = 0;
+  int _totalCurrent = 0;
 
   bool _isLoading = true;
 
@@ -129,7 +129,7 @@ class _SupplierOnboardingDashboardState
           _completeContractsOverdue.length +
           _generatePasswordsOverdue.length;
 
-      _totalDueToday = _initiateCreditChecksNormal
+      _totalDueSoon = _initiateCreditChecksNormal
               .where((t) => t.waitingDays >= 25 && t.waitingDays <= 30)
               .length +
           _completeCreditChecksNormal
@@ -142,7 +142,7 @@ class _SupplierOnboardingDashboardState
               .where((t) => t.waitingDays >= 3 && t.waitingDays <= 5)
               .length;
 
-      _totalUpcoming = _initiateCreditChecksNormal.length +
+      _totalCurrent = _initiateCreditChecksNormal.length +
           _completeCreditChecksNormal.length +
           _completeContractsNormal.length +
           _generatePasswordsNormal.length;
@@ -306,27 +306,27 @@ class _SupplierOnboardingDashboardState
               onRefresh: _loadDashboardData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 2.0, top: 2.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Welcome Section
                     _buildWelcomeSection(userName, theme),
-                    const SizedBox(height: 24),
+                    // const SizedBox(height: 24),
 
                     // KPI Cards
                     _buildKPICards(theme),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
                     // Critical Section
                     if (_totalOverdue > 0) ...[
                       _buildCriticalSection(theme),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                     ],
 
                     // Normal Tasks Section
                     _buildNormalTasksSection(theme),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
                     // Pipeline Summary
                     _buildPipelineSummary(theme),
@@ -462,65 +462,34 @@ class _SupplierOnboardingDashboardState
     );
   }
 
-  Widget _buildWelcomeSection(String userName, ThemeData theme) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              theme.colorScheme.primary,
-              theme.colorScheme.primary.withValues(alpha: 0.7)
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+ Widget _buildWelcomeSection(String userName, ThemeData theme) {
+  return Padding(
+    padding: EdgeInsets.zero,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Text(
+          'Last updated: ${DateFormat('MMM dd, yyyy - hh:mm a').format(DateTime.now())}',
+          style: theme.textTheme.bodySmall!.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
-          borderRadius: BorderRadius.circular(12),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.dashboard, color: Colors.white, size: 32),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Role: Supplier Onboarding Specialist',
-                        style: theme.textTheme.headlineSmall!.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white),
-                  onPressed: _loadDashboardData,
-                  tooltip: 'Refresh Dashboard',
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Last updated: ${DateFormat('MMM dd, yyyy - hh:mm a').format(DateTime.now())}',
-              style: theme.textTheme.bodySmall!.copyWith(
-                color: Colors.white.withValues(alpha: 0.8),
-              ),
-            ),
-          ],
+        const SizedBox(width: 8),
+        IconButton(
+          icon: Icon(
+            Icons.refresh,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+          onPressed: _loadDashboardData,
+          tooltip: 'Refresh Dashboard',
+          iconSize: 20,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 
   Widget _buildKPICards(ThemeData theme) {
     return Row(
@@ -538,7 +507,7 @@ class _SupplierOnboardingDashboardState
         Expanded(
           child: _buildKPICard(
             title: 'DUE SOON',
-            value: _totalDueToday.toString(),
+            value: _totalDueSoon.toString(),
             icon: Icons.warning_amber_outlined,
             color: Colors.orange,
             theme: theme,
@@ -547,8 +516,8 @@ class _SupplierOnboardingDashboardState
         const SizedBox(width: 16),
         Expanded(
           child: _buildKPICard(
-            title: 'UPCOMING',
-            value: _totalUpcoming.toString(),
+            title: 'CURRENT',
+            value: _totalCurrent.toString(),
             icon: Icons.schedule,
             color: Colors.green,
             theme: theme,
@@ -594,7 +563,7 @@ class _SupplierOnboardingDashboardState
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               title,
               style: theme.textTheme.bodyMedium!.copyWith(
@@ -614,11 +583,7 @@ class _SupplierOnboardingDashboardState
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.red.withValues(alpha: 0.05), Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          color: Colors.orange.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -643,6 +608,7 @@ class _SupplierOnboardingDashboardState
                     style: theme.textTheme.titleLarge!.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.red[700],
+                      //color: theme.colorScheme.primary,
                     ),
                   ),
                 ],
@@ -660,6 +626,7 @@ class _SupplierOnboardingDashboardState
                 title: 'Complete Credit Checks (Waiting > 60 days)',
                 tasks: _completeCreditChecksOverdue,
                 theme: theme,
+                //color: theme.colorScheme.primary,
                 color: Colors.red,
               ),
             if (_completeContractsOverdue.isNotEmpty)

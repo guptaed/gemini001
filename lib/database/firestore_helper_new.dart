@@ -80,6 +80,22 @@ class FirestoreHelper {
     }
   }
 
+  // Get a supplier by their SupId
+  Future<Supplier?> getSupplierBySupId(int supId) async {
+    try {
+      final querySnapshot = await _suppliersCollection
+          .where('SupId', isEqualTo: supId)
+          .limit(1)
+          .get();
+      return querySnapshot.docs.isNotEmpty
+          ? querySnapshot.docs.first.data()
+          : null;
+    } catch (e) {
+      logger.e('Error fetching supplier by SupId: $e');
+      rethrow;
+    }
+  }
+
   // Update an existing supplier's data.
   Future<void> updateSupplier(Supplier supplier) async {
     try {

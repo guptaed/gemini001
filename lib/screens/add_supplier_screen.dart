@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
+import 'package:gemini001/database/storage_helper.dart';
 import 'package:gemini001/models/supplier.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
@@ -12,8 +13,10 @@ import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
 import 'package:gemini001/utils/logging.dart';
+import 'package:file_picker/file_picker.dart';
 
 class AddSupplierScreen extends StatefulWidget {
   const AddSupplierScreen({super.key});
@@ -32,6 +35,14 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   final _taxCodeController = TextEditingController();
   final _representativeController = TextEditingController();
   final _titleController = TextEditingController();
+
+  // PDF upload state
+  Uint8List? _pdfBytes1;
+  Uint8List? _pdfBytes2;
+  Uint8List? _pdfBytes3;
+  String? _pdfFileName1;
+  String? _pdfFileName2;
+  String? _pdfFileName3;
 
   @override
   void initState() {
@@ -58,6 +69,134 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
     return '5${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}$random';
   }
 
+  // Show a dialog that requires user acknowledgment
+  Future<void> _showMessageDialog({
+    required String title,
+    required String message,
+    bool isError = false,
+  }) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // User must tap button to dismiss
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                isError ? Icons.error_outline : Icons.check_circle_outline,
+                color: isError ? Colors.red : Colors.green,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: isError ? Colors.red[700] : Colors.green[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Text(message),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Pick a PDF file
+  Future<void> _pickPDF(int fieldNumber) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: false,
+        withData: true, // This ensures bytes are loaded for web compatibility
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final fileBytes = result.files.single.bytes;
+        final fileName = result.files.single.name;
+
+        // Check if bytes are available
+        if (fileBytes == null) {
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Error',
+              message: 'Could not read file data. Please try selecting the file again.',
+              isError: true,
+            );
+          }
+          return;
+        }
+
+        // Check file size (10 MB limit)
+        final fileSize = fileBytes.length;
+        const maxSize = 10 * 1024 * 1024; // 10 MB
+
+        if (fileSize > maxSize) {
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'File Too Large',
+              message: 'The selected file exceeds the 10 MB size limit.\n\nFile size: ${(fileSize / (1024 * 1024)).toStringAsFixed(2)} MB\nMaximum allowed: 10 MB',
+              isError: true,
+            );
+          }
+          return;
+        }
+
+        setState(() {
+          if (fieldNumber == 1) {
+            _pdfBytes1 = fileBytes;
+            _pdfFileName1 = fileName;
+          } else if (fieldNumber == 2) {
+            _pdfBytes2 = fileBytes;
+            _pdfFileName2 = fileName;
+          } else if (fieldNumber == 3) {
+            _pdfBytes3 = fileBytes;
+            _pdfFileName3 = fileName;
+          }
+        });
+      }
+    } catch (e) {
+      logger.e('Error picking PDF: $e');
+      if (mounted) {
+        await _showMessageDialog(
+          title: 'Error',
+          message: 'Error selecting file:\n\n$e',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  // Clear a PDF file
+  void _clearPDF(int fieldNumber) {
+    setState(() {
+      if (fieldNumber == 1) {
+        _pdfBytes1 = null;
+        _pdfFileName1 = null;
+      } else if (fieldNumber == 2) {
+        _pdfBytes2 = null;
+        _pdfFileName2 = null;
+      } else if (fieldNumber == 3) {
+        _pdfBytes3 = null;
+        _pdfFileName3 = null;
+      }
+    });
+  }
+
   Future<void> _saveSupplier() async {
     if (_formKey.currentState!.validate()) {
       final supplier = Supplier(
@@ -72,15 +211,101 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         Status: 'New',
       );
       try {
+        // First, save the supplier to Firestore
         await FirestoreHelper().addSupplier(supplier);
+
+        // Upload PDFs if any are selected
+        String? uploadedPDF1;
+        String? uploadedPDF2;
+        String? uploadedPDF3;
+        final errors = <String>[];
+
+        if (_pdfBytes1 != null && _pdfFileName1 != null) {
+          try {
+            uploadedPDF1 = await StorageHelper().uploadPDF(
+              fileBytes: _pdfBytes1!,
+              fileName: _pdfFileName1!,
+              supplierId: supplier.SupId,
+              fieldNumber: 1,
+            );
+          } catch (e) {
+            logger.e('Error uploading PDF 1: $e');
+            errors.add('Supporting PDF 1 ($_pdfFileName1): $e');
+          }
+        }
+
+        if (_pdfBytes2 != null && _pdfFileName2 != null) {
+          try {
+            uploadedPDF2 = await StorageHelper().uploadPDF(
+              fileBytes: _pdfBytes2!,
+              fileName: _pdfFileName2!,
+              supplierId: supplier.SupId,
+              fieldNumber: 2,
+            );
+          } catch (e) {
+            logger.e('Error uploading PDF 2: $e');
+            errors.add('Supporting PDF 2 ($_pdfFileName2): $e');
+          }
+        }
+
+        if (_pdfBytes3 != null && _pdfFileName3 != null) {
+          try {
+            uploadedPDF3 = await StorageHelper().uploadPDF(
+              fileBytes: _pdfBytes3!,
+              fileName: _pdfFileName3!,
+              supplierId: supplier.SupId,
+              fieldNumber: 3,
+            );
+          } catch (e) {
+            logger.e('Error uploading PDF 3: $e');
+            errors.add('Supporting PDF 3 ($_pdfFileName3): $e');
+          }
+        }
+
+        // Update supplier with PDF filenames if any were uploaded
+        if (uploadedPDF1 != null || uploadedPDF2 != null || uploadedPDF3 != null) {
+          // Get the supplier from Firestore to get its document ID
+          final savedSupplier = await FirestoreHelper().getSupplierBySupId(supplier.SupId);
+          if (savedSupplier != null) {
+            final updatedSupplier = savedSupplier.copyWith(
+              SupportingPDF1: uploadedPDF1,
+              SupportingPDF2: uploadedPDF2,
+              SupportingPDF3: uploadedPDF3,
+            );
+            await FirestoreHelper().updateSupplier(updatedSupplier);
+          }
+        }
+
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Supplier added successfully!')));
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const ListSuppliersScreen()),
+          // Show success message with any errors
+          String title;
+          String message;
+          bool isError = false;
+
+          if (errors.isEmpty) {
+            title = 'Success';
+            message = 'Supplier added successfully!';
+          } else {
+            title = 'Partial Success';
+            message = 'Supplier was added successfully, but some PDF files failed to upload:\n\n';
+            message += errors.map((e) => '• $e').join('\n');
+            message += '\n\nPlease check Firebase Storage permissions or try uploading the files again later.';
+            isError = true;
+          }
+
+          await _showMessageDialog(
+            title: title,
+            message: message,
+            isError: isError,
           );
+
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const ListSuppliersScreen()),
+            );
+          }
           _formKey.currentState!.reset();
           _companyNameController.clear();
           _addressController.clear();
@@ -91,13 +316,22 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           _titleController.clear();
           setState(() {
             _supIdController.text = _generateSupplierId();
+            _pdfBytes1 = null;
+            _pdfBytes2 = null;
+            _pdfBytes3 = null;
+            _pdfFileName1 = null;
+            _pdfFileName2 = null;
+            _pdfFileName3 = null;
           });
         }
       } catch (e) {
+        logger.e('Error adding supplier with SupId: ${supplier.SupId}', e);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error adding supplier: $e')));
-          logger.e('Error adding supplier with SupId: ${supplier.SupId}', e);
+          await _showMessageDialog(
+            title: 'Error',
+            message: 'Failed to add supplier:\n\n$e',
+            isError: true,
+          );
         }
       }
     }
@@ -223,6 +457,40 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                 controller: _taxCodeController,
                 labelText: 'Tax Code',
               ),
+              const SizedBox(height: 30),
+              // Supporting Documents Section
+              Text(
+                'Supporting Documents (Optional)',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal[700],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Upload up to 3 PDF files (Max 10 MB each)',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildPDFUploadField(
+                labelText: 'Supporting PDF 1',
+                fieldNumber: 1,
+                fileName: _pdfFileName1,
+              ),
+              _buildPDFUploadField(
+                labelText: 'Supporting PDF 2',
+                fieldNumber: 2,
+                fileName: _pdfFileName2,
+              ),
+              _buildPDFUploadField(
+                labelText: 'Supporting PDF 3',
+                fieldNumber: 3,
+                fileName: _pdfFileName3,
+              ),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
@@ -264,6 +532,70 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPDFUploadField({
+    required String labelText,
+    required int fieldNumber,
+    required String? fileName,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            labelText,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[400]!),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey[50],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    fileName ?? 'No file selected',
+                    style: TextStyle(
+                      color: fileName != null ? Colors.black87 : Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                if (fileName != null)
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => _clearPDF(fieldNumber),
+                    color: Colors.red,
+                    tooltip: 'Remove file',
+                  ),
+                ElevatedButton.icon(
+                  onPressed: () => _pickPDF(fieldNumber),
+                  icon: const Icon(Icons.upload_file, size: 18),
+                  label: Text(fileName != null ? 'Change' : 'Choose PDF'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal[600],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

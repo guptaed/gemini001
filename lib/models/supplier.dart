@@ -8,6 +8,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gemini001/utils/logging.dart';
 
+// Sentinel value to distinguish between "not provided" and "provided as null"
+const Object _undefined = Object();
+
 class Supplier {
   // `id` is now a nullable `String?` because Firestore will automatically
   // assign a unique ID when a new document is added.
@@ -22,6 +25,9 @@ class Supplier {
   final String Representative;
   final String Title;
   final String Status;
+  final String? SupportingPDF1;
+  final String? SupportingPDF2;
+  final String? SupportingPDF3;
 
   // The constructor for the `Supplier` class.
   // The `id` is optional when creating a new supplier object, as it will be null initially.
@@ -36,34 +42,44 @@ class Supplier {
     required this.Representative,
     required this.Title,
     required this.Status,
+    this.SupportingPDF1,
+    this.SupportingPDF2,
+    this.SupportingPDF3,
   });
 
-// `copyWith` method: This method allows us to create a new `Supplier` object
-// by copying the existing one and overriding specific fields.
-// This is useful for updating supplier information without modifying the original object.
+  // `copyWith` method: This method allows us to create a new `Supplier` object
+  // by copying the existing one and overriding specific fields.
+  // This is useful for updating supplier information without modifying the original object.
+  // Note: Uses Object? pattern to distinguish between "not provided" and "provided as null"
   Supplier copyWith({
-    String? id,
-    int? SupId,
-    String? CompanyName,
-    String? Address,
-    String? Tel,
-    String? Email,
-    String? TaxCode,
-    String? Representative,
-    String? Title,
-    String? Status,
+    Object? id = _undefined,
+    Object? SupId = _undefined,
+    Object? CompanyName = _undefined,
+    Object? Address = _undefined,
+    Object? Tel = _undefined,
+    Object? Email = _undefined,
+    Object? TaxCode = _undefined,
+    Object? Representative = _undefined,
+    Object? Title = _undefined,
+    Object? Status = _undefined,
+    Object? SupportingPDF1 = _undefined,
+    Object? SupportingPDF2 = _undefined,
+    Object? SupportingPDF3 = _undefined,
   }) {
     return Supplier(
-      id: id ?? this.id,
-      SupId: SupId ?? this.SupId,
-      CompanyName: CompanyName ?? this.CompanyName,
-      Address: Address ?? this.Address,
-      Tel: Tel ?? this.Tel,
-      Email: Email ?? this.Email,
-      TaxCode: TaxCode ?? this.TaxCode,
-      Representative: Representative ?? this.Representative,
-      Title: Title ?? this.Title,
-      Status: Status ?? this.Status,
+      id: id == _undefined ? this.id : id as String?,
+      SupId: SupId == _undefined ? this.SupId : SupId as int,
+      CompanyName: CompanyName == _undefined ? this.CompanyName : CompanyName as String,
+      Address: Address == _undefined ? this.Address : Address as String,
+      Tel: Tel == _undefined ? this.Tel : Tel as String,
+      Email: Email == _undefined ? this.Email : Email as String,
+      TaxCode: TaxCode == _undefined ? this.TaxCode : TaxCode as String,
+      Representative: Representative == _undefined ? this.Representative : Representative as String,
+      Title: Title == _undefined ? this.Title : Title as String,
+      Status: Status == _undefined ? this.Status : Status as String,
+      SupportingPDF1: SupportingPDF1 == _undefined ? this.SupportingPDF1 : SupportingPDF1 as String?,
+      SupportingPDF2: SupportingPDF2 == _undefined ? this.SupportingPDF2 : SupportingPDF2 as String?,
+      SupportingPDF3: SupportingPDF3 == _undefined ? this.SupportingPDF3 : SupportingPDF3 as String?,
     );
   }
 
@@ -81,6 +97,9 @@ class Supplier {
       'Representative': Representative,
       'Title': Title,
       'Status': Status,
+      'SupportingPDF1': SupportingPDF1,
+      'SupportingPDF2': SupportingPDF2,
+      'SupportingPDF3': SupportingPDF3,
     };
   }
 
@@ -104,6 +123,9 @@ class Supplier {
         Representative: data['Representative'] as String,
         Title: data['Title'] as String,
         Status: data['Status'] as String,
+        SupportingPDF1: data['SupportingPDF1'] as String?,
+        SupportingPDF2: data['SupportingPDF2'] as String?,
+        SupportingPDF3: data['SupportingPDF3'] as String?,
       );
     } catch (e) {
       // If there's an error during conversion, we print it and return a default

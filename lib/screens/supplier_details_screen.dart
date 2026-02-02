@@ -6,6 +6,7 @@ import 'package:gemini001/models/credit_check.dart';
 import 'package:gemini001/models/bid_flow.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
+import 'package:gemini001/database/storage_helper.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/add_announcement_screen.dart';
@@ -19,6 +20,9 @@ import 'package:gemini001/screens/bid_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:gemini001/utils/logging.dart';
+import 'package:file_picker/file_picker.dart';
 
 class SupplierDetailsScreen extends StatefulWidget {
   final Supplier supplier;
@@ -34,10 +38,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   late Future<BankDetails?> _bankDetailsFuture;
   late Future<CreditCheck?> _creditCheckFuture;
   late Future<List<BidFlow>> _bidFlowsFuture;
+  late Supplier _currentSupplier;
 
   @override
   void initState() {
     super.initState();
+    _currentSupplier = widget.supplier;
     _contractInfoFuture =
         FirestoreHelper().getContractInfo(widget.supplier.SupId);
     _bankDetailsFuture =
@@ -46,6 +52,9 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         FirestoreHelper().getCreditCheck(widget.supplier.SupId);
     _bidFlowsFuture =
         FirestoreHelper().getBidFlowsBySupplier(widget.supplier.SupId);
+
+    // Fetch latest supplier data from Firestore on screen load
+    _refreshSupplier();
   }
 
   void _refreshCreditCheck() {
@@ -53,6 +62,481 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       _creditCheckFuture =
           FirestoreHelper().getCreditCheck(widget.supplier.SupId);
     });
+  }
+
+  // Refresh supplier data from Firestore
+  Future<void> _refreshSupplier() async {
+    try {
+      final updatedSupplier = await FirestoreHelper().getSupplierBySupId(widget.supplier.SupId);
+      if (updatedSupplier != null && mounted) {
+        setState(() {
+          _currentSupplier = updatedSupplier;
+        });
+      }
+    } catch (e) {
+      logger.e('Error refreshing supplier: $e');
+    }
+  }
+
+  // Upload a new PDF to an empty slot
+  Future<void> _uploadPDF(int fieldNumber) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final fileBytes = result.files.single.bytes;
+        final fileName = result.files.single.name;
+
+        if (fileBytes == null) {
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Error',
+              message: 'Could not read file data. Please try selecting the file again.',
+              isError: true,
+            );
+          }
+          return;
+        }
+
+        // Check file size (10 MB limit)
+        final fileSize = fileBytes.length;
+        const maxSize = 10 * 1024 * 1024;
+
+        if (fileSize > maxSize) {
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'File Too Large',
+              message: 'The selected file exceeds the 10 MB size limit.\n\nFile size: ${(fileSize / (1024 * 1024)).toStringAsFixed(2)} MB\nMaximum allowed: 10 MB',
+              isError: true,
+            );
+          }
+          return;
+        }
+
+        // Upload the PDF
+        try {
+          // Show loading dialog
+          if (mounted) {
+            _showLoadingDialog('Uploading PDF...');
+          }
+
+          final uploadedFileName = await StorageHelper().uploadPDF(
+            fileBytes: fileBytes,
+            fileName: fileName,
+            supplierId: _currentSupplier.SupId,
+            fieldNumber: fieldNumber,
+          );
+
+          // Dismiss loading dialog
+          if (mounted) {
+            _dismissLoadingDialog();
+          }
+
+          if (uploadedFileName != null) {
+            // Update local state immediately
+            setState(() {
+              _currentSupplier = _currentSupplier.copyWith(
+                SupportingPDF1: fieldNumber == 1 ? uploadedFileName : _currentSupplier.SupportingPDF1,
+                SupportingPDF2: fieldNumber == 2 ? uploadedFileName : _currentSupplier.SupportingPDF2,
+                SupportingPDF3: fieldNumber == 3 ? uploadedFileName : _currentSupplier.SupportingPDF3,
+              );
+            });
+
+            // Update Firestore in the background
+            await FirestoreHelper().updateSupplier(_currentSupplier);
+
+            if (mounted) {
+              await _showMessageDialog(
+                title: 'Success',
+                message: 'PDF uploaded successfully!',
+                isError: false,
+              );
+            }
+          }
+        } catch (e) {
+          logger.e('Error uploading PDF: $e');
+          // Dismiss loading dialog if still showing
+          if (mounted) {
+            _dismissLoadingDialog();
+          }
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Upload Failed',
+              message: 'Failed to upload PDF:\n\n$e',
+              isError: true,
+            );
+          }
+        }
+      }
+    } catch (e) {
+      logger.e('Error picking PDF: $e');
+      if (mounted) {
+        await _showMessageDialog(
+          title: 'Error',
+          message: 'Error selecting file:\n\n$e',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  // Replace an existing PDF
+  Future<void> _replacePDF(String oldFileName, int fieldNumber) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Replace PDF'),
+          content: Text('Are you sure you want to replace "$oldFileName"?\n\nThe old file will be deleted from storage.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Replace'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final fileBytes = result.files.single.bytes;
+        final fileName = result.files.single.name;
+
+        if (fileBytes == null) {
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Error',
+              message: 'Could not read file data. Please try selecting the file again.',
+              isError: true,
+            );
+          }
+          return;
+        }
+
+        // Check file size
+        final fileSize = fileBytes.length;
+        const maxSize = 10 * 1024 * 1024;
+
+        if (fileSize > maxSize) {
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'File Too Large',
+              message: 'The selected file exceeds the 10 MB size limit.\n\nFile size: ${(fileSize / (1024 * 1024)).toStringAsFixed(2)} MB\nMaximum allowed: 10 MB',
+              isError: true,
+            );
+          }
+          return;
+        }
+
+        try {
+          // Show loading dialog
+          if (mounted) {
+            _showLoadingDialog('Replacing PDF...');
+          }
+
+          // Delete old file from storage
+          await StorageHelper().deletePDF(
+            supplierId: _currentSupplier.SupId,
+            fileName: oldFileName,
+          );
+
+          // Upload new file
+          final uploadedFileName = await StorageHelper().uploadPDF(
+            fileBytes: fileBytes,
+            fileName: fileName,
+            supplierId: _currentSupplier.SupId,
+            fieldNumber: fieldNumber,
+          );
+
+          // Dismiss loading dialog
+          if (mounted) {
+            _dismissLoadingDialog();
+          }
+
+          if (uploadedFileName != null) {
+            // Update local state immediately
+            setState(() {
+              _currentSupplier = _currentSupplier.copyWith(
+                SupportingPDF1: fieldNumber == 1 ? uploadedFileName : _currentSupplier.SupportingPDF1,
+                SupportingPDF2: fieldNumber == 2 ? uploadedFileName : _currentSupplier.SupportingPDF2,
+                SupportingPDF3: fieldNumber == 3 ? uploadedFileName : _currentSupplier.SupportingPDF3,
+              );
+            });
+
+            // Update Firestore in the background
+            await FirestoreHelper().updateSupplier(_currentSupplier);
+
+            if (mounted) {
+              await _showMessageDialog(
+                title: 'Success',
+                message: 'PDF replaced successfully!',
+                isError: false,
+              );
+            }
+          }
+        } catch (e) {
+          logger.e('Error replacing PDF: $e');
+          // Dismiss loading dialog if still showing
+          if (mounted) {
+            _dismissLoadingDialog();
+          }
+          // Refresh from server in case of error
+          await _refreshSupplier();
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Replace Failed',
+              message: 'Failed to replace PDF:\n\n$e',
+              isError: true,
+            );
+          }
+        }
+      }
+    } catch (e) {
+      logger.e('Error picking replacement PDF: $e');
+      if (mounted) {
+        await _showMessageDialog(
+          title: 'Error',
+          message: 'Error selecting file:\n\n$e',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  // Delete a PDF
+  Future<void> _deletePDF(String fileName, int fieldNumber) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete PDF'),
+          content: Text('Are you sure you want to delete "$fileName"?\n\nThis action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // Show loading dialog
+      if (mounted) {
+        _showLoadingDialog('Deleting PDF...');
+      }
+
+      // Delete from storage
+      await StorageHelper().deletePDF(
+        supplierId: _currentSupplier.SupId,
+        fileName: fileName,
+      );
+
+      // Update local state immediately
+      setState(() {
+        _currentSupplier = _currentSupplier.copyWith(
+          SupportingPDF1: fieldNumber == 1 ? null : _currentSupplier.SupportingPDF1,
+          SupportingPDF2: fieldNumber == 2 ? null : _currentSupplier.SupportingPDF2,
+          SupportingPDF3: fieldNumber == 3 ? null : _currentSupplier.SupportingPDF3,
+        );
+      });
+
+      // Update Firestore in the background
+      await FirestoreHelper().updateSupplier(_currentSupplier);
+
+      // Dismiss loading dialog
+      if (mounted) {
+        _dismissLoadingDialog();
+      }
+
+      if (mounted) {
+        await _showMessageDialog(
+          title: 'Success',
+          message: 'PDF deleted successfully!',
+          isError: false,
+        );
+      }
+    } catch (e) {
+      logger.e('Error deleting PDF: $e');
+      // Dismiss loading dialog if still showing
+      if (mounted) {
+        _dismissLoadingDialog();
+      }
+      // Refresh from server in case of error
+      await _refreshSupplier();
+      if (mounted) {
+        await _showMessageDialog(
+          title: 'Delete Failed',
+          message: 'Failed to delete PDF:\n\n$e',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  // Download/Open PDF file
+  Future<void> _downloadPDF(String fileName, int fieldNumber) async {
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fetching PDF...'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+
+      // Get download URL from Firebase Storage
+      final downloadUrl = await StorageHelper().getPDFDownloadUrl(
+        supplierId: _currentSupplier.SupId,
+        fileName: fileName,
+      );
+
+      if (downloadUrl == null) {
+        if (mounted) {
+          await _showMessageDialog(
+            title: 'Error',
+            message: 'Failed to get download URL for the PDF file.',
+            isError: true,
+          );
+        }
+        return;
+      }
+
+      // Open the URL in browser/download
+      final uri = Uri.parse(downloadUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          await _showMessageDialog(
+            title: 'Error',
+            message: 'Could not open the PDF file. URL: $downloadUrl',
+            isError: true,
+          );
+        }
+      }
+    } catch (e) {
+      logger.e('Error downloading PDF: $e');
+      if (mounted) {
+        await _showMessageDialog(
+          title: 'Error',
+          message: 'Error downloading PDF:\n\n$e',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  // Show a loading dialog during operations
+  void _showLoadingDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 20),
+                Text(
+                  message,
+                  style: const TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Dismiss the loading dialog
+  void _dismissLoadingDialog() {
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  // Show a dialog that requires user acknowledgment
+  Future<void> _showMessageDialog({
+    required String title,
+    required String message,
+    bool isError = false,
+  }) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                isError ? Icons.error_outline : Icons.check_circle_outline,
+                color: isError ? Colors.red : Colors.green,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: isError ? Colors.red[700] : Colors.green[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Text(message),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _onMenuItemSelected(int index) {
@@ -506,6 +990,225 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 
+  Widget _buildEmptyPDFCard({
+    required int fieldNumber,
+    required ThemeData theme,
+  }) {
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.grey[50]!, Colors.grey[100]!],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[400]!,
+          width: 1.5,
+          style: BorderStyle.solid,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.upload_file,
+              color: Colors.grey[600],
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Supporting PDF $fieldNumber',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'No file uploaded',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _uploadPDF(fieldNumber),
+              icon: const Icon(Icons.cloud_upload, size: 18),
+              label: const Text('Upload PDF'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[600],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPDFCard({
+    required String fileName,
+    required int fieldNumber,
+    required ThemeData theme,
+  }) {
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.grey[100]!, Colors.grey[200]!],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.teal[700]!.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.teal[700]!.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.teal[700]!, Colors.teal[600]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.picture_as_pdf,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Supporting PDF $fieldNumber',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.teal[800],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      fileName,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[800],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _downloadPDF(fileName, fieldNumber),
+              icon: const Icon(Icons.download, size: 18),
+              label: const Text('Download / View'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[700],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _replacePDF(fileName, fieldNumber),
+                  icon: const Icon(Icons.swap_horiz, size: 16),
+                  label: const Text('Replace'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.orange[700],
+                    side: BorderSide(color: Colors.orange[700]!),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _deletePDF(fileName, fieldNumber),
+                  icon: const Icon(Icons.delete_outline, size: 16),
+                  label: const Text('Delete'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red[700],
+                    side: BorderSide(color: Colors.red[700]!),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -579,6 +1282,83 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                           ),
                         ],
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Supporting Documents Section - Always visible
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.picture_as_pdf,
+                          color: theme.colorScheme.primary,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Supporting Documents',
+                          style: headlineSmall.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(
+                      color: Colors.grey,
+                      thickness: 1,
+                      height: 30,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: [
+                        // Slot 1
+                        _currentSupplier.SupportingPDF1 != null
+                            ? _buildPDFCard(
+                                fileName: _currentSupplier.SupportingPDF1!,
+                                fieldNumber: 1,
+                                theme: theme,
+                              )
+                            : _buildEmptyPDFCard(
+                                fieldNumber: 1,
+                                theme: theme,
+                              ),
+                        // Slot 2
+                        _currentSupplier.SupportingPDF2 != null
+                            ? _buildPDFCard(
+                                fileName: _currentSupplier.SupportingPDF2!,
+                                fieldNumber: 2,
+                                theme: theme,
+                              )
+                            : _buildEmptyPDFCard(
+                                fieldNumber: 2,
+                                theme: theme,
+                              ),
+                        // Slot 3
+                        _currentSupplier.SupportingPDF3 != null
+                            ? _buildPDFCard(
+                                fileName: _currentSupplier.SupportingPDF3!,
+                                fieldNumber: 3,
+                                theme: theme,
+                              )
+                            : _buildEmptyPDFCard(
+                                fieldNumber: 3,
+                                theme: theme,
+                              ),
+                      ],
                     ),
                   ],
                 ),
