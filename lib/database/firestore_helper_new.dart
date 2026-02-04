@@ -9,6 +9,7 @@ import 'package:gemini001/models/credit_check.dart';
 import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/models/shipment.dart';
 import 'package:gemini001/models/bid_flow.dart';
+import 'package:gemini001/models/supplier_history.dart';
 import 'package:gemini001/utils/logging.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
@@ -46,6 +47,14 @@ class FirestoreHelper {
     return _db.collection('Shipments').withConverter<Shipment>(
           fromFirestore: (snapshot, _) => Shipment.fromFirestore(snapshot),
           toFirestore: (shipment, _) => shipment.toMap(),
+        );
+  }
+
+  // This getter returns a collection reference for "SupplierHistory" with a converter.
+  CollectionReference<SupplierHistory> get _supplierHistoryCollection {
+    return _db.collection('SupplierHistory').withConverter<SupplierHistory>(
+          fromFirestore: (snapshot, _) => SupplierHistory.fromFirestore(snapshot),
+          toFirestore: (history, _) => history.toMap(),
         );
   }
 
@@ -97,7 +106,13 @@ class FirestoreHelper {
   }
 
   // Update an existing supplier's data.
-  Future<void> updateSupplier(Supplier supplier) async {
+  // Optional: Pass changes to log field-level history
+  Future<void> updateSupplier(
+    Supplier supplier, {
+    List<FieldChange>? changes,
+    String? reason,
+    String? ipAddress,
+  }) async {
     try {
       if (supplier.id != null) {
         // Fetch old supplier for audit
@@ -106,7 +121,7 @@ class FirestoreHelper {
 
         await _suppliersCollection.doc(supplier.id).set(supplier);
 
-        // Log audit
+        // Log audit for status change (existing functionality)
         final currentUser = _auth.currentUser;
         if (currentUser != null && oldSupplier?.Status != supplier.Status) {
           await _db.collection('audit_trails').add({
@@ -119,11 +134,61 @@ class FirestoreHelper {
             'timestamp': FieldValue.serverTimestamp(),
           });
         }
+
+        // Create history entry if changes provided (new functionality)
+        if (changes != null && changes.isNotEmpty && currentUser != null) {
+          final history = SupplierHistory(
+            supId: supplier.SupId,
+            documentId: supplier.id!,
+            timestamp: DateTime.now(),
+            userId: currentUser.email ?? currentUser.uid,
+            userName: currentUser.displayName ?? currentUser.email ?? 'Unknown User',
+            changes: changes,
+            ipAddress: ipAddress,
+            reason: reason,
+          );
+          await addSupplierHistory(history);
+        }
       }
     } catch (e) {
       logger.e('Error updating supplier: $e');
       rethrow;
     }
+  }
+
+  // Add a supplier history entry
+  Future<void> addSupplierHistory(SupplierHistory history) async {
+    try {
+      await _supplierHistoryCollection.add(history);
+      logger.i('Supplier history added for SupId: ${history.supId}, Changes: ${history.changes.length}');
+    } catch (e) {
+      logger.e('Error adding supplier history: $e');
+      rethrow;
+    }
+  }
+
+  // Get history for a specific supplier
+  Future<List<SupplierHistory>> getSupplierHistory(int supId) async {
+    try {
+      final querySnapshot = await _supplierHistoryCollection
+          .where('supId', isEqualTo: supId)
+          .orderBy('timestamp', descending: true)
+          .get();
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      logger.e('Error fetching supplier history: $e');
+      rethrow;
+    }
+  }
+
+  // Stream all history (for admin view)
+  Stream<List<SupplierHistory>> streamAllHistory() {
+    return _supplierHistoryCollection
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((querySnapshot) {
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    });
   }
 
   // This getter returns a collection reference for "Contracts" with a converter.

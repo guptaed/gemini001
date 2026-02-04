@@ -1233,14 +1233,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.supplier.CompanyName,
+                      _currentSupplier.CompanyName,
                       style: headlineSmall.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildStatusBadge(widget.supplier.Status, theme),
+                    _buildStatusBadge(_currentSupplier.Status, theme),
                     const Divider(
                       color: Colors.grey,
                       thickness: 1,
@@ -1248,19 +1248,19 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                     ),
                     const SizedBox(height: 16),
                     _buildDetailRow('Supplier ID',
-                        widget.supplier.SupId.toString(), bodyMedium, theme),
+                        _currentSupplier.SupId.toString(), bodyMedium, theme),
                     _buildDetailRow('Representative',
-                        widget.supplier.Representative, bodyMedium, theme),
+                        _currentSupplier.Representative, bodyMedium, theme),
                     _buildDetailRow(
-                        'Title', widget.supplier.Title, bodyMedium, theme),
+                        'Title', _currentSupplier.Title, bodyMedium, theme),
                     _buildDetailRow(
-                        'Address', widget.supplier.Address, bodyMedium, theme),
+                        'Address', _currentSupplier.Address, bodyMedium, theme),
                     _buildDetailRow(
-                        'Telephone', widget.supplier.Tel, bodyMedium, theme),
+                        'Telephone', _currentSupplier.Tel, bodyMedium, theme),
                     _buildDetailRow(
-                        'Email', widget.supplier.Email, bodyMedium, theme),
+                        'Email', _currentSupplier.Email, bodyMedium, theme),
                     _buildDetailRow(
-                        'Tax Code', widget.supplier.TaxCode, bodyMedium, theme),
+                        'Tax Code', _currentSupplier.TaxCode, bodyMedium, theme),
                     const SizedBox(height: 16),
                     AnimatedOpacity(
                       opacity: 1.0,
@@ -1269,7 +1269,21 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              // Navigate to edit screen
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddSupplierScreen(
+                                    existingSupplier: _currentSupplier,
+                                  ),
+                                ),
+                              );
+                              // Refresh if changes were saved
+                              if (result == true && mounted) {
+                                _refreshSupplier();
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
@@ -1430,9 +1444,9 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 AddCreditCheckScreen(
-                                              supId: widget.supplier.SupId,
+                                              supId: _currentSupplier.SupId,
                                               companyName:
-                                                  widget.supplier.CompanyName,
+                                                  _currentSupplier.CompanyName,
                                             ),
                                           ),
                                         );

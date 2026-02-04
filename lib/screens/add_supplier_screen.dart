@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/database/storage_helper.dart';
 import 'package:gemini001/models/supplier.dart';
+import 'package:gemini001/models/supplier_history.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/add_announcement_screen.dart';
@@ -19,7 +20,12 @@ import 'package:gemini001/utils/logging.dart';
 import 'package:file_picker/file_picker.dart';
 
 class AddSupplierScreen extends StatefulWidget {
-  const AddSupplierScreen({super.key});
+  final Supplier? existingSupplier; // For edit mode
+
+  const AddSupplierScreen({
+    super.key,
+    this.existingSupplier,
+  });
 
   @override
   State<AddSupplierScreen> createState() => _AddSupplierScreenState();
@@ -35,6 +41,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   final _taxCodeController = TextEditingController();
   final _representativeController = TextEditingController();
   final _titleController = TextEditingController();
+  final _reasonController = TextEditingController(); // For edit reason
 
   // PDF upload state
   Uint8List? _pdfBytes1;
@@ -44,10 +51,25 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   String? _pdfFileName2;
   String? _pdfFileName3;
 
+  // Edit mode detection
+  bool get isEditMode => widget.existingSupplier != null;
+
   @override
   void initState() {
     super.initState();
-    _supIdController.text = _generateSupplierId();
+    if (isEditMode) {
+      // Pre-populate fields with existing supplier data
+      _supIdController.text = widget.existingSupplier!.SupId.toString();
+      _companyNameController.text = widget.existingSupplier!.CompanyName;
+      _addressController.text = widget.existingSupplier!.Address;
+      _telController.text = widget.existingSupplier!.Tel;
+      _emailController.text = widget.existingSupplier!.Email;
+      _taxCodeController.text = widget.existingSupplier!.TaxCode;
+      _representativeController.text = widget.existingSupplier!.Representative;
+      _titleController.text = widget.existingSupplier!.Title;
+    } else {
+      _supIdController.text = _generateSupplierId();
+    }
   }
 
   @override
@@ -60,6 +82,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
     _taxCodeController.dispose();
     _representativeController.dispose();
     _titleController.dispose();
+    _reasonController.dispose();
     super.dispose();
   }
 
@@ -197,22 +220,245 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
     });
   }
 
+  // Detect changes between existing supplier and form data
+  List<FieldChange> _detectChanges() {
+    if (!isEditMode) return [];
+
+    final changes = <FieldChange>[];
+    final existing = widget.existingSupplier!;
+
+    // Check each field for changes
+    if (_companyNameController.text != existing.CompanyName) {
+      changes.add(FieldChange(
+        fieldName: 'CompanyName',
+        fieldLabel: 'Company Name',
+        oldValue: existing.CompanyName,
+        newValue: _companyNameController.text,
+      ));
+    }
+
+    if (_addressController.text != existing.Address) {
+      changes.add(FieldChange(
+        fieldName: 'Address',
+        fieldLabel: 'Address',
+        oldValue: existing.Address,
+        newValue: _addressController.text,
+      ));
+    }
+
+    if (_telController.text != existing.Tel) {
+      changes.add(FieldChange(
+        fieldName: 'Tel',
+        fieldLabel: 'Telephone',
+        oldValue: existing.Tel,
+        newValue: _telController.text,
+      ));
+    }
+
+    if (_emailController.text != existing.Email) {
+      changes.add(FieldChange(
+        fieldName: 'Email',
+        fieldLabel: 'Email',
+        oldValue: existing.Email,
+        newValue: _emailController.text,
+      ));
+    }
+
+    if (_taxCodeController.text != existing.TaxCode) {
+      changes.add(FieldChange(
+        fieldName: 'TaxCode',
+        fieldLabel: 'Tax Code',
+        oldValue: existing.TaxCode,
+        newValue: _taxCodeController.text,
+      ));
+    }
+
+    if (_representativeController.text != existing.Representative) {
+      changes.add(FieldChange(
+        fieldName: 'Representative',
+        fieldLabel: 'Representative',
+        oldValue: existing.Representative,
+        newValue: _representativeController.text,
+      ));
+    }
+
+    if (_titleController.text != existing.Title) {
+      changes.add(FieldChange(
+        fieldName: 'Title',
+        fieldLabel: 'Title',
+        oldValue: existing.Title,
+        newValue: _titleController.text,
+      ));
+    }
+
+    return changes;
+  }
+
+  // Show confirmation dialog with changes before saving
+  Future<bool> _showConfirmationDialog(List<FieldChange> changes) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange[700], size: 28),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Confirm Changes',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'You are about to modify the following ${changes.length} field${changes.length > 1 ? 's' : ''}:',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 16),
+                ...changes.map((change) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        change.fieldLabel,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'From: "${change.oldValue}"',
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                      Text(
+                        'To: "${change.newValue}"',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+                const Divider(height: 24),
+                const Text(
+                  'Do you want to proceed with these changes?',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[700],
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
   Future<void> _saveSupplier() async {
     if (_formKey.currentState!.validate()) {
-      final supplier = Supplier(
-        SupId: int.parse(_supIdController.text),
-        CompanyName: _companyNameController.text,
-        Address: _addressController.text,
-        Tel: _telController.text,
-        Email: _emailController.text,
-        TaxCode: _taxCodeController.text,
-        Representative: _representativeController.text,
-        Title: _titleController.text,
-        Status: 'New',
-      );
-      try {
-        // First, save the supplier to Firestore
-        await FirestoreHelper().addSupplier(supplier);
+      // Edit mode: Detect changes and show confirmation
+      if (isEditMode) {
+        final changes = _detectChanges();
+
+        // If no changes, show message and return
+        if (changes.isEmpty) {
+          await _showMessageDialog(
+            title: 'No Changes',
+            message: 'No modifications were made to the supplier information.',
+            isError: false,
+          );
+          return;
+        }
+
+        // Show confirmation dialog
+        final confirmed = await _showConfirmationDialog(changes);
+        if (!confirmed) {
+          return; // User cancelled
+        }
+
+        // Update the supplier
+        try {
+          final updatedSupplier = widget.existingSupplier!.copyWith(
+            CompanyName: _companyNameController.text,
+            Address: _addressController.text,
+            Tel: _telController.text,
+            Email: _emailController.text,
+            TaxCode: _taxCodeController.text,
+            Representative: _representativeController.text,
+            Title: _titleController.text,
+          );
+
+          final reason = _reasonController.text.trim().isEmpty
+              ? null
+              : _reasonController.text.trim();
+
+          await FirestoreHelper().updateSupplier(
+            updatedSupplier,
+            changes: changes,
+            reason: reason,
+            ipAddress: null, // Can be implemented later if needed
+          );
+
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Success',
+              message: 'Supplier information updated successfully!',
+              isError: false,
+            );
+
+            // Return to previous screen
+            Navigator.of(context).pop(true); // true indicates success
+          }
+        } catch (e) {
+          logger.e('Error updating supplier: $e');
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Error',
+              message: 'Failed to update supplier:\n\n$e',
+              isError: true,
+            );
+          }
+        }
+      } else {
+        // Add mode: Create new supplier
+        final supplier = Supplier(
+          SupId: int.parse(_supIdController.text),
+          CompanyName: _companyNameController.text,
+          Address: _addressController.text,
+          Tel: _telController.text,
+          Email: _emailController.text,
+          TaxCode: _taxCodeController.text,
+          Representative: _representativeController.text,
+          Title: _titleController.text,
+          Status: 'New',
+        );
+        try {
+          // First, save the supplier to Firestore
+          await FirestoreHelper().addSupplier(supplier);
 
         // Upload PDFs if any are selected
         String? uploadedPDF1;
@@ -324,16 +570,17 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             _pdfFileName3 = null;
           });
         }
-      } catch (e) {
-        logger.e('Error adding supplier with SupId: ${supplier.SupId}', e);
-        if (mounted) {
-          await _showMessageDialog(
-            title: 'Error',
-            message: 'Failed to add supplier:\n\n$e',
-            isError: true,
-          );
+        } catch (e) {
+          logger.e('Error adding supplier with SupId: ${supplier.SupId}', e);
+          if (mounted) {
+            await _showMessageDialog(
+              title: 'Error',
+              message: 'Failed to add supplier:\n\n$e',
+              isError: true,
+            );
+          }
         }
-      }
+      } // End of else block (add mode)
     }
   }
 
@@ -401,7 +648,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   Widget build(BuildContext context) {
     final userName = Provider.of<AuthProvider>(context).user?.email ?? 'User';
     return CommonLayout(
-      title: 'Add New Supplier',
+      title: isEditMode ? 'Edit Supplier' : 'Add New Supplier',
       userName: userName,
       selectedPageIndex: 1,
       onMenuItemSelected: _onMenuItemSelected,
@@ -420,7 +667,9 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                     value!.isEmpty ? 'ID should be generated' : null,
               ),
               _buildTextField(
-                controller: TextEditingController(text: 'New'),
+                controller: TextEditingController(
+                  text: isEditMode ? widget.existingSupplier!.Status : 'New',
+                ),
                 labelText: 'Status',
                 enabled: false,
                 fillColor: Colors.grey[300],
@@ -458,40 +707,81 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                 labelText: 'Tax Code',
               ),
               const SizedBox(height: 30),
-              // Supporting Documents Section
-              Text(
-                'Supporting Documents (Optional)',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal[700],
+              // Reason for change field (Edit mode only)
+              if (isEditMode) ...[
+                Text(
+                  'Reason for Change',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal[700],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Upload up to 3 PDF files (Max 10 MB each)',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+                const SizedBox(height: 4),
+                Text(
+                  'Optional: Explain why you are making these changes',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildPDFUploadField(
-                labelText: 'Supporting PDF 1',
-                fieldNumber: 1,
-                fileName: _pdfFileName1,
-              ),
-              _buildPDFUploadField(
-                labelText: 'Supporting PDF 2',
-                fieldNumber: 2,
-                fileName: _pdfFileName2,
-              ),
-              _buildPDFUploadField(
-                labelText: 'Supporting PDF 3',
-                fieldNumber: 3,
-                fileName: _pdfFileName3,
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _reasonController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Customer requested address update',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.grey[400]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.teal[700]!, width: 2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+              ],
+              // Supporting Documents Section (Add mode only)
+              if (!isEditMode) ...[
+                Text(
+                  'Supporting Documents (Optional)',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal[700],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Upload up to 3 PDF files (Max 10 MB each)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildPDFUploadField(
+                  labelText: 'Supporting PDF 1',
+                  fieldNumber: 1,
+                  fileName: _pdfFileName1,
+                ),
+                _buildPDFUploadField(
+                  labelText: 'Supporting PDF 2',
+                  fieldNumber: 2,
+                  fileName: _pdfFileName2,
+                ),
+                _buildPDFUploadField(
+                  labelText: 'Supporting PDF 3',
+                  fieldNumber: 3,
+                  fileName: _pdfFileName3,
+                ),
+                const SizedBox(height: 20),
+              ],
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -519,9 +809,9 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Save Supplier',
-                    style: TextStyle(
+                  child: Text(
+                    isEditMode ? 'Update Supplier' : 'Save Supplier',
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
