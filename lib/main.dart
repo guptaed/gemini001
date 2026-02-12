@@ -6,12 +6,25 @@ import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/screens/login_screen.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
+import 'package:gemini001/utils/version_checker.dart';
+
+// App build number for version checking.
+// Only increment this for CRITICAL releases that require immediate user notification.
+// For minor releases, leave unchanged - users will get updates on next page refresh.
+const String appBuildNumber = '1';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize version checker for web (checks every 15 minutes)
+  // Only increment appBuildNumber for critical releases that need immediate user attention
+  VersionChecker().initialize(
+    currentBuildNumber: appBuildNumber,
+    checkInterval: const Duration(minutes: 15),
   );
 
   runApp(
