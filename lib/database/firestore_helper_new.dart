@@ -59,9 +59,16 @@ class FirestoreHelper {
   }
 
   // Add a new supplier to the 'suppliers' collection.
+  // Automatically sets creation metadata (CreatedBy, CreatedByName, CreatedAt)
   Future<void> addSupplier(Supplier supplier) async {
     try {
-      await _suppliersCollection.add(supplier);
+      final currentUser = _auth.currentUser;
+      final supplierWithMetadata = supplier.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _suppliersCollection.add(supplierWithMetadata);
     } catch (e) {
       logger.e('Error adding supplier: $e');
       rethrow;
@@ -106,6 +113,8 @@ class FirestoreHelper {
   }
 
   // Update an existing supplier's data.
+  // Automatically sets modification metadata (LastModifiedBy, LastModifiedByName, LastModifiedAt)
+  // and preserves creation metadata from the original document.
   // Optional: Pass changes to log field-level history
   Future<void> updateSupplier(
     Supplier supplier, {
@@ -115,14 +124,26 @@ class FirestoreHelper {
   }) async {
     try {
       if (supplier.id != null) {
-        // Fetch old supplier for audit
+        // Fetch old supplier for audit and to preserve creation metadata
         final oldDoc = await _suppliersCollection.doc(supplier.id).get();
         final oldSupplier = oldDoc.data();
 
-        await _suppliersCollection.doc(supplier.id).set(supplier);
+        // Set modification metadata and preserve creation metadata
+        final currentUser = _auth.currentUser;
+        final supplierWithMetadata = supplier.copyWith(
+          // Preserve original creation metadata
+          CreatedBy: oldSupplier?.CreatedBy ?? supplier.CreatedBy,
+          CreatedByName: oldSupplier?.CreatedByName ?? supplier.CreatedByName,
+          CreatedAt: oldSupplier?.CreatedAt ?? supplier.CreatedAt,
+          // Set modification metadata
+          LastModifiedBy: currentUser?.uid,
+          LastModifiedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+          LastModifiedAt: DateTime.now(),
+        );
+
+        await _suppliersCollection.doc(supplier.id).set(supplierWithMetadata);
 
         // Log audit for status change (existing functionality)
-        final currentUser = _auth.currentUser;
         if (currentUser != null && oldSupplier?.Status != supplier.Status) {
           await _db.collection('audit_trails').add({
             'action': 'status_change',

@@ -29,6 +29,14 @@ class Supplier {
   final String? SupportingPDF2;
   final String? SupportingPDF3;
 
+  // Metadata fields for tracking creation and modification
+  final String? CreatedBy; // User ID who created
+  final String? CreatedByName; // User display name
+  final DateTime? CreatedAt; // Creation timestamp
+  final String? LastModifiedBy; // User ID who last modified
+  final String? LastModifiedByName; // User display name
+  final DateTime? LastModifiedAt; // Last modification timestamp
+
   // The constructor for the `Supplier` class.
   // The `id` is optional when creating a new supplier object, as it will be null initially.
   Supplier({
@@ -45,6 +53,12 @@ class Supplier {
     this.SupportingPDF1,
     this.SupportingPDF2,
     this.SupportingPDF3,
+    this.CreatedBy,
+    this.CreatedByName,
+    this.CreatedAt,
+    this.LastModifiedBy,
+    this.LastModifiedByName,
+    this.LastModifiedAt,
   });
 
   // `copyWith` method: This method allows us to create a new `Supplier` object
@@ -65,6 +79,12 @@ class Supplier {
     Object? SupportingPDF1 = _undefined,
     Object? SupportingPDF2 = _undefined,
     Object? SupportingPDF3 = _undefined,
+    Object? CreatedBy = _undefined,
+    Object? CreatedByName = _undefined,
+    Object? CreatedAt = _undefined,
+    Object? LastModifiedBy = _undefined,
+    Object? LastModifiedByName = _undefined,
+    Object? LastModifiedAt = _undefined,
   }) {
     return Supplier(
       id: id == _undefined ? this.id : id as String?,
@@ -80,6 +100,12 @@ class Supplier {
       SupportingPDF1: SupportingPDF1 == _undefined ? this.SupportingPDF1 : SupportingPDF1 as String?,
       SupportingPDF2: SupportingPDF2 == _undefined ? this.SupportingPDF2 : SupportingPDF2 as String?,
       SupportingPDF3: SupportingPDF3 == _undefined ? this.SupportingPDF3 : SupportingPDF3 as String?,
+      CreatedBy: CreatedBy == _undefined ? this.CreatedBy : CreatedBy as String?,
+      CreatedByName: CreatedByName == _undefined ? this.CreatedByName : CreatedByName as String?,
+      CreatedAt: CreatedAt == _undefined ? this.CreatedAt : CreatedAt as DateTime?,
+      LastModifiedBy: LastModifiedBy == _undefined ? this.LastModifiedBy : LastModifiedBy as String?,
+      LastModifiedByName: LastModifiedByName == _undefined ? this.LastModifiedByName : LastModifiedByName as String?,
+      LastModifiedAt: LastModifiedAt == _undefined ? this.LastModifiedAt : LastModifiedAt as DateTime?,
     );
   }
 
@@ -100,6 +126,12 @@ class Supplier {
       'SupportingPDF1': SupportingPDF1,
       'SupportingPDF2': SupportingPDF2,
       'SupportingPDF3': SupportingPDF3,
+      'CreatedBy': CreatedBy,
+      'CreatedByName': CreatedByName,
+      'CreatedAt': CreatedAt != null ? Timestamp.fromDate(CreatedAt!) : null,
+      'LastModifiedBy': LastModifiedBy,
+      'LastModifiedByName': LastModifiedByName,
+      'LastModifiedAt': LastModifiedAt != null ? Timestamp.fromDate(LastModifiedAt!) : null,
     };
   }
 
@@ -126,6 +158,12 @@ class Supplier {
         SupportingPDF1: data['SupportingPDF1'] as String?,
         SupportingPDF2: data['SupportingPDF2'] as String?,
         SupportingPDF3: data['SupportingPDF3'] as String?,
+        CreatedBy: data['CreatedBy'] as String?,
+        CreatedByName: data['CreatedByName'] as String?,
+        CreatedAt: (data['CreatedAt'] as Timestamp?)?.toDate(),
+        LastModifiedBy: data['LastModifiedBy'] as String?,
+        LastModifiedByName: data['LastModifiedByName'] as String?,
+        LastModifiedAt: (data['LastModifiedAt'] as Timestamp?)?.toDate(),
       );
     } catch (e) {
       // If there's an error during conversion, we print it and return a default

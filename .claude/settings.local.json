@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(flutter analyze:*)",
-      "Bash(flutter pub get:*)"
+      "Bash(flutter pub get:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter run:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd /c:*)",
+      "Bash(pushd:*)",
+      "Bash(popd:*)",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

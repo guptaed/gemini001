@@ -990,6 +990,55 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 
+  Widget _buildMetadataSection(ThemeData theme) {
+    final metadataStyle = TextStyle(
+      fontSize: 12,
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+    );
+
+    String formatDateTime(DateTime? dt) {
+      if (dt == null) return 'N/A';
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_currentSupplier.CreatedAt != null) ...[
+          Row(
+            children: [
+              Icon(Icons.add_circle_outline,
+                  size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Created by ${_currentSupplier.CreatedByName ?? 'Unknown'} on ${formatDateTime(_currentSupplier.CreatedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+        if (_currentSupplier.LastModifiedAt != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.edit_outlined,
+                  size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Last modified by ${_currentSupplier.LastModifiedByName ?? 'Unknown'} on ${formatDateTime(_currentSupplier.LastModifiedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildEmptyPDFCard({
     required int fieldNumber,
     required ThemeData theme,
@@ -1261,6 +1310,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                         'Email', _currentSupplier.Email, bodyMedium, theme),
                     _buildDetailRow(
                         'Tax Code', _currentSupplier.TaxCode, bodyMedium, theme),
+                    // Metadata section
+                    if (_currentSupplier.CreatedAt != null ||
+                        _currentSupplier.LastModifiedAt != null) ...[
+                      const SizedBox(height: 16),
+                      const Divider(color: Colors.grey, thickness: 0.5),
+                      const SizedBox(height: 8),
+                      _buildMetadataSection(theme),
+                    ],
                     const SizedBox(height: 16),
                     AnimatedOpacity(
                       opacity: 1.0,
