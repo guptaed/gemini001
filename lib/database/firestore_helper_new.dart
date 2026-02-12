@@ -308,10 +308,17 @@ class FirestoreHelper {
     }
   }
 
+  // Add a new credit check
+  // Automatically sets creation metadata (CreatedBy, CreatedByName, CreatedAt)
   Future<void> addCreditCheck(CreditCheck creditCheck) async {
     try {
-      await _creditChecksCollection.add(creditCheck);
       final currentUser = _auth.currentUser;
+      final creditCheckWithMetadata = creditCheck.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _creditChecksCollection.add(creditCheckWithMetadata);
       if (currentUser != null) {
         await _db.collection('audit_trails').add({
           'action': 'credit_check_added',
@@ -329,13 +336,19 @@ class FirestoreHelper {
   }
 
   // Update credit check status and log to audit_trails.
+  // Automatically sets modification metadata (LastModifiedBy, LastModifiedByName, LastModifiedAt)
   Future<void> updateCreditCheck(
       CreditCheck creditCheck, String oldStatus) async {
     try {
       if (creditCheck.id != null) {
-        await _creditChecksCollection.doc(creditCheck.id).set(creditCheck);
-        // Log audit
         final currentUser = _auth.currentUser;
+        final creditCheckWithMetadata = creditCheck.copyWith(
+          LastModifiedBy: currentUser?.uid,
+          LastModifiedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+          LastModifiedAt: DateTime.now(),
+        );
+        await _creditChecksCollection.doc(creditCheck.id).set(creditCheckWithMetadata);
+        // Log audit
         if (currentUser != null && oldStatus != creditCheck.status) {
           await _db.collection('audit_trails').add({
             'action': 'credit_check_status_change',

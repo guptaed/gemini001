@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gemini001/utils/logging.dart';
 
+// Sentinel value to distinguish between "not provided" and "provided as null"
+const Object _undefined = Object();
+
 class CreditCheck {
   final String? id;
   final int supId;
@@ -14,6 +17,14 @@ class CreditCheck {
   final String checkCompany;
   final String pdfUrlPhotoERC;
 
+  // Metadata fields for tracking creation and modification
+  final String? CreatedBy; // User ID who created
+  final String? CreatedByName; // User display name
+  final DateTime? CreatedAt; // Creation timestamp
+  final String? LastModifiedBy; // User ID who last modified
+  final String? LastModifiedByName; // User display name
+  final DateTime? LastModifiedAt; // Last modification timestamp
+
   CreditCheck({
     this.id,
     required this.supId,
@@ -26,10 +37,17 @@ class CreditCheck {
     required this.checkFinishDate,
     required this.checkCompany,
     required this.pdfUrlPhotoERC,
+    this.CreatedBy,
+    this.CreatedByName,
+    this.CreatedAt,
+    this.LastModifiedBy,
+    this.LastModifiedByName,
+    this.LastModifiedAt,
   });
 
+  // Note: Uses Object? pattern to distinguish between "not provided" and "provided as null"
   CreditCheck copyWith({
-    String? id,
+    Object? id = _undefined,
     int? supId,
     String? status,
     String? establishedDate,
@@ -40,9 +58,15 @@ class CreditCheck {
     String? checkFinishDate,
     String? checkCompany,
     String? pdfUrlPhotoERC,
+    Object? CreatedBy = _undefined,
+    Object? CreatedByName = _undefined,
+    Object? CreatedAt = _undefined,
+    Object? LastModifiedBy = _undefined,
+    Object? LastModifiedByName = _undefined,
+    Object? LastModifiedAt = _undefined,
   }) {
     return CreditCheck(
-      id: id ?? this.id,
+      id: id == _undefined ? this.id : id as String?,
       supId: supId ?? this.supId,
       status: status ?? this.status,
       establishedDate: establishedDate ?? this.establishedDate,
@@ -53,6 +77,12 @@ class CreditCheck {
       checkFinishDate: checkFinishDate ?? this.checkFinishDate,
       checkCompany: checkCompany ?? this.checkCompany,
       pdfUrlPhotoERC: pdfUrlPhotoERC ?? this.pdfUrlPhotoERC,
+      CreatedBy: CreatedBy == _undefined ? this.CreatedBy : CreatedBy as String?,
+      CreatedByName: CreatedByName == _undefined ? this.CreatedByName : CreatedByName as String?,
+      CreatedAt: CreatedAt == _undefined ? this.CreatedAt : CreatedAt as DateTime?,
+      LastModifiedBy: LastModifiedBy == _undefined ? this.LastModifiedBy : LastModifiedBy as String?,
+      LastModifiedByName: LastModifiedByName == _undefined ? this.LastModifiedByName : LastModifiedByName as String?,
+      LastModifiedAt: LastModifiedAt == _undefined ? this.LastModifiedAt : LastModifiedAt as DateTime?,
     );
   }
 
@@ -68,6 +98,12 @@ class CreditCheck {
       'CheckFinishDate': checkFinishDate,
       'CheckCompany': checkCompany,
       'PdfUrlPhotoERC': pdfUrlPhotoERC,
+      'CreatedBy': CreatedBy,
+      'CreatedByName': CreatedByName,
+      'CreatedAt': CreatedAt != null ? Timestamp.fromDate(CreatedAt!) : null,
+      'LastModifiedBy': LastModifiedBy,
+      'LastModifiedByName': LastModifiedByName,
+      'LastModifiedAt': LastModifiedAt != null ? Timestamp.fromDate(LastModifiedAt!) : null,
     };
   }
 
@@ -87,6 +123,12 @@ class CreditCheck {
         checkFinishDate: data['CheckFinishDate'] as String,
         checkCompany: data['CheckCompany'] as String,
         pdfUrlPhotoERC: data['PdfUrlPhotoERC'] as String,
+        CreatedBy: data['CreatedBy'] as String?,
+        CreatedByName: data['CreatedByName'] as String?,
+        CreatedAt: (data['CreatedAt'] as Timestamp?)?.toDate(),
+        LastModifiedBy: data['LastModifiedBy'] as String?,
+        LastModifiedByName: data['LastModifiedByName'] as String?,
+        LastModifiedAt: (data['LastModifiedAt'] as Timestamp?)?.toDate(),
       );
     } catch (e) {
       logger.e('Error parsing credit check data from Firestore: $e');

@@ -1037,6 +1037,58 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 
+  Widget _buildCreditCheckMetadataSection(
+      CreditCheck creditCheck, ThemeData theme) {
+    final metadataStyle = TextStyle(
+      fontSize: 12,
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+    );
+
+    String formatDateTime(DateTime? dt) {
+      if (dt == null) return 'N/A';
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (creditCheck.CreatedAt != null) ...[
+          Row(
+            children: [
+              Icon(Icons.add_circle_outline,
+                  size: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Created by ${creditCheck.CreatedByName ?? 'Unknown'} on ${formatDateTime(creditCheck.CreatedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+        if (creditCheck.LastModifiedAt != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.edit_outlined,
+                  size: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Last modified by ${creditCheck.LastModifiedByName ?? 'Unknown'} on ${formatDateTime(creditCheck.LastModifiedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildEmptyPDFCard({
     required int fieldNumber,
     required ThemeData theme,
@@ -1569,6 +1621,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                       creditCheck.checkCompany,
                                       bodyMedium,
                                       theme),
+                                  // Metadata section
+                                  if (creditCheck.CreatedAt != null ||
+                                      creditCheck.LastModifiedAt != null) ...[
+                                    const SizedBox(height: 8),
+                                    const Divider(height: 16),
+                                    _buildCreditCheckMetadataSection(
+                                        creditCheck, theme),
+                                  ],
                                   const SizedBox(height: 16),
                                   AnimatedOpacity(
                                     opacity: 1.0,
