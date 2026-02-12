@@ -8,6 +8,7 @@ import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
+import 'package:gemini001/screens/shipment_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/widgets/common_layout.dart';
@@ -304,12 +305,16 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                             color: Colors.white,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
-                              onTap: () {}, // Non-interactive, per bid screens
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight:
-                                      MediaQuery.of(context).size.width / 2.0,
-                                ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ShipmentDetailsScreen(shipment: shipment),
+                                  ),
+                                );
+                              },
+                              child: SingleChildScrollView(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -334,78 +339,73 @@ class _ListShipmentsScreenState extends State<ListShipmentsScreen> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    Flexible(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            _buildDetailRow(
-                                                'Supplier ID',
-                                                shipment.SupId.toString(),
-                                                bodyMedium,
-                                                theme),
-                                            _buildDetailRow(
-                                                'Bid ID',
-                                                shipment.BidId.toString(),
-                                                bodyMedium,
-                                                theme),
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: 100,
-                                                  child: Text(
-                                                    'Status:',
-                                                    style: bodyMedium.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                    Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          _buildDetailRow(
+                                              'Supplier ID',
+                                              shipment.SupId.toString(),
+                                              bodyMedium,
+                                              theme),
+                                          _buildDetailRow(
+                                              'Bid ID',
+                                              shipment.BidId.toString(),
+                                              bodyMedium,
+                                              theme),
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 100,
+                                                child: Text(
+                                                  'Status:',
+                                                  style: bodyMedium.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: theme
+                                                        .colorScheme.onSurface
+                                                        .withValues(alpha: 0.7),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              Chip(
+                                                label: Text(
+                                                  shipment.Status,
+                                                  style: bodyMedium.copyWith(
                                                       color: theme
-                                                          .colorScheme.onSurface
-                                                          .withValues(
-                                                              alpha: 0.7),
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
+                                                          .colorScheme.onPrimary),
                                                 ),
-                                                Chip(
-                                                  label: Text(
-                                                    shipment.Status,
-                                                    style: bodyMedium.copyWith(
-                                                        color: theme.colorScheme
-                                                            .onPrimary),
-                                                  ),
-                                                  backgroundColor:
-                                                      _getStatusColor(
-                                                          shipment.Status),
-                                                  padding: const EdgeInsets
-                                                      .symmetric(horizontal: 8),
-                                                  materialTapTargetSize:
-                                                      MaterialTapTargetSize
-                                                          .shrinkWrap,
-                                                ),
-                                              ],
-                                            ),
-                                            _buildDetailRow(
-                                                'Shipped Date',
-                                                shipment.ShippedDate,
-                                                bodyMedium,
-                                                theme),
-                                            _buildDetailRow(
-                                                'Received Date',
-                                                shipment.ReceivedDate,
-                                                bodyMedium,
-                                                theme),
-                                            _buildDetailRow(
-                                                'Notes',
-                                                shipment.Notes,
-                                                bodyMedium,
-                                                theme),
-                                          ],
-                                        ),
+                                                backgroundColor: _getStatusColor(
+                                                    shipment.Status),
+                                                padding: const EdgeInsets
+                                                    .symmetric(horizontal: 8),
+                                                materialTapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                              ),
+                                            ],
+                                          ),
+                                          _buildDetailRow(
+                                              'Shipped Date',
+                                              shipment.ShippedDate,
+                                              bodyMedium,
+                                              theme),
+                                          _buildDetailRow(
+                                              'Received Date',
+                                              shipment.ReceivedDate,
+                                              bodyMedium,
+                                              theme),
+                                          _buildDetailRow(
+                                              'Notes',
+                                              shipment.Notes,
+                                              bodyMedium,
+                                              theme),
+                                        ],
                                       ),
                                     ),
                                   ],

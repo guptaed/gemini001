@@ -4,6 +4,7 @@ import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/add_announcement_screen.dart';
 import 'package:gemini001/screens/add_bid_screen.dart';
+import 'package:gemini001/screens/bid_details_screen.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
 import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
@@ -219,51 +220,66 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
                       final bid = filteredBids[index];
                       return Card(
                         elevation: 2,
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Bid #${bid.bidId}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.teal,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    BidDetailsScreen(bid: bid),
+                              ),
+                            );
+                          },
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Bid #${bid.bidId}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.teal,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const Divider(
-                                  color: Colors.grey,
-                                  thickness: 1,
-                                  height: 10,
-                                ),
-                                _buildDetailRow('Supplier ID',
-                                    bid.supId.toString(), bodyMedium, theme),
-                                _buildDetailRow(
-                                    'Announcement ID',
-                                    bid.announceId.toString(),
-                                    bodyMedium,
-                                    theme),
-                                _buildDetailRow('Bid ID', bid.bidId.toString(),
-                                    bodyMedium, theme),
-                                _buildDetailRow('Submitted Date',
-                                    bid.submittedDate, bodyMedium, theme),
-                                _buildDetailRow('Quantity',
-                                    bid.quantity.toString(), bodyMedium, theme),
-                                _buildDetailRow(
-                                    'Status', bid.status, bodyMedium, theme),
-                                _buildDetailRow(
-                                    'Quantity Accepted',
-                                    bid.quantityAccepted.toString(),
-                                    bodyMedium,
-                                    theme),
-                                _buildDetailRow('Accept/Reject Date',
-                                    bid.acceptRejectDate, bodyMedium, theme),
-                                _buildDetailRow(
-                                    'Notes', bid.notes, bodyMedium, theme),
-                              ],
+                                  const Divider(
+                                    color: Colors.grey,
+                                    thickness: 1,
+                                    height: 10,
+                                  ),
+                                  _buildDetailRow('Supplier ID',
+                                      bid.supId.toString(), bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Announcement ID',
+                                      bid.announceId.toString(),
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow('Bid ID', bid.bidId.toString(),
+                                      bodyMedium, theme),
+                                  _buildDetailRow('Submitted Date',
+                                      bid.submittedDate, bodyMedium, theme),
+                                  _buildDetailRow('Quantity',
+                                      bid.quantity.toString(), bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Status', bid.status, bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Quantity Accepted',
+                                      bid.quantityAccepted.toString(),
+                                      bodyMedium,
+                                      theme),
+                                  _buildDetailRow('Accept/Reject Date',
+                                      bid.acceptRejectDate, bodyMedium, theme),
+                                  _buildDetailRow(
+                                      'Notes', bid.notes, bodyMedium, theme),
+                                ],
+                              ),
                             ),
                           ),
                         ),

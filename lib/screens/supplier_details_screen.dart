@@ -16,7 +16,6 @@ import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:gemini001/screens/add_credit_check_screen.dart';
-import 'package:gemini001/screens/bid_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
@@ -697,11 +696,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       child: GestureDetector(
         onTap: isWorkflow && stage != null && isCurrent
             ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        BidDetailsScreen(bidId: id ?? '', stage: stage),
+                // TODO: Navigate to bid details when Bid object is available
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Bid details for ID: ${id ?? 'N/A'} - Feature coming soon!'),
                   ),
                 );
               }

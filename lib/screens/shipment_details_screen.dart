@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gemini001/models/bid.dart';
+import 'package:gemini001/models/shipment.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/add_supplier_screen.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
@@ -13,10 +13,10 @@ import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
-class BidDetailsScreen extends StatelessWidget {
-  final Bid bid;
+class ShipmentDetailsScreen extends StatelessWidget {
+  final Shipment shipment;
 
-  const BidDetailsScreen({super.key, required this.bid});
+  const ShipmentDetailsScreen({super.key, required this.shipment});
 
   void _onMenuItemSelected(BuildContext context, int index) {
     switch (index) {
@@ -86,9 +86,9 @@ class BidDetailsScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return CommonLayout(
-      title: 'Bid Details',
+      title: 'Shipment Details',
       userName: userName,
-      selectedPageIndex: 5,
+      selectedPageIndex: 7,
       onMenuItemSelected: (index) => _onMenuItemSelected(context, index),
       mainContentPanel: Container(
         color: Colors.grey[100],
@@ -102,7 +102,7 @@ class BidDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header with Bid ID
+                // Header with Shipment ID
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -115,18 +115,19 @@ class BidDetailsScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.gavel, color: Colors.white, size: 32),
+                      const Icon(Icons.local_shipping,
+                          color: Colors.white, size: 32),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Bid #${bid.bidId}',
+                          'Shipment #${shipment.ShipmentId}',
                           style: theme.textTheme.headlineSmall!.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
                       ),
-                      _buildStatusChip(bid.status),
+                      _buildStatusChip(shipment.Status),
                     ],
                   ),
                 ),
@@ -134,31 +135,24 @@ class BidDetailsScreen extends StatelessWidget {
 
                 // IDs Section
                 _buildDetailRow(
-                    'Bid ID', bid.bidId.toString(), theme),
+                    'Shipment ID', shipment.ShipmentId.toString(), theme),
                 _buildDetailRow(
-                    'Supplier ID', bid.supId.toString(), theme),
-                _buildDetailRow(
-                    'Announcement ID', bid.announceId.toString(), theme),
+                    'Supplier ID', shipment.SupId.toString(), theme),
+                _buildDetailRow('Bid ID', shipment.BidId.toString(), theme),
                 const Divider(height: 32),
 
                 // Dates Section
-                _buildDetailRow('Submitted Date', bid.submittedDate, theme),
-                _buildDetailRow(
-                    'Accept/Reject Date', bid.acceptRejectDate, theme),
-                const Divider(height: 32),
-
-                // Quantity Section
-                _buildDetailRow(
-                    'Quantity', '${bid.quantity} liters', theme),
-                _buildDetailRow(
-                    'Quantity Accepted', '${bid.quantityAccepted} liters', theme),
+                _buildDetailRow('Shipped Date', shipment.ShippedDate, theme),
+                _buildDetailRow('Received Date', shipment.ReceivedDate, theme),
                 const Divider(height: 32),
 
                 // Notes Section
-                _buildDetailRow('Notes', bid.notes, theme, isMultiline: true),
+                _buildDetailRow('Notes', shipment.Notes, theme,
+                    isMultiline: true),
 
                 // Metadata section
-                if (bid.CreatedAt != null || bid.LastModifiedAt != null) ...[
+                if (shipment.CreatedAt != null ||
+                    shipment.LastModifiedAt != null) ...[
                   const SizedBox(height: 16),
                   const Divider(height: 32),
                   _buildMetadataSection(theme),
@@ -184,15 +178,14 @@ class BidDetailsScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
                       onPressed: () {
-                        // TODO: Navigate to edit screen or show shipments
+                        // TODO: Navigate to edit screen
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content:
-                                  Text('View shipments feature coming soon!')),
+                              content: Text('Edit shipment feature coming soon!')),
                         );
                       },
-                      icon: const Icon(Icons.local_shipping),
-                      label: const Text('View Shipments'),
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit Shipment'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: Colors.white,
@@ -213,14 +206,17 @@ class BidDetailsScreen extends StatelessWidget {
   Widget _buildStatusChip(String status) {
     Color chipColor;
     switch (status.toLowerCase()) {
-      case 'accepted':
+      case 'shipped':
+        chipColor = Colors.orange;
+        break;
+      case 'received':
         chipColor = Colors.green;
         break;
-      case 'rejected':
-        chipColor = Colors.red;
-        break;
       case 'pending':
-        chipColor = Colors.orange;
+        chipColor = Colors.blue;
+        break;
+      case 'cancelled':
+        chipColor = Colors.red;
         break;
       default:
         chipColor = Colors.grey;
@@ -258,7 +254,7 @@ class BidDetailsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (bid.CreatedAt != null) ...[
+        if (shipment.CreatedAt != null) ...[
           Row(
             children: [
               Icon(Icons.add_circle_outline,
@@ -267,14 +263,14 @@ class BidDetailsScreen extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Created by ${bid.CreatedByName ?? 'Unknown'} on ${formatDateTime(bid.CreatedAt)}',
+                  'Created by ${shipment.CreatedByName ?? 'Unknown'} on ${formatDateTime(shipment.CreatedAt)}',
                   style: metadataStyle,
                 ),
               ),
             ],
           ),
         ],
-        if (bid.LastModifiedAt != null) ...[
+        if (shipment.LastModifiedAt != null) ...[
           const SizedBox(height: 4),
           Row(
             children: [
@@ -284,7 +280,7 @@ class BidDetailsScreen extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Last modified by ${bid.LastModifiedByName ?? 'Unknown'} on ${formatDateTime(bid.LastModifiedAt)}',
+                  'Last modified by ${shipment.LastModifiedByName ?? 'Unknown'} on ${formatDateTime(shipment.LastModifiedAt)}',
                   style: metadataStyle,
                 ),
               ),
