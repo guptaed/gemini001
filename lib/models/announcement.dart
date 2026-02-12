@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gemini001/utils/logging.dart';
 
+// Sentinel value to distinguish between "not provided" and "provided as null"
+const Object _undefined = Object();
+
 class Announcement {
   final String? id;
   final int announceId;
@@ -13,6 +16,14 @@ class Announcement {
   final String status;
   final String notes;
 
+  // Metadata fields for tracking creation and modification
+  final String? CreatedBy; // User ID who created
+  final String? CreatedByName; // User display name
+  final DateTime? CreatedAt; // Creation timestamp
+  final String? LastModifiedBy; // User ID who last modified
+  final String? LastModifiedByName; // User display name
+  final DateTime? LastModifiedAt; // Last modification timestamp
+
   Announcement({
     this.id,
     required this.announceId,
@@ -24,10 +35,17 @@ class Announcement {
     required this.price,
     required this.status,
     required this.notes,
+    this.CreatedBy,
+    this.CreatedByName,
+    this.CreatedAt,
+    this.LastModifiedBy,
+    this.LastModifiedByName,
+    this.LastModifiedAt,
   });
 
+  // Note: Uses Object? pattern to distinguish between "not provided" and "provided as null"
   Announcement copyWith({
-    String? id,
+    Object? id = _undefined,
     int? announceId,
     String? announceDate,
     String? bidCloseDate,
@@ -37,9 +55,15 @@ class Announcement {
     double? price,
     String? status,
     String? notes,
+    Object? CreatedBy = _undefined,
+    Object? CreatedByName = _undefined,
+    Object? CreatedAt = _undefined,
+    Object? LastModifiedBy = _undefined,
+    Object? LastModifiedByName = _undefined,
+    Object? LastModifiedAt = _undefined,
   }) {
     return Announcement(
-      id: id ?? this.id,
+      id: id == _undefined ? this.id : id as String?,
       announceId: announceId ?? this.announceId,
       announceDate: announceDate ?? this.announceDate,
       bidCloseDate: bidCloseDate ?? this.bidCloseDate,
@@ -49,6 +73,12 @@ class Announcement {
       price: price ?? this.price,
       status: status ?? this.status,
       notes: notes ?? this.notes,
+      CreatedBy: CreatedBy == _undefined ? this.CreatedBy : CreatedBy as String?,
+      CreatedByName: CreatedByName == _undefined ? this.CreatedByName : CreatedByName as String?,
+      CreatedAt: CreatedAt == _undefined ? this.CreatedAt : CreatedAt as DateTime?,
+      LastModifiedBy: LastModifiedBy == _undefined ? this.LastModifiedBy : LastModifiedBy as String?,
+      LastModifiedByName: LastModifiedByName == _undefined ? this.LastModifiedByName : LastModifiedByName as String?,
+      LastModifiedAt: LastModifiedAt == _undefined ? this.LastModifiedAt : LastModifiedAt as DateTime?,
     );
   }
 
@@ -63,6 +93,12 @@ class Announcement {
       'Price': price,
       'Status': status,
       'Notes': notes,
+      'CreatedBy': CreatedBy,
+      'CreatedByName': CreatedByName,
+      'CreatedAt': CreatedAt != null ? Timestamp.fromDate(CreatedAt!) : null,
+      'LastModifiedBy': LastModifiedBy,
+      'LastModifiedByName': LastModifiedByName,
+      'LastModifiedAt': LastModifiedAt != null ? Timestamp.fromDate(LastModifiedAt!) : null,
     };
   }
 
@@ -81,6 +117,12 @@ class Announcement {
         price: (data['Price'] as num).toDouble(),
         status: data['Status'] as String,
         notes: data['Notes'] as String,
+        CreatedBy: data['CreatedBy'] as String?,
+        CreatedByName: data['CreatedByName'] as String?,
+        CreatedAt: (data['CreatedAt'] as Timestamp?)?.toDate(),
+        LastModifiedBy: data['LastModifiedBy'] as String?,
+        LastModifiedByName: data['LastModifiedByName'] as String?,
+        LastModifiedAt: (data['LastModifiedAt'] as Timestamp?)?.toDate(),
       );
     } catch (e) {
       logger.e('Error parsing announcement data from Firestore: $e');

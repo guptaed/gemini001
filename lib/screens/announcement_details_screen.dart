@@ -158,6 +158,14 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                 _buildDetailRow('Notes', announcement.notes, theme,
                     isMultiline: true),
 
+                // Metadata section
+                if (announcement.CreatedAt != null ||
+                    announcement.LastModifiedAt != null) ...[
+                  const SizedBox(height: 16),
+                  const Divider(height: 32),
+                  _buildMetadataSection(theme),
+                ],
+
                 const SizedBox(height: 32),
 
                 // Action Buttons
@@ -200,6 +208,55 @@ class AnnouncementDetailsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMetadataSection(ThemeData theme) {
+    final metadataStyle = TextStyle(
+      fontSize: 12,
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+    );
+
+    String formatDateTime(DateTime? dt) {
+      if (dt == null) return 'N/A';
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (announcement.CreatedAt != null) ...[
+          Row(
+            children: [
+              Icon(Icons.add_circle_outline,
+                  size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Created by ${announcement.CreatedByName ?? 'Unknown'} on ${formatDateTime(announcement.CreatedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+        if (announcement.LastModifiedAt != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.edit_outlined,
+                  size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Last modified by ${announcement.LastModifiedByName ?? 'Unknown'} on ${formatDateTime(announcement.LastModifiedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 

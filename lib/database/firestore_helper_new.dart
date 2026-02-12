@@ -363,9 +363,16 @@ class FirestoreHelper {
   }
 
   // Add a new announcement
+  // Automatically sets creation metadata (CreatedBy, CreatedByName, CreatedAt)
   Future<void> addAnnouncement(Announcement announcement) async {
     try {
-      await _announcementsCollection.add(announcement);
+      final currentUser = _auth.currentUser;
+      final announcementWithMetadata = announcement.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _announcementsCollection.add(announcementWithMetadata);
     } catch (e) {
       logger.e('Error adding announcement: $e');
       rethrow;
@@ -380,9 +387,16 @@ class FirestoreHelper {
   }
 
   // Add a new bid
+  // Automatically sets creation metadata (CreatedBy, CreatedByName, CreatedAt)
   Future<void> addBid(Bid bid) async {
     try {
-      await _bidsCollection.add(bid);
+      final currentUser = _auth.currentUser;
+      final bidWithMetadata = bid.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _bidsCollection.add(bidWithMetadata);
     } catch (e) {
       logger.e('Error adding bid: $e');
       rethrow;
@@ -397,9 +411,16 @@ class FirestoreHelper {
   }
 
   // Add a new shipment
+  // Automatically sets creation metadata (CreatedBy, CreatedByName, CreatedAt)
   Future<void> addShipment(Shipment shipment) async {
     try {
-      await _shipmentsCollection.add(shipment);
+      final currentUser = _auth.currentUser;
+      final shipmentWithMetadata = shipment.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _shipmentsCollection.add(shipmentWithMetadata);
     } catch (e) {
       logger.e('Error adding shipment: $e');
       rethrow;
