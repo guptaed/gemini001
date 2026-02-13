@@ -1143,6 +1143,58 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     );
   }
 
+  Widget _buildBankMetadataSection(
+      BankDetails bankDetails, ThemeData theme) {
+    final metadataStyle = TextStyle(
+      fontSize: 12,
+      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+    );
+
+    String formatDateTime(DateTime? dt) {
+      if (dt == null) return 'N/A';
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (bankDetails.CreatedAt != null) ...[
+          Row(
+            children: [
+              Icon(Icons.add_circle_outline,
+                  size: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Created by ${bankDetails.CreatedByName ?? 'Unknown'} on ${formatDateTime(bankDetails.CreatedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+        if (bankDetails.LastModifiedAt != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.edit_outlined,
+                  size: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Last modified by ${bankDetails.LastModifiedByName ?? 'Unknown'} on ${formatDateTime(bankDetails.LastModifiedAt)}',
+                  style: metadataStyle,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildEmptyPDFCard({
     required int fieldNumber,
     required ThemeData theme,
@@ -2021,6 +2073,14 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                       bankDetails.PreferredBank.toString(),
                                       bodyMedium,
                                       theme),
+                                  // Metadata section
+                                  if (bankDetails.CreatedAt != null ||
+                                      bankDetails.LastModifiedAt != null) ...[
+                                    const SizedBox(height: 8),
+                                    const Divider(height: 16),
+                                    _buildBankMetadataSection(
+                                        bankDetails, theme),
+                                  ],
                                   const SizedBox(height: 16),
                                   AnimatedOpacity(
                                     opacity: 1.0,
@@ -2030,7 +2090,27 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
                                         ElevatedButton(
-                                          onPressed: () {},
+                                          onPressed: () async {
+                                            final result = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AddBankScreen(
+                                                  supId: widget.supplier.SupId,
+                                                  companyName:
+                                                      widget.supplier.CompanyName,
+                                                  existingBank: bankDetails,
+                                                ),
+                                              ),
+                                            );
+                                            // Refresh if changes were saved
+                                            if (result == true && mounted) {
+                                              setState(() {
+                                                _bankDetailsFuture = FirestoreHelper()
+                                                    .getBankDetails(widget.supplier.SupId);
+                                              });
+                                            }
+                                          },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor:
                                                 theme.colorScheme.primary,

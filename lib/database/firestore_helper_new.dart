@@ -12,6 +12,7 @@ import 'package:gemini001/models/bid_flow.dart';
 import 'package:gemini001/models/supplier_history.dart';
 import 'package:gemini001/models/credit_check_history.dart';
 import 'package:gemini001/models/contract_history.dart';
+import 'package:gemini001/models/bank_history.dart';
 import 'package:gemini001/utils/logging.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
@@ -254,6 +255,14 @@ class FirestoreHelper {
         );
   }
 
+  // This getter returns a collection reference for "BankHistory" with a converter.
+  CollectionReference<BankHistory> get _bankHistoryCollection {
+    return _db.collection('BankHistory').withConverter<BankHistory>(
+          fromFirestore: (snapshot, _) => BankHistory.fromFirestore(snapshot),
+          toFirestore: (history, _) => history.toMap(),
+        );
+  }
+
   // This getter returns a collection reference for "Smartphoneaccess" with a converter.
   CollectionReference<SmartphoneAccess> get _smartphoneaccessCollection {
     return _db.collection('Smartphoneaccess').withConverter<SmartphoneAccess>(
@@ -436,6 +445,93 @@ class FirestoreHelper {
       }
     } catch (e) {
       logger.e('Error adding bank details: $e');
+      rethrow;
+    }
+  }
+
+  // Update bank details and log to audit_trails.
+  // Automatically sets modification metadata (LastModifiedBy, LastModifiedByName, LastModifiedAt)
+  // and preserves creation metadata from the original document.
+  // Optional: Pass changes to log field-level history
+  Future<void> updateBankDetails(
+    BankDetails bankDetails, {
+    List<FieldChange>? changes,
+    String? reason,
+    String? ipAddress,
+  }) async {
+    try {
+      if (bankDetails.id != null) {
+        // Fetch old bank details to preserve creation metadata
+        final oldDoc = await _banksCollection.doc(bankDetails.id).get();
+        final oldBankDetails = oldDoc.data();
+
+        final currentUser = _auth.currentUser;
+        final bankWithMetadata = bankDetails.copyWith(
+          // Preserve original creation metadata
+          CreatedBy: oldBankDetails?.CreatedBy ?? bankDetails.CreatedBy,
+          CreatedByName: oldBankDetails?.CreatedByName ?? bankDetails.CreatedByName,
+          CreatedAt: oldBankDetails?.CreatedAt ?? bankDetails.CreatedAt,
+          // Set modification metadata
+          LastModifiedBy: currentUser?.uid,
+          LastModifiedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+          LastModifiedAt: DateTime.now(),
+        );
+        await _banksCollection.doc(bankDetails.id).set(bankWithMetadata);
+
+        // Log audit for bank details update
+        if (currentUser != null) {
+          await _db.collection('audit_trails').add({
+            'action': 'bank_details_updated',
+            'supplierId': bankDetails.SupId,
+            'bankName': bankDetails.BankName,
+            'userUid': currentUser.uid,
+            'userEmail': currentUser.email,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+
+        // Create history entry if changes provided
+        if (changes != null && changes.isNotEmpty && currentUser != null) {
+          final history = BankHistory(
+            supId: bankDetails.SupId,
+            documentId: bankDetails.id!,
+            timestamp: DateTime.now(),
+            userId: currentUser.email ?? currentUser.uid,
+            userName: currentUser.displayName ?? currentUser.email ?? 'Unknown User',
+            changes: changes,
+            ipAddress: ipAddress,
+            reason: reason,
+          );
+          await addBankHistory(history);
+        }
+      }
+    } catch (e) {
+      logger.e('Error updating bank details: $e');
+      rethrow;
+    }
+  }
+
+  // Add bank history entry
+  Future<void> addBankHistory(BankHistory history) async {
+    try {
+      await _bankHistoryCollection.add(history);
+      logger.i('Bank history entry added for document: ${history.documentId}');
+    } catch (e) {
+      logger.e('Error adding bank history: $e');
+      rethrow;
+    }
+  }
+
+  // Get bank history for a specific bank document
+  Future<List<BankHistory>> getBankHistory(String documentId) async {
+    try {
+      final querySnapshot = await _bankHistoryCollection
+          .where('documentId', isEqualTo: documentId)
+          .orderBy('timestamp', descending: true)
+          .get();
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      logger.e('Error fetching bank history: $e');
       rethrow;
     }
   }
