@@ -12,7 +12,7 @@ class Footer extends StatelessWidget {
       color: const Color.fromARGB(255, 218, 217, 217),
       child: const Center(
         child: Text(
-          '© 2025 erex Co. Ltd. All rights reserved. | Contact: it.solutions@erex.co.jp | v 0.0.7, October 2025.',
+          '© 2026 erex Co. Ltd. All rights reserved. | Contact: it.solutions@erex.co.jp | v 0.0.8, February 2026.',
           style: TextStyle(
               fontSize: 12,
               color: Color.fromARGB(255, 41, 40, 40),

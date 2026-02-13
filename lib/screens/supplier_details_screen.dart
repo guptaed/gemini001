@@ -1640,7 +1640,24 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
                                         ElevatedButton(
-                                          onPressed: () {},
+                                          onPressed: () async {
+                                            final result = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AddCreditCheckScreen(
+                                                  supId: _currentSupplier.SupId,
+                                                  companyName:
+                                                      _currentSupplier.CompanyName,
+                                                  existingCreditCheck: creditCheck,
+                                                ),
+                                              ),
+                                            );
+                                            // Refresh if changes were saved
+                                            if (result == true && mounted) {
+                                              _refreshCreditCheck();
+                                            }
+                                          },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor:
                                                 theme.colorScheme.primary,

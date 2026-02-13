@@ -10,6 +10,7 @@ import 'package:gemini001/models/bid.dart';
 import 'package:gemini001/models/shipment.dart';
 import 'package:gemini001/models/bid_flow.dart';
 import 'package:gemini001/models/supplier_history.dart';
+import 'package:gemini001/models/credit_check_history.dart';
 import 'package:gemini001/utils/logging.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
@@ -236,6 +237,14 @@ class FirestoreHelper {
         );
   }
 
+  // This getter returns a collection reference for "CreditCheckHistory" with a converter.
+  CollectionReference<CreditCheckHistory> get _creditCheckHistoryCollection {
+    return _db.collection('CreditCheckHistory').withConverter<CreditCheckHistory>(
+          fromFirestore: (snapshot, _) => CreditCheckHistory.fromFirestore(snapshot),
+          toFirestore: (history, _) => history.toMap(),
+        );
+  }
+
 
   // This getter returns a collection reference for "Smartphoneaccess" with a converter.
   CollectionReference<SmartphoneAccess> get _smartphoneaccessCollection {
@@ -391,34 +400,92 @@ class FirestoreHelper {
     }
   }
 
-  // Update credit check status and log to audit_trails.
+  // Update credit check and log to audit_trails.
   // Automatically sets modification metadata (LastModifiedBy, LastModifiedByName, LastModifiedAt)
+  // and preserves creation metadata from the original document.
+  // Optional: Pass changes to log field-level history
   Future<void> updateCreditCheck(
-      CreditCheck creditCheck, String oldStatus) async {
+    CreditCheck creditCheck, {
+    String? oldStatus,
+    List<FieldChange>? changes,
+    String? reason,
+    String? ipAddress,
+  }) async {
     try {
       if (creditCheck.id != null) {
+        // Fetch old credit check to preserve creation metadata
+        final oldDoc = await _creditChecksCollection.doc(creditCheck.id).get();
+        final oldCreditCheck = oldDoc.data();
+
         final currentUser = _auth.currentUser;
         final creditCheckWithMetadata = creditCheck.copyWith(
+          // Preserve original creation metadata
+          CreatedBy: oldCreditCheck?.CreatedBy ?? creditCheck.CreatedBy,
+          CreatedByName: oldCreditCheck?.CreatedByName ?? creditCheck.CreatedByName,
+          CreatedAt: oldCreditCheck?.CreatedAt ?? creditCheck.CreatedAt,
+          // Set modification metadata
           LastModifiedBy: currentUser?.uid,
           LastModifiedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
           LastModifiedAt: DateTime.now(),
         );
         await _creditChecksCollection.doc(creditCheck.id).set(creditCheckWithMetadata);
-        // Log audit
-        if (currentUser != null && oldStatus != creditCheck.status) {
+
+        // Log audit for status change
+        final effectiveOldStatus = oldStatus ?? oldCreditCheck?.status;
+        if (currentUser != null && effectiveOldStatus != null && effectiveOldStatus != creditCheck.status) {
           await _db.collection('audit_trails').add({
             'action': 'credit_check_status_change',
             'supplierId': creditCheck.supId,
-            'oldStatus': oldStatus,
+            'oldStatus': effectiveOldStatus,
             'newStatus': creditCheck.status,
             'userUid': currentUser.uid,
             'userEmail': currentUser.email,
             'timestamp': FieldValue.serverTimestamp(),
           });
         }
+
+        // Create history entry if changes provided
+        if (changes != null && changes.isNotEmpty && currentUser != null) {
+          final history = CreditCheckHistory(
+            supId: creditCheck.supId,
+            documentId: creditCheck.id!,
+            timestamp: DateTime.now(),
+            userId: currentUser.email ?? currentUser.uid,
+            userName: currentUser.displayName ?? currentUser.email ?? 'Unknown User',
+            changes: changes,
+            ipAddress: ipAddress,
+            reason: reason,
+          );
+          await addCreditCheckHistory(history);
+        }
       }
     } catch (e) {
       logger.e('Error updating credit check: $e');
+      rethrow;
+    }
+  }
+
+  // Add a credit check history entry
+  Future<void> addCreditCheckHistory(CreditCheckHistory history) async {
+    try {
+      await _creditCheckHistoryCollection.add(history);
+      logger.i('Credit check history added for SupId: ${history.supId}, Changes: ${history.changes.length}');
+    } catch (e) {
+      logger.e('Error adding credit check history: $e');
+      rethrow;
+    }
+  }
+
+  // Get history for a specific credit check
+  Future<List<CreditCheckHistory>> getCreditCheckHistory(int supId) async {
+    try {
+      final querySnapshot = await _creditCheckHistoryCollection
+          .where('supId', isEqualTo: supId)
+          .orderBy('timestamp', descending: true)
+          .get();
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      logger.e('Error fetching credit check history: $e');
       rethrow;
     }
   }
