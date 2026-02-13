@@ -11,6 +11,7 @@ import 'package:gemini001/models/shipment.dart';
 import 'package:gemini001/models/bid_flow.dart';
 import 'package:gemini001/models/supplier_history.dart';
 import 'package:gemini001/models/credit_check_history.dart';
+import 'package:gemini001/models/contract_history.dart';
 import 'package:gemini001/utils/logging.dart';
 
 // FirestoreHelper is a helper class that encapsulates all the Firestore logic
@@ -245,6 +246,13 @@ class FirestoreHelper {
         );
   }
 
+  // This getter returns a collection reference for "ContractHistory" with a converter.
+  CollectionReference<ContractHistory> get _contractHistoryCollection {
+    return _db.collection('ContractHistory').withConverter<ContractHistory>(
+          fromFirestore: (snapshot, _) => ContractHistory.fromFirestore(snapshot),
+          toFirestore: (history, _) => history.toMap(),
+        );
+  }
 
   // This getter returns a collection reference for "Smartphoneaccess" with a converter.
   CollectionReference<SmartphoneAccess> get _smartphoneaccessCollection {
@@ -304,6 +312,93 @@ class FirestoreHelper {
       }
     } catch (e) {
       logger.e('Error adding contract: $e');
+      rethrow;
+    }
+  }
+
+  // Update contract info and log to audit_trails.
+  // Automatically sets modification metadata (LastModifiedBy, LastModifiedByName, LastModifiedAt)
+  // and preserves creation metadata from the original document.
+  // Optional: Pass changes to log field-level history
+  Future<void> updateContractInfo(
+    ContractInfo contractInfo, {
+    List<FieldChange>? changes,
+    String? reason,
+    String? ipAddress,
+  }) async {
+    try {
+      if (contractInfo.id != null) {
+        // Fetch old contract to preserve creation metadata
+        final oldDoc = await _contractsCollection.doc(contractInfo.id).get();
+        final oldContract = oldDoc.data();
+
+        final currentUser = _auth.currentUser;
+        final contractWithMetadata = contractInfo.copyWith(
+          // Preserve original creation metadata
+          CreatedBy: oldContract?.CreatedBy ?? contractInfo.CreatedBy,
+          CreatedByName: oldContract?.CreatedByName ?? contractInfo.CreatedByName,
+          CreatedAt: oldContract?.CreatedAt ?? contractInfo.CreatedAt,
+          // Set modification metadata
+          LastModifiedBy: currentUser?.uid,
+          LastModifiedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+          LastModifiedAt: DateTime.now(),
+        );
+        await _contractsCollection.doc(contractInfo.id).set(contractWithMetadata);
+
+        // Log audit for contract update
+        if (currentUser != null) {
+          await _db.collection('audit_trails').add({
+            'action': 'contract_updated',
+            'supplierId': contractInfo.SupId,
+            'contractNo': contractInfo.ContractNo,
+            'userUid': currentUser.uid,
+            'userEmail': currentUser.email,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+
+        // Create history entry if changes provided
+        if (changes != null && changes.isNotEmpty && currentUser != null) {
+          final history = ContractHistory(
+            supId: contractInfo.SupId,
+            documentId: contractInfo.id!,
+            timestamp: DateTime.now(),
+            userId: currentUser.email ?? currentUser.uid,
+            userName: currentUser.displayName ?? currentUser.email ?? 'Unknown User',
+            changes: changes,
+            ipAddress: ipAddress,
+            reason: reason,
+          );
+          await addContractHistory(history);
+        }
+      }
+    } catch (e) {
+      logger.e('Error updating contract: $e');
+      rethrow;
+    }
+  }
+
+  // Add contract history entry
+  Future<void> addContractHistory(ContractHistory history) async {
+    try {
+      await _contractHistoryCollection.add(history);
+      logger.i('Contract history entry added for document: ${history.documentId}');
+    } catch (e) {
+      logger.e('Error adding contract history: $e');
+      rethrow;
+    }
+  }
+
+  // Get contract history for a specific contract document
+  Future<List<ContractHistory>> getContractHistory(String documentId) async {
+    try {
+      final querySnapshot = await _contractHistoryCollection
+          .where('documentId', isEqualTo: documentId)
+          .orderBy('timestamp', descending: true)
+          .get();
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      logger.e('Error fetching contract history: $e');
       rethrow;
     }
   }
