@@ -271,6 +271,34 @@ class FirestoreHelper {
         : null;
   }
 
+  // Add a new contract
+  // Automatically sets creation metadata (CreatedBy, CreatedByName, CreatedAt)
+  Future<void> addContractInfo(ContractInfo contractInfo) async {
+    try {
+      final currentUser = _auth.currentUser;
+      final contractWithMetadata = contractInfo.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName:
+            currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _contractsCollection.add(contractWithMetadata);
+      if (currentUser != null) {
+        await _db.collection('audit_trails').add({
+          'action': 'contract_added',
+          'supplierId': contractInfo.SupId,
+          'contractNo': contractInfo.ContractNo,
+          'userUid': currentUser.uid,
+          'userEmail': currentUser.email,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      logger.e('Error adding contract: $e');
+      rethrow;
+    }
+  }
+
   // Get bank details for a given SupId.
   Future<BankDetails?> getBankDetails(int supId) async {
     final querySnapshot =
@@ -278,6 +306,34 @@ class FirestoreHelper {
     return querySnapshot.docs.isNotEmpty
         ? querySnapshot.docs.first.data()
         : null;
+  }
+
+  // Add new bank details
+  // Automatically sets creation metadata (CreatedBy, CreatedByName, CreatedAt)
+  Future<void> addBankDetails(BankDetails bankDetails) async {
+    try {
+      final currentUser = _auth.currentUser;
+      final bankWithMetadata = bankDetails.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName:
+            currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _banksCollection.add(bankWithMetadata);
+      if (currentUser != null) {
+        await _db.collection('audit_trails').add({
+          'action': 'bank_details_added',
+          'supplierId': bankDetails.SupId,
+          'bankName': bankDetails.BankName,
+          'userUid': currentUser.uid,
+          'userEmail': currentUser.email,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      logger.e('Error adding bank details: $e');
+      rethrow;
+    }
   }
 
   // Get Smartphone Access for a given SupId.

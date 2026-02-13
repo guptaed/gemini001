@@ -16,6 +16,8 @@ import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:gemini001/screens/add_credit_check_screen.dart';
+import 'package:gemini001/screens/add_contract_screen.dart';
+import 'package:gemini001/screens/add_bank_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
@@ -1707,7 +1709,25 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                     opacity: 1.0,
                                     duration: const Duration(milliseconds: 300),
                                     child: ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                AddContractScreen(
+                                              supId: widget.supplier.SupId,
+                                              companyName:
+                                                  widget.supplier.CompanyName,
+                                            ),
+                                          ),
+                                        );
+                                        // Refresh contract info after returning
+                                        setState(() {
+                                          _contractInfoFuture = FirestoreHelper()
+                                              .getContractInfo(
+                                                  widget.supplier.SupId);
+                                        });
+                                      },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
                                             theme.colorScheme.primary,
@@ -1836,7 +1856,24 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                     opacity: 1.0,
                                     duration: const Duration(milliseconds: 300),
                                     child: ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AddBankScreen(
+                                              supId: widget.supplier.SupId,
+                                              companyName:
+                                                  widget.supplier.CompanyName,
+                                            ),
+                                          ),
+                                        );
+                                        // Refresh bank details after returning
+                                        setState(() {
+                                          _bankDetailsFuture = FirestoreHelper()
+                                              .getBankDetails(
+                                                  widget.supplier.SupId);
+                                        });
+                                      },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
                                             theme.colorScheme.primary,
