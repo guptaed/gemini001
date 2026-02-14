@@ -8,4 +8,13 @@
 .DS_Store
 Thumbs.db
 
+# Dart tooling
+.dart_tool/
+
+# Firebase CLI cache
+.firebase/
+
+# Claude Code
+.claude/
+
 # Each app/package has its own .gitignore for specific ignores
