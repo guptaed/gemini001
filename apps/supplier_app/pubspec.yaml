@@ -1,0 +1,34 @@
+name: supplier_app
+description: "VietFuel Supplier App - for suppliers to manage bids, shipments, and more."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # Shared package with models
+  vietfuel_shared:
+    path: ../../packages/vietfuel_shared
+  # Firebase
+  firebase_core: ^4.0.0
+  cloud_firestore: ^6.0.0
+  firebase_auth: ^6.0.1
+  firebase_storage: ^13.0.0
+  # State management
+  provider: ^6.0.5
+  # Utilities
+  intl: ^0.18.0
+  logger: ^1.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

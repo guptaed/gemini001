@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "490924808031",
+    "project_id": "vietfuelprocapp",
+    "storage_bucket": "vietfuelprocapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:490924808031:android:7f6086944ed0b3f3cac8ea",
+        "android_client_info": {
+          "package_name": "com.erex.leo001"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaLSoXSKiTQq-uKi30NS4Zq23UaIoPLHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:490924808031:android:69defbdeffc1f6e1cac8ea",
+        "android_client_info": {
+          "package_name": "com.vietfuel.supplier_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaLSoXSKiTQq-uKi30NS4Zq23UaIoPLHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
