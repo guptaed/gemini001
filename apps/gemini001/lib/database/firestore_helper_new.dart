@@ -669,6 +669,87 @@ class FirestoreHelper {
     }
   }
 
+  // Collection reference for "FuelTypes" with converter
+  CollectionReference<FuelType> get _fuelTypesCollection {
+    return _db.collection('FuelTypes').withConverter<FuelType>(
+          fromFirestore: (snapshot, _) => FuelType.fromFirestore(snapshot),
+          toFirestore: (fuelType, _) => fuelType.toMap(),
+        );
+  }
+
+  // Add a new fuel type
+  Future<void> addFuelType(FuelType fuelType) async {
+    try {
+      final currentUser = _auth.currentUser;
+      final fuelTypeWithMetadata = fuelType.copyWith(
+        CreatedBy: currentUser?.uid,
+        CreatedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+        CreatedAt: DateTime.now(),
+      );
+      await _fuelTypesCollection.add(fuelTypeWithMetadata);
+    } catch (e) {
+      logger.e('Error adding fuel type: $e');
+      rethrow;
+    }
+  }
+
+  // Update an existing fuel type
+  Future<void> updateFuelType(FuelType fuelType) async {
+    try {
+      if (fuelType.id != null) {
+        final oldDoc = await _fuelTypesCollection.doc(fuelType.id).get();
+        final oldFuelType = oldDoc.data();
+
+        final currentUser = _auth.currentUser;
+        final fuelTypeWithMetadata = fuelType.copyWith(
+          CreatedBy: oldFuelType?.CreatedBy ?? fuelType.CreatedBy,
+          CreatedByName: oldFuelType?.CreatedByName ?? fuelType.CreatedByName,
+          CreatedAt: oldFuelType?.CreatedAt ?? fuelType.CreatedAt,
+          LastModifiedBy: currentUser?.uid,
+          LastModifiedByName: currentUser?.displayName ?? currentUser?.email ?? 'Unknown',
+          LastModifiedAt: DateTime.now(),
+        );
+        await _fuelTypesCollection.doc(fuelType.id).set(fuelTypeWithMetadata);
+      }
+    } catch (e) {
+      logger.e('Error updating fuel type: $e');
+      rethrow;
+    }
+  }
+
+  // Stream all fuel types (for master list screen)
+  Stream<List<FuelType>> streamFuelTypes() {
+    return _fuelTypesCollection.snapshots().map((querySnapshot) {
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  // Stream only active fuel types (for dropdowns)
+  Stream<List<FuelType>> streamActiveFuelTypes() {
+    return _fuelTypesCollection
+        .where('IsActive', isEqualTo: true)
+        .snapshots()
+        .map((querySnapshot) {
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  // Get a fuel type by its FuelTypeId code (e.g. "WC-NC-001")
+  Future<FuelType?> getFuelTypeByCode(String fuelTypeId) async {
+    try {
+      final querySnapshot = await _fuelTypesCollection
+          .where('FuelTypeId', isEqualTo: fuelTypeId)
+          .limit(1)
+          .get();
+      return querySnapshot.docs.isNotEmpty
+          ? querySnapshot.docs.first.data()
+          : null;
+    } catch (e) {
+      logger.e('Error fetching fuel type by code: $e');
+      rethrow;
+    }
+  }
+
   // Collection reference for "Announcements" with converter
   CollectionReference<Announcement> get _announcementsCollection {
     return _db.collection('Announcements').withConverter<Announcement>(

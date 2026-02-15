@@ -21,6 +21,8 @@ import 'package:gemini001/screens/add_bank_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/screens/list_fuel_types_screen.dart';
+import 'package:gemini001/screens/add_fuel_type_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:gemini001/utils/logging.dart';
 import 'package:file_picker/file_picker.dart';
@@ -607,6 +609,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           MaterialPageRoute(
               builder: (context) => const SupplierOnboardingDashboard()),
         );
+        break;
+      case 11:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListFuelTypesScreen()));
+        break;
+      case 12:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddFuelTypeScreen()));
         break;
     }
   }
@@ -1889,16 +1897,44 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                                       contractInfo.MaxAutoValidity.toString(),
                                       bodyMedium,
                                       theme),
-                                  _buildDetailRow(
-                                      'STT1 Price',
-                                      contractInfo.STT1Price.toString(),
-                                      bodyMedium,
-                                      theme),
-                                  _buildDetailRow(
-                                      'STT2 Price',
-                                      contractInfo.STT2Price.toString(),
-                                      bodyMedium,
-                                      theme),
+                                  // Contracted Fuel Types
+                                  if (contractInfo.ContractedFuelTypes.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Contracted Fuel Types:',
+                                      style: bodyMedium.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    ...contractInfo.ContractedFuelTypes.map((ft) =>
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 16, top: 4, bottom: 4),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.local_fire_department, size: 16, color: Colors.teal[700]),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                '${ft.FuelTypeName} (${ft.FuelTypeId})',
+                                                style: bodyMedium,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${ft.BaseUnitPrice.toStringAsFixed(2)} ${ft.PriceUnit}',
+                                              style: bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ] else
+                                    _buildDetailRow(
+                                        'Contracted Fuel Types',
+                                        'None',
+                                        bodyMedium,
+                                        theme),
                                   // Metadata section
                                   if (contractInfo.CreatedAt != null ||
                                       contractInfo.LastModifiedAt != null) ...[

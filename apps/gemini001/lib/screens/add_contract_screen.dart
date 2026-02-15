@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/models/contract.dart';
+import 'package:gemini001/models/contract_fuel_type.dart';
+import 'package:gemini001/models/fuel_type.dart';
 import 'package:gemini001/models/supplier_history.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
@@ -15,6 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/screens/list_fuel_types_screen.dart';
+import 'package:gemini001/screens/add_fuel_type_screen.dart';
 import 'package:gemini001/utils/logging.dart';
 
 class AddContractScreen extends StatefulWidget {
@@ -39,29 +43,39 @@ class _AddContractScreenState extends State<AddContractScreen> {
   final _signedDateController = TextEditingController();
   final _validityYrsController = TextEditingController();
   final _maxAutoValidityController = TextEditingController();
-  final _stt1PriceController = TextEditingController();
-  final _stt2PriceController = TextEditingController();
   final _pdfUrlMainController = TextEditingController();
   final _pdfUrlAppendix1Controller = TextEditingController();
-  final _reasonController = TextEditingController(); // For edit reason
+  final _reasonController = TextEditingController();
 
-  // Edit mode detection
+  final FirestoreHelper _firestoreHelper = FirestoreHelper();
+  late Stream<List<FuelType>> _activeFuelTypesStream;
+
+  // Contracted fuel types with their prices
+  final List<_ContractedFuelTypeEntry> _contractedFuelTypeEntries = [];
+
   bool get isEditMode => widget.existingContract != null;
 
   @override
   void initState() {
     super.initState();
+    _activeFuelTypesStream = _firestoreHelper.streamActiveFuelTypes();
     if (isEditMode) {
-      // Pre-populate fields with existing contract data
       final existing = widget.existingContract!;
       _contractNoController.text = existing.ContractNo;
       _signedDateController.text = existing.SignedDate;
       _validityYrsController.text = existing.ValidityYrs.toString();
       _maxAutoValidityController.text = existing.MaxAutoValidity.toString();
-      _stt1PriceController.text = existing.STT1Price.toString();
-      _stt2PriceController.text = existing.STT2Price.toString();
       _pdfUrlMainController.text = existing.PdfUrlMain ?? '';
       _pdfUrlAppendix1Controller.text = existing.PdfUrlAppendix1 ?? '';
+      // Load existing contracted fuel types
+      for (final cft in existing.ContractedFuelTypes) {
+        _contractedFuelTypeEntries.add(_ContractedFuelTypeEntry(
+          fuelTypeId: cft.FuelTypeId,
+          fuelTypeName: cft.FuelTypeName,
+          priceController: TextEditingController(text: cft.BaseUnitPrice.toString()),
+          priceUnit: cft.PriceUnit,
+        ));
+      }
     }
   }
 
@@ -71,11 +85,12 @@ class _AddContractScreenState extends State<AddContractScreen> {
     _signedDateController.dispose();
     _validityYrsController.dispose();
     _maxAutoValidityController.dispose();
-    _stt1PriceController.dispose();
-    _stt2PriceController.dispose();
     _pdfUrlMainController.dispose();
     _pdfUrlAppendix1Controller.dispose();
     _reasonController.dispose();
+    for (final entry in _contractedFuelTypeEntries) {
+      entry.priceController.dispose();
+    }
     super.dispose();
   }
 
@@ -94,7 +109,44 @@ class _AddContractScreenState extends State<AddContractScreen> {
     }
   }
 
-  // Show a dialog that requires user acknowledgment
+  List<ContractFuelType> _buildContractedFuelTypes() {
+    return _contractedFuelTypeEntries.map((entry) => ContractFuelType(
+      FuelTypeId: entry.fuelTypeId,
+      FuelTypeName: entry.fuelTypeName,
+      BaseUnitPrice: double.tryParse(entry.priceController.text) ?? 0.0,
+      PriceUnit: entry.priceUnit,
+    )).toList();
+  }
+
+  List<String> _buildContractedFuelTypeIds() {
+    return _contractedFuelTypeEntries.map((e) => e.fuelTypeId).toList();
+  }
+
+  void _addFuelTypeEntry(FuelType ft) {
+    // Don't add duplicates
+    if (_contractedFuelTypeEntries.any((e) => e.fuelTypeId == ft.FuelTypeId)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${ft.FuelTypeName} is already added')),
+      );
+      return;
+    }
+    setState(() {
+      _contractedFuelTypeEntries.add(_ContractedFuelTypeEntry(
+        fuelTypeId: ft.FuelTypeId,
+        fuelTypeName: ft.FuelTypeName,
+        priceController: TextEditingController(),
+        priceUnit: 'VND/${ft.UnitOfMeasure}',
+      ));
+    });
+  }
+
+  void _removeFuelTypeEntry(int index) {
+    setState(() {
+      _contractedFuelTypeEntries[index].priceController.dispose();
+      _contractedFuelTypeEntries.removeAt(index);
+    });
+  }
+
   Future<void> _showMessageDialog({
     required String title,
     required String message,
@@ -124,14 +176,10 @@ class _AddContractScreenState extends State<AddContractScreen> {
               ),
             ],
           ),
-          content: SingleChildScrollView(
-            child: Text(message),
-          ),
+          content: SingleChildScrollView(child: Text(message)),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('OK'),
             ),
           ],
@@ -140,96 +188,86 @@ class _AddContractScreenState extends State<AddContractScreen> {
     );
   }
 
-  // Detect changes between existing contract and form data
   List<FieldChange> _detectChanges() {
     if (!isEditMode) return [];
 
     final changes = <FieldChange>[];
     final existing = widget.existingContract!;
 
-    // Check each field for changes
     if (_contractNoController.text != existing.ContractNo) {
       changes.add(FieldChange(
-        fieldName: 'ContractNo',
-        fieldLabel: 'Contract Number',
-        oldValue: existing.ContractNo,
-        newValue: _contractNoController.text,
+        fieldName: 'ContractNo', fieldLabel: 'Contract Number',
+        oldValue: existing.ContractNo, newValue: _contractNoController.text,
       ));
     }
-
     if (_signedDateController.text != existing.SignedDate) {
       changes.add(FieldChange(
-        fieldName: 'SignedDate',
-        fieldLabel: 'Signed Date',
-        oldValue: existing.SignedDate,
-        newValue: _signedDateController.text,
+        fieldName: 'SignedDate', fieldLabel: 'Signed Date',
+        oldValue: existing.SignedDate, newValue: _signedDateController.text,
       ));
     }
-
     final newValidityYrs = int.tryParse(_validityYrsController.text) ?? 0;
     if (newValidityYrs != existing.ValidityYrs) {
       changes.add(FieldChange(
-        fieldName: 'ValidityYrs',
-        fieldLabel: 'Validity Years',
-        oldValue: existing.ValidityYrs.toString(),
-        newValue: newValidityYrs.toString(),
+        fieldName: 'ValidityYrs', fieldLabel: 'Validity Years',
+        oldValue: existing.ValidityYrs.toString(), newValue: newValidityYrs.toString(),
       ));
     }
-
     final newMaxAutoValidity = int.tryParse(_maxAutoValidityController.text) ?? 0;
     if (newMaxAutoValidity != existing.MaxAutoValidity) {
       changes.add(FieldChange(
-        fieldName: 'MaxAutoValidity',
-        fieldLabel: 'Max Auto Validity',
-        oldValue: existing.MaxAutoValidity.toString(),
-        newValue: newMaxAutoValidity.toString(),
+        fieldName: 'MaxAutoValidity', fieldLabel: 'Max Auto Validity',
+        oldValue: existing.MaxAutoValidity.toString(), newValue: newMaxAutoValidity.toString(),
       ));
     }
 
-    final newStt1Price = double.tryParse(_stt1PriceController.text) ?? 0.0;
-    if (newStt1Price != existing.STT1Price) {
+    // Detect fuel type changes
+    final oldFuelTypeIds = existing.ContractedFuelTypeIds.toSet();
+    final newFuelTypeIds = _buildContractedFuelTypeIds().toSet();
+    if (!oldFuelTypeIds.containsAll(newFuelTypeIds) || !newFuelTypeIds.containsAll(oldFuelTypeIds)) {
       changes.add(FieldChange(
-        fieldName: 'STT1Price',
-        fieldLabel: 'STT1 Price',
-        oldValue: existing.STT1Price.toString(),
-        newValue: newStt1Price.toString(),
+        fieldName: 'ContractedFuelTypeIds', fieldLabel: 'Contracted Fuel Types',
+        oldValue: existing.ContractedFuelTypeIds.join(', '),
+        newValue: _buildContractedFuelTypeIds().join(', '),
       ));
-    }
-
-    final newStt2Price = double.tryParse(_stt2PriceController.text) ?? 0.0;
-    if (newStt2Price != existing.STT2Price) {
-      changes.add(FieldChange(
-        fieldName: 'STT2Price',
-        fieldLabel: 'STT2 Price',
-        oldValue: existing.STT2Price.toString(),
-        newValue: newStt2Price.toString(),
-      ));
+    } else {
+      // Check if any prices changed
+      for (final entry in _contractedFuelTypeEntries) {
+        final oldEntry = existing.ContractedFuelTypes
+            .where((cft) => cft.FuelTypeId == entry.fuelTypeId)
+            .firstOrNull;
+        if (oldEntry != null) {
+          final newPrice = double.tryParse(entry.priceController.text) ?? 0.0;
+          if (newPrice != oldEntry.BaseUnitPrice) {
+            changes.add(FieldChange(
+              fieldName: 'BaseUnitPrice_${entry.fuelTypeId}',
+              fieldLabel: 'Price for ${entry.fuelTypeName}',
+              oldValue: oldEntry.BaseUnitPrice.toString(),
+              newValue: newPrice.toString(),
+            ));
+          }
+        }
+      }
     }
 
     final newPdfUrlMain = _pdfUrlMainController.text.isEmpty ? null : _pdfUrlMainController.text;
     if (newPdfUrlMain != existing.PdfUrlMain) {
       changes.add(FieldChange(
-        fieldName: 'PdfUrlMain',
-        fieldLabel: 'Main Contract PDF URL',
-        oldValue: existing.PdfUrlMain ?? '',
-        newValue: newPdfUrlMain ?? '',
+        fieldName: 'PdfUrlMain', fieldLabel: 'Main Contract PDF URL',
+        oldValue: existing.PdfUrlMain ?? '', newValue: newPdfUrlMain ?? '',
       ));
     }
-
     final newPdfUrlAppendix1 = _pdfUrlAppendix1Controller.text.isEmpty ? null : _pdfUrlAppendix1Controller.text;
     if (newPdfUrlAppendix1 != existing.PdfUrlAppendix1) {
       changes.add(FieldChange(
-        fieldName: 'PdfUrlAppendix1',
-        fieldLabel: 'Appendix 1 PDF URL',
-        oldValue: existing.PdfUrlAppendix1 ?? '',
-        newValue: newPdfUrlAppendix1 ?? '',
+        fieldName: 'PdfUrlAppendix1', fieldLabel: 'Appendix 1 PDF URL',
+        oldValue: existing.PdfUrlAppendix1 ?? '', newValue: newPdfUrlAppendix1 ?? '',
       ));
     }
 
     return changes;
   }
 
-  // Show confirmation dialog with changes before saving
   Future<bool> _showConfirmationDialog(List<FieldChange> changes) async {
     final result = await showDialog<bool>(
       context: context,
@@ -237,14 +275,10 @@ class _AddContractScreenState extends State<AddContractScreen> {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.warning_amber_rounded,
-                  color: Colors.orange[700], size: 28),
+              Icon(Icons.warning_amber_rounded, color: Colors.orange[700], size: 28),
               const SizedBox(width: 12),
               const Expanded(
-                child: Text(
-                  'Confirm Changes',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                child: Text('Confirm Changes', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -259,167 +293,96 @@ class _AddContractScreenState extends State<AddContractScreen> {
                 ),
                 const SizedBox(height: 16),
                 ...changes.map((change) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            change.fieldLabel,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.teal[700],
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'From: "${change.oldValue}"',
-                            style: TextStyle(color: Colors.grey[700]),
-                          ),
-                          Text(
-                            'To: "${change.newValue}"',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(change.fieldLabel, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal[700])),
+                      const SizedBox(height: 4),
+                      Text('From: "${change.oldValue}"', style: TextStyle(color: Colors.grey[700])),
+                      Text('To: "${change.newValue}"', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87)),
+                    ],
+                  ),
+                )),
                 const Divider(height: 24),
-                const Text(
-                  'Do you want to proceed with these changes?',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
+                const Text('Do you want to proceed with these changes?', style: TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[700],
-                foregroundColor: Colors.white,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal[700], foregroundColor: Colors.white),
               child: const Text('Confirm'),
             ),
           ],
         );
       },
     );
-
     return result ?? false;
   }
 
   Future<void> _saveContract() async {
     if (_formKey.currentState!.validate()) {
-      // Edit mode: Detect changes and show confirmation
       if (isEditMode) {
         final changes = _detectChanges();
-
-        // If no changes, show message and return
         if (changes.isEmpty) {
-          await _showMessageDialog(
-            title: 'No Changes',
-            message:
-                'No modifications were made to the contract information.',
-            isError: false,
-          );
+          await _showMessageDialog(title: 'No Changes', message: 'No modifications were made to the contract information.');
           return;
         }
-
-        // Show confirmation dialog
         final confirmed = await _showConfirmationDialog(changes);
-        if (!confirmed) {
-          return; // User cancelled
-        }
+        if (!confirmed) return;
 
-        // Update the contract
         try {
           final updatedContract = widget.existingContract!.copyWith(
             ContractNo: _contractNoController.text,
             SignedDate: _signedDateController.text,
             ValidityYrs: int.parse(_validityYrsController.text),
             MaxAutoValidity: int.parse(_maxAutoValidityController.text),
-            STT1Price: double.parse(_stt1PriceController.text),
-            STT2Price: double.parse(_stt2PriceController.text),
-            PdfUrlMain: _pdfUrlMainController.text.isEmpty
-                ? null
-                : _pdfUrlMainController.text,
-            PdfUrlAppendix1: _pdfUrlAppendix1Controller.text.isEmpty
-                ? null
-                : _pdfUrlAppendix1Controller.text,
+            ContractedFuelTypes: _buildContractedFuelTypes(),
+            ContractedFuelTypeIds: _buildContractedFuelTypeIds(),
+            PdfUrlMain: _pdfUrlMainController.text.isEmpty ? null : _pdfUrlMainController.text,
+            PdfUrlAppendix1: _pdfUrlAppendix1Controller.text.isEmpty ? null : _pdfUrlAppendix1Controller.text,
           );
 
-          final reason = _reasonController.text.trim().isEmpty
-              ? null
-              : _reasonController.text.trim();
-
-          await FirestoreHelper().updateContractInfo(
-            updatedContract,
-            changes: changes,
-            reason: reason,
-            ipAddress: null, // Can be implemented later if needed
-          );
+          final reason = _reasonController.text.trim().isEmpty ? null : _reasonController.text.trim();
+          await _firestoreHelper.updateContractInfo(updatedContract, changes: changes, reason: reason);
 
           if (mounted) {
-            await _showMessageDialog(
-              title: 'Success',
-              message: 'Contract information updated successfully!',
-              isError: false,
-            );
-
-            // Return to previous screen with success indicator
-            if (mounted) {
-              Navigator.of(context).pop(true);
-            }
+            await _showMessageDialog(title: 'Success', message: 'Contract information updated successfully!');
+            if (mounted) Navigator.of(context).pop(true);
           }
         } catch (e) {
           logger.e('Error updating contract: $e');
           if (mounted) {
-            await _showMessageDialog(
-              title: 'Error',
-              message: 'Failed to update contract:\n\n$e',
-              isError: true,
-            );
+            await _showMessageDialog(title: 'Error', message: 'Failed to update contract:\n\n$e', isError: true);
           }
         }
       } else {
-        // Add mode: Create new contract
         final contractInfo = ContractInfo(
           SupId: widget.supId,
           ContractNo: _contractNoController.text,
           SignedDate: _signedDateController.text,
           ValidityYrs: int.parse(_validityYrsController.text),
           MaxAutoValidity: int.parse(_maxAutoValidityController.text),
-          STT1Price: double.parse(_stt1PriceController.text),
-          STT2Price: double.parse(_stt2PriceController.text),
-          PdfUrlMain: _pdfUrlMainController.text.isEmpty
-              ? null
-              : _pdfUrlMainController.text,
-          PdfUrlAppendix1: _pdfUrlAppendix1Controller.text.isEmpty
-              ? null
-              : _pdfUrlAppendix1Controller.text,
+          ContractedFuelTypes: _buildContractedFuelTypes(),
+          ContractedFuelTypeIds: _buildContractedFuelTypeIds(),
+          PdfUrlMain: _pdfUrlMainController.text.isEmpty ? null : _pdfUrlMainController.text,
+          PdfUrlAppendix1: _pdfUrlAppendix1Controller.text.isEmpty ? null : _pdfUrlAppendix1Controller.text,
         );
         try {
-          await FirestoreHelper().addContractInfo(contractInfo);
+          await _firestoreHelper.addContractInfo(contractInfo);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Contract Information added successfully!')),
+              const SnackBar(content: Text('Contract Information added successfully!')),
             );
-            Navigator.pop(context); // Pop back to SupplierDetailsScreen
+            Navigator.pop(context);
           }
         } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error adding contract: $e')),
-            );
-            logger.e(
-                'Error adding contract for SupplierId: ${widget.supId}', e);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding contract: $e')));
+            logger.e('Error adding contract for SupplierId: ${widget.supId}', e);
           }
         }
       }
@@ -429,62 +392,37 @@ class _AddContractScreenState extends State<AddContractScreen> {
   void _onMenuItemSelected(int index) {
     switch (index) {
       case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ListSuppliersScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListSuppliersScreen()));
         break;
       case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddSupplierScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddSupplierScreen()));
         break;
       case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const AddAnnouncementScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddAnnouncementScreen()));
         break;
       case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const ListAnnouncementsScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListAnnouncementsScreen()));
         break;
       case 4:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddBidScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddBidScreen()));
         break;
       case 5:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ListBidsScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListBidsScreen()));
         break;
       case 6:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddShipmentScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddShipmentScreen()));
         break;
       case 7:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ListShipmentsScreen()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListShipmentsScreen()));
         break;
-
       case 10:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const SupplierOnboardingDashboard()),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const SupplierOnboardingDashboard()));
+        break;
+      case 11:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListFuelTypesScreen()));
+        break;
+      case 12:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddFuelTypeScreen()));
         break;
     }
   }
@@ -509,29 +447,23 @@ class _AddContractScreenState extends State<AddContractScreen> {
                 initialValue: widget.supId.toString(),
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) =>
-                    value!.isEmpty ? 'Supplier ID is required' : null,
               ),
               _buildTextField(
                 labelText: 'Supplier Name',
                 initialValue: widget.companyName,
                 enabled: false,
                 fillColor: Colors.grey[300],
-                validator: (value) =>
-                    value!.isEmpty ? 'Supplier Name is required' : null,
               ),
               _buildTextField(
                 controller: _contractNoController,
                 labelText: 'Contract Number',
-                validator: (value) =>
-                    value!.isEmpty ? 'Enter Contract Number' : null,
+                validator: (value) => value!.isEmpty ? 'Enter Contract Number' : null,
               ),
               _buildTextFieldWithDatePicker(
                 controller: _signedDateController,
                 labelText: 'Signed Date (YYYY-MM-DD)',
                 onTap: () => _selectDate(context, _signedDateController),
-                validator: (value) =>
-                    value!.isEmpty ? 'Enter Signed Date' : null,
+                validator: (value) => value!.isEmpty ? 'Enter Signed Date' : null,
               ),
               _buildTextField(
                 controller: _validityYrsController,
@@ -539,9 +471,7 @@ class _AddContractScreenState extends State<AddContractScreen> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value!.isEmpty) return 'Enter Validity Years';
-                  if (int.tryParse(value) == null) {
-                    return 'Enter a valid number';
-                  }
+                  if (int.tryParse(value) == null) return 'Enter a valid number';
                   return null;
                 },
               ),
@@ -551,47 +481,128 @@ class _AddContractScreenState extends State<AddContractScreen> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value!.isEmpty) return 'Enter Max Auto Validity';
-                  if (int.tryParse(value) == null) {
-                    return 'Enter a valid number';
-                  }
+                  if (int.tryParse(value) == null) return 'Enter a valid number';
                   return null;
                 },
               ),
-              _buildTextField(
-                controller: _stt1PriceController,
-                labelText: 'STT1 Price',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value!.isEmpty) return 'Enter STT1 Price';
-                  if (double.tryParse(value) == null) {
-                    return 'Enter a valid number';
-                  }
-                  return null;
-                },
+
+              // Contracted Fuel Types section
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.teal[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.teal[200]!),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.local_fire_department, color: Colors.teal[700], size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Contracted Fuel Types',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal[800], fontSize: 16),
+                        ),
+                        const Spacer(),
+                        // Add fuel type button
+                        StreamBuilder<List<FuelType>>(
+                          stream: _activeFuelTypesStream,
+                          builder: (context, snapshot) {
+                            final fuelTypes = snapshot.data ?? [];
+                            return PopupMenuButton<FuelType>(
+                              tooltip: 'Add fuel type',
+                              icon: Icon(Icons.add_circle, color: Colors.teal[700], size: 28),
+                              onSelected: _addFuelTypeEntry,
+                              itemBuilder: (context) {
+                                if (fuelTypes.isEmpty) {
+                                  return [
+                                    const PopupMenuItem(
+                                      enabled: false,
+                                      child: Text('No fuel types available'),
+                                    ),
+                                  ];
+                                }
+                                return fuelTypes.map((ft) => PopupMenuItem<FuelType>(
+                                  value: ft,
+                                  child: Text('${ft.FuelTypeName} (${ft.FuelTypeId})'),
+                                )).toList();
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    if (_contractedFuelTypeEntries.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          'No fuel types added yet. Use the + button to add fuel types covered by this contract.',
+                          style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
+                        ),
+                      ),
+                    ..._contractedFuelTypeEntries.asMap().entries.map((mapEntry) {
+                      final index = mapEntry.key;
+                      final entry = mapEntry.value;
+                      return Card(
+                        margin: const EdgeInsets.only(top: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      entry.fuelTypeName,
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(entry.fuelTypeId, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: TextFormField(
+                                  controller: entry.priceController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Price (${entry.priceUnit})',
+                                    border: const OutlineInputBorder(),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                  ),
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) return 'Required';
+                                    if (double.tryParse(value) == null) return 'Invalid';
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.remove_circle, color: Colors.red[400]),
+                                onPressed: () => _removeFuelTypeEntry(index),
+                                tooltip: 'Remove',
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ),
-              _buildTextField(
-                controller: _stt2PriceController,
-                labelText: 'STT2 Price',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value!.isEmpty) return 'Enter STT2 Price';
-                  if (double.tryParse(value) == null) {
-                    return 'Enter a valid number';
-                  }
-                  return null;
-                },
-              ),
+              const SizedBox(height: 16),
+
               _buildTextField(
                 controller: _pdfUrlMainController,
                 labelText: 'Main Contract PDF URL (Optional)',
                 validator: (value) {
-                  if (value!.isNotEmpty) {
-                    if (!Uri.parse(value).isAbsolute) {
-                      return 'Enter a valid URL';
-                    }
-                  }
+                  if (value!.isNotEmpty && !Uri.parse(value).isAbsolute) return 'Enter a valid URL';
                   return null;
                 },
               ),
@@ -599,11 +610,7 @@ class _AddContractScreenState extends State<AddContractScreen> {
                 controller: _pdfUrlAppendix1Controller,
                 labelText: 'Appendix 1 PDF URL (Optional)',
                 validator: (value) {
-                  if (value!.isNotEmpty) {
-                    if (!Uri.parse(value).isAbsolute) {
-                      return 'Enter a valid URL';
-                    }
-                  }
+                  if (value!.isNotEmpty && !Uri.parse(value).isAbsolute) return 'Enter a valid URL';
                   return null;
                 },
               ),
@@ -624,13 +631,7 @@ class _AddContractScreenState extends State<AddContractScreen> {
                         children: [
                           Icon(Icons.info_outline, color: Colors.amber[700], size: 20),
                           const SizedBox(width: 8),
-                          Text(
-                            'Reason for Change (Optional)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber[800],
-                            ),
-                          ),
+                          Text('Reason for Change (Optional)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber[800])),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -639,15 +640,9 @@ class _AddContractScreenState extends State<AddContractScreen> {
                         maxLines: 2,
                         decoration: InputDecoration(
                           hintText: 'Briefly describe why you are making this change...',
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
-                          ),
+                          border: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0)),
+                          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0)),
+                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0)),
                           filled: true,
                           fillColor: Colors.white,
                         ),
@@ -664,8 +659,7 @@ class _AddContractScreenState extends State<AddContractScreen> {
                   textStyle: const TextStyle(fontSize: 18),
                   backgroundColor: theme.primaryColor,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: Text(isEditMode ? 'Update Contract Information' : 'Save Contract Information'),
               ),
@@ -681,11 +675,8 @@ class _AddContractScreenState extends State<AddContractScreen> {
     TextEditingController? controller,
     String? initialValue,
     TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
     String? Function(String?)? validator,
     int? maxLines,
-    int? maxLength,
-    TextInputAction? textInputAction = TextInputAction.next,
     bool enabled = true,
     Color? fillColor,
   }) {
@@ -696,23 +687,15 @@ class _AddContractScreenState extends State<AddContractScreen> {
         initialValue: initialValue,
         decoration: InputDecoration(
           labelText: labelText,
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
-          ),
+          border: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0)),
+          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0)),
+          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0)),
           filled: !enabled,
           fillColor: fillColor,
         ),
         keyboardType: keyboardType,
-        obscureText: obscureText,
         maxLines: maxLines,
-        maxLength: maxLength,
-        textInputAction: textInputAction,
+        textInputAction: TextInputAction.next,
         enabled: enabled,
         validator: validator,
       ),
@@ -731,19 +714,10 @@ class _AddContractScreenState extends State<AddContractScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: labelText,
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
-          ),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: onTap,
-          ),
+          border: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0)),
+          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0)),
+          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0)),
+          suffixIcon: IconButton(icon: const Icon(Icons.calendar_today), onPressed: onTap),
         ),
         readOnly: true,
         onTap: onTap,
@@ -751,4 +725,19 @@ class _AddContractScreenState extends State<AddContractScreen> {
       ),
     );
   }
+}
+
+/// Internal helper class for managing contracted fuel type entries in the form
+class _ContractedFuelTypeEntry {
+  final String fuelTypeId;
+  final String fuelTypeName;
+  final TextEditingController priceController;
+  final String priceUnit;
+
+  _ContractedFuelTypeEntry({
+    required this.fuelTypeId,
+    required this.fuelTypeName,
+    required this.priceController,
+    this.priceUnit = 'VND/ton',
+  });
 }

@@ -3,6 +3,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vietfuel_shared/src/models/contract_fuel_type.dart';
 import 'package:vietfuel_shared/src/utils/logging.dart';
 
 // Sentinel value to distinguish between "not provided" and "provided as null"
@@ -15,8 +16,8 @@ class ContractInfo {
   final String SignedDate;
   final int ValidityYrs;
   final int MaxAutoValidity;
-  final double STT1Price;
-  final double STT2Price;
+  final List<ContractFuelType> ContractedFuelTypes;
+  final List<String> ContractedFuelTypeIds; // Flat list for Firestore arrayContains queries
   final String? PdfUrlMain;
   final String? PdfUrlAppendix1;
 
@@ -35,8 +36,8 @@ class ContractInfo {
     required this.SignedDate,
     required this.ValidityYrs,
     required this.MaxAutoValidity,
-    required this.STT1Price,
-    required this.STT2Price,
+    this.ContractedFuelTypes = const [],
+    this.ContractedFuelTypeIds = const [],
     this.PdfUrlMain,
     this.PdfUrlAppendix1,
     this.CreatedBy,
@@ -54,8 +55,8 @@ class ContractInfo {
     String? SignedDate,
     int? ValidityYrs,
     int? MaxAutoValidity,
-    double? STT1Price,
-    double? STT2Price,
+    List<ContractFuelType>? ContractedFuelTypes,
+    List<String>? ContractedFuelTypeIds,
     Object? PdfUrlMain = _undefined,
     Object? PdfUrlAppendix1 = _undefined,
     Object? CreatedBy = _undefined,
@@ -72,8 +73,8 @@ class ContractInfo {
       SignedDate: SignedDate ?? this.SignedDate,
       ValidityYrs: ValidityYrs ?? this.ValidityYrs,
       MaxAutoValidity: MaxAutoValidity ?? this.MaxAutoValidity,
-      STT1Price: STT1Price ?? this.STT1Price,
-      STT2Price: STT2Price ?? this.STT2Price,
+      ContractedFuelTypes: ContractedFuelTypes ?? this.ContractedFuelTypes,
+      ContractedFuelTypeIds: ContractedFuelTypeIds ?? this.ContractedFuelTypeIds,
       PdfUrlMain:
           PdfUrlMain == _undefined ? this.PdfUrlMain : PdfUrlMain as String?,
       PdfUrlAppendix1: PdfUrlAppendix1 == _undefined
@@ -105,8 +106,8 @@ class ContractInfo {
       'SignedDate': SignedDate,
       'ValidityYrs': ValidityYrs,
       'MaxAutoValidity': MaxAutoValidity,
-      'STT1Price': STT1Price,
-      'STT2Price': STT2Price,
+      'ContractedFuelTypes': ContractedFuelTypes.map((ft) => ft.toMap()).toList(),
+      'ContractedFuelTypeIds': ContractedFuelTypeIds,
       'PdfUrlMain': PdfUrlMain,
       'PdfUrlAppendix1': PdfUrlAppendix1,
       'CreatedBy': CreatedBy,
@@ -123,6 +124,17 @@ class ContractInfo {
       DocumentSnapshot<Map<String, dynamic>> doc) {
     try {
       final data = doc.data()!;
+
+      // Parse ContractedFuelTypes from embedded array
+      final fuelTypesRaw = data['ContractedFuelTypes'] as List<dynamic>? ?? [];
+      final contractedFuelTypes = fuelTypesRaw
+          .map((item) => ContractFuelType.fromMap(item as Map<String, dynamic>))
+          .toList();
+
+      // Parse ContractedFuelTypeIds
+      final fuelTypeIdsRaw = data['ContractedFuelTypeIds'] as List<dynamic>? ?? [];
+      final contractedFuelTypeIds = fuelTypeIdsRaw.cast<String>().toList();
+
       return ContractInfo(
         id: doc.id,
         SupId: data['SupId'] as int,
@@ -130,8 +142,8 @@ class ContractInfo {
         SignedDate: data['SignedDate'] as String,
         ValidityYrs: data['ValidityYrs'] as int,
         MaxAutoValidity: data['MaxAutoValidity'] as int,
-        STT1Price: (data['STT1Price'] as num).toDouble(),
-        STT2Price: (data['STT2Price'] as num).toDouble(),
+        ContractedFuelTypes: contractedFuelTypes,
+        ContractedFuelTypeIds: contractedFuelTypeIds,
         PdfUrlMain: data['PdfUrlMain'] as String?,
         PdfUrlAppendix1: data['PdfUrlAppendix1'] as String?,
         CreatedBy: data['CreatedBy'] as String?,
@@ -149,8 +161,6 @@ class ContractInfo {
         SignedDate: '',
         ValidityYrs: 0,
         MaxAutoValidity: 0,
-        STT1Price: 0.0,
-        STT2Price: 0.0,
         PdfUrlMain: null,
         PdfUrlAppendix1: null,
       );

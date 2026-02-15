@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/screens/list_fuel_types_screen.dart';
+import 'package:gemini001/screens/add_fuel_type_screen.dart';
 
 class ListAnnouncementsScreen extends StatefulWidget {
   const ListAnnouncementsScreen({super.key});
@@ -94,6 +96,12 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
           MaterialPageRoute(
               builder: (context) => const SupplierOnboardingDashboard()),
         );
+        break;
+      case 11:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListFuelTypesScreen()));
+        break;
+      case 12:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddFuelTypeScreen()));
         break;
     }
   }
@@ -332,6 +340,7 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                         announcement.announceDate.toLowerCase(),
                         announcement.bidCloseDate.toLowerCase(),
                         announcement.deliveryDate.toLowerCase(),
+                        announcement.fuelTypeId.toLowerCase(),
                         announcement.fuelType.toLowerCase(),
                         announcement.quantity.toString(),
                         announcement.price.toString(),
@@ -392,14 +401,28 @@ class _ListAnnouncementsScreenState extends State<ListAnnouncementsScreen> {
                                           topRight: Radius.circular(12),
                                         ),
                                       ),
-                                      child: Text(
-                                        announcement.fuelType,
-                                        style: titleMedium.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            announcement.fuelType,
+                                            style: titleMedium.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.primary,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (announcement.fuelTypeId.isNotEmpty)
+                                            Text(
+                                              announcement.fuelTypeId,
+                                              style: bodyMedium.copyWith(
+                                                color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
                                       ),
                                     ),
                                     Flexible(

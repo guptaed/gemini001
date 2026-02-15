@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gemini001/database/firestore_helper_new.dart';
 import 'package:gemini001/models/announcement.dart';
+import 'package:gemini001/models/fuel_type.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/list_announcements_screen.dart';
 import 'package:gemini001/screens/list_suppliers_screen.dart';
@@ -14,6 +15,8 @@ import 'package:gemini001/providers/auth_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/screens/list_fuel_types_screen.dart';
+import 'package:gemini001/screens/add_fuel_type_screen.dart';
 import 'package:gemini001/utils/logging.dart';
 
 class AddAnnouncementScreen extends StatefulWidget {
@@ -29,15 +32,19 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
   final _announceDateController = TextEditingController();
   final _bidCloseDateController = TextEditingController();
   final _deliveryDateController = TextEditingController();
-  final _fuelTypeController = TextEditingController();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
   final _notesController = TextEditingController();
+
+  final FirestoreHelper _firestoreHelper = FirestoreHelper();
+  late Stream<List<FuelType>> _activeFuelTypesStream;
+  FuelType? _selectedFuelType;
 
   @override
   void initState() {
     super.initState();
     _announceIdController.text = _generateAnnouncementId();
+    _activeFuelTypesStream = _firestoreHelper.streamActiveFuelTypes();
   }
 
   @override
@@ -46,7 +53,6 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
     _announceDateController.dispose();
     _bidCloseDateController.dispose();
     _deliveryDateController.dispose();
-    _fuelTypeController.dispose();
     _quantityController.dispose();
     _priceController.dispose();
     _notesController.dispose();
@@ -76,12 +82,14 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
 
   Future<void> _saveAnnouncement() async {
     if (_formKey.currentState!.validate()) {
+      if (_selectedFuelType == null) return;
       final announcement = Announcement(
         announceId: int.parse(_announceIdController.text),
         announceDate: _announceDateController.text,
         bidCloseDate: _bidCloseDateController.text,
         deliveryDate: _deliveryDateController.text,
-        fuelType: _fuelTypeController.text,
+        fuelTypeId: _selectedFuelType!.FuelTypeId,
+        fuelType: _selectedFuelType!.FuelTypeName,
         quantity: int.parse(_quantityController.text),
         price: double.parse(_priceController.text),
         status: 'Active', // Hardcoded as per requirement
@@ -102,12 +110,12 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
           _announceDateController.clear();
           _bidCloseDateController.clear();
           _deliveryDateController.clear();
-          _fuelTypeController.clear();
           _quantityController.clear();
           _priceController.clear();
           _notesController.clear();
           setState(() {
             _announceIdController.text = _generateAnnouncementId();
+            _selectedFuelType = null;
           });
         }
       } catch (e) {
@@ -180,6 +188,12 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
               builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
+      case 11:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListFuelTypesScreen()));
+        break;
+      case 12:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddFuelTypeScreen()));
+        break;
     }
   }
 
@@ -226,10 +240,47 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
                 validator: (value) =>
                     value!.isEmpty ? 'Enter Delivery Date' : null,
               ),
-              _buildTextField(
-                controller: _fuelTypeController,
-                labelText: 'Fuel Type',
-                validator: (value) => value!.isEmpty ? 'Enter Fuel Type' : null,
+              // Fuel Type dropdown from master data
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: StreamBuilder<List<FuelType>>(
+                  stream: _activeFuelTypesStream,
+                  builder: (context, snapshot) {
+                    final fuelTypes = snapshot.data ?? [];
+                    return DropdownButtonFormField<String>(
+                      initialValue: _selectedFuelType?.id,
+                      decoration: InputDecoration(
+                        labelText: 'Fuel Type',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[400]!, width: 1.0),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.teal[700]!, width: 2.0),
+                        ),
+                      ),
+                      items: fuelTypes.map((ft) => DropdownMenuItem<String>(
+                        value: ft.id,
+                        child: Text('${ft.FuelTypeName} (${ft.FuelTypeId})'),
+                      )).toList(),
+                      onChanged: (docId) {
+                        if (docId != null) {
+                          setState(() {
+                            _selectedFuelType = fuelTypes.firstWhere((ft) => ft.id == docId);
+                          });
+                        }
+                      },
+                      validator: (_) => _selectedFuelType == null ? 'Select a Fuel Type' : null,
+                      hint: snapshot.connectionState == ConnectionState.waiting
+                          ? const Text('Loading fuel types...')
+                          : fuelTypes.isEmpty
+                              ? const Text('No fuel types available — add one first')
+                              : const Text('Select a Fuel Type'),
+                    );
+                  },
+                ),
               ),
               _buildTextField(
                 controller: _quantityController,

@@ -5,8 +5,38 @@ import 'package:supplier_app/providers/auth_provider.dart';
 import 'package:supplier_app/widgets/status_badge.dart';
 import 'package:vietfuel_shared/vietfuel_shared.dart';
 
-class AnnouncementsScreen extends StatelessWidget {
+class AnnouncementsScreen extends StatefulWidget {
   const AnnouncementsScreen({super.key});
+
+  @override
+  State<AnnouncementsScreen> createState() => _AnnouncementsScreenState();
+}
+
+class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
+  List<String> _contractedFuelTypeIds = [];
+  bool _contractLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadContract();
+  }
+
+  Future<void> _loadContract() async {
+    final supId = Provider.of<AuthProvider>(context, listen: false).supId;
+    if (supId == null) {
+      setState(() => _contractLoaded = true);
+      return;
+    }
+
+    final contract = await FirestoreHelper().getContractForSupplier(supId);
+    if (mounted) {
+      setState(() {
+        _contractedFuelTypeIds = contract?.ContractedFuelTypeIds ?? [];
+        _contractLoaded = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +49,8 @@ class AnnouncementsScreen extends StatelessWidget {
       body: StreamBuilder<List<Announcement>>(
         stream: FirestoreHelper().streamAnnouncements(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              !_contractLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -55,7 +86,12 @@ class AnnouncementsScreen extends StatelessWidget {
             itemCount: announcements.length,
             itemBuilder: (context, index) {
               final a = announcements[index];
-              return _AnnouncementCard(announcement: a);
+              final isEligible = a.fuelTypeId.isEmpty ||
+                  _contractedFuelTypeIds.contains(a.fuelTypeId);
+              return _AnnouncementCard(
+                announcement: a,
+                isEligible: isEligible,
+              );
             },
           );
         },
@@ -66,8 +102,12 @@ class AnnouncementsScreen extends StatelessWidget {
 
 class _AnnouncementCard extends StatelessWidget {
   final Announcement announcement;
+  final bool isEligible;
 
-  const _AnnouncementCard({required this.announcement});
+  const _AnnouncementCard({
+    required this.announcement,
+    required this.isEligible,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -85,11 +125,13 @@ class _AnnouncementCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  announcement.fuelType,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    announcement.fuelType,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 StatusBadge(status: announcement.status),
@@ -111,22 +153,51 @@ class _AnnouncementCard extends StatelessWidget {
             ],
             if (isOpen) ...[
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showBidDialog(context),
-                  icon: const Icon(Icons.gavel),
-                  label: const Text('Place Bid', style: TextStyle(fontSize: 16)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              if (isEligible)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showBidDialog(context),
+                    icon: const Icon(Icons.gavel),
+                    label: const Text('Place Bid',
+                        style: TextStyle(fontSize: 16)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.orange[200]!),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline,
+                          size: 20, color: Colors.orange[700]),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Not in your contract',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.orange[800],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ],
         ),

@@ -195,6 +195,27 @@ class LeftPaneMenu extends StatelessWidget {
                   theme: theme,
                   badge: 'Coming Soon',
                 ),
+
+                const SizedBox(height: 8),
+                const Divider(height: 1, thickness: 1),
+                const SizedBox(height: 8),
+
+                // Admin Section
+                _buildSectionHeader('ADMIN', theme),
+                _buildMenuItem(
+                  context: context,
+                  icon: Icons.local_fire_department,
+                  title: 'Fuel Type Master',
+                  index: 11,
+                  theme: theme,
+                ),
+                _buildMenuItem(
+                  context: context,
+                  icon: Icons.add_chart,
+                  title: 'Add Fuel Type',
+                  index: 12,
+                  theme: theme,
+                ),
               ],
             ),
           ),

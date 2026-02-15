@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:gemini001/widgets/common_layout.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/screens/list_fuel_types_screen.dart';
+import 'package:gemini001/screens/add_fuel_type_screen.dart';
 
 class ListBidsScreen extends StatefulWidget {
   const ListBidsScreen({super.key});
@@ -95,6 +97,12 @@ class _ListBidsScreenState extends State<ListBidsScreen> {
           MaterialPageRoute(
               builder: (context) => const SupplierOnboardingDashboard()),
         );
+        break;
+      case 11:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListFuelTypesScreen()));
+        break;
+      case 12:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddFuelTypeScreen()));
         break;
     }
   }

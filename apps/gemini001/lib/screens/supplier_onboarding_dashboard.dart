@@ -14,6 +14,8 @@ import 'package:gemini001/screens/add_bid_screen.dart';
 import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
+import 'package:gemini001/screens/list_fuel_types_screen.dart';
+import 'package:gemini001/screens/add_fuel_type_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
@@ -286,6 +288,12 @@ class _SupplierOnboardingDashboardState
             context,
             MaterialPageRoute(
                 builder: (context) => const ListShipmentsScreen()));
+        break;
+      case 11:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListFuelTypesScreen()));
+        break;
+      case 12:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddFuelTypeScreen()));
         break;
     }
   }

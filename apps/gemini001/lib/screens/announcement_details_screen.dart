@@ -13,6 +13,8 @@ import 'package:gemini001/screens/list_bids_screen.dart';
 import 'package:gemini001/screens/add_shipment_screen.dart';
 import 'package:gemini001/screens/list_shipments_screen.dart';
 import 'package:gemini001/screens/supplier_onboarding_dashboard.dart';
+import 'package:gemini001/screens/list_fuel_types_screen.dart';
+import 'package:gemini001/screens/add_fuel_type_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gemini001/providers/auth_provider.dart';
 
@@ -80,6 +82,12 @@ class AnnouncementDetailsScreen extends StatelessWidget {
               builder: (context) => const SupplierOnboardingDashboard()),
         );
         break;
+      case 11:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ListFuelTypesScreen()));
+        break;
+      case 12:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const AddFuelTypeScreen()));
+        break;
     }
   }
 
@@ -122,12 +130,24 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                           color: Colors.white, size: 32),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          announcement.fuelType,
-                          style: theme.textTheme.headlineSmall!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              announcement.fuelType,
+                              style: theme.textTheme.headlineSmall!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            if (announcement.fuelTypeId.isNotEmpty)
+                              Text(
+                                announcement.fuelTypeId,
+                                style: theme.textTheme.bodyMedium!.copyWith(
+                                  color: Colors.white70,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -138,6 +158,8 @@ class AnnouncementDetailsScreen extends StatelessWidget {
                 // Details Section
                 _buildDetailRow('Announcement ID',
                     announcement.announceId.toString(), theme),
+                _buildDetailRow('Fuel Type Code',
+                    announcement.fuelTypeId.isNotEmpty ? announcement.fuelTypeId : 'N/A', theme),
                 _buildDetailRow('Status', announcement.status, theme),
                 const Divider(height: 32),
 
